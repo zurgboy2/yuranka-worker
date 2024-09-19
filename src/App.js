@@ -1,25 +1,81 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { CssBaseline, ThemeProvider, createTheme, GlobalStyles } from '@mui/material';
+import Dashboard from './Dashboard';
+import { UserProvider } from './UserContext';
+import { CheckInProvider } from './CheckInContext';
 
-function App() {
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#8B0000', // blood red
+    },
+    background: {
+      default: '#121212',
+      paper: '#1E1E1E',
+    },
+  },
+  shape: {
+    borderRadius: 16,
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+        },
+      },
+    },
+  },
+});
+
+const globalStyles = {
+  '*::-webkit-scrollbar': {
+    width: '8px',
+    height: '8px',
+  },
+  '*::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+  '*::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: '20px',
+  },
+  '*::-webkit-scrollbar-thumb:hover': {
+    background: 'rgba(255, 255, 255, 0.3)',
+  },
+  'body': {
+    scrollbarWidth: 'thin',
+    scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+  },
+};
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <GlobalStyles styles={globalStyles} />
+      <UserProvider>
+        <CheckInProvider>
+          <Dashboard />
+        </CheckInProvider>
+      </UserProvider>
+    </ThemeProvider>
   );
-}
+};
 
 export default App;
