@@ -23,7 +23,7 @@ const GoogleCalendar = () => {
         const action = 'getCalendarEvents';
         
         const response = await apiCall(scriptId, action, {
-          roles: userData.roles,
+          role: userData.role,
           googleToken: userData.googleToken,
           username: userData.username
         });

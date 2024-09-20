@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   AppBar, Toolbar, Typography, Container, Grid, 
   useTheme, CircularProgress, Alert, Card, CardActionArea, CardContent,
-  Dialog, DialogContent, Box, Chip
+  Dialog, DialogContent, Box
 } from '@mui/material';
 import roleConfig from './roleConfig';
 import { useUserData } from './UserContext';
@@ -35,13 +35,10 @@ const Dashboard = () => {
   const availableRoles = useMemo(() => Object.keys(memoizedRoleConfig), [memoizedRoleConfig]);
 
   useEffect(() => {
-    if (userData && userData.roles) {
-      const invalidRoles = userData.roles.filter(role => !availableRoles.includes(role));
-      if (invalidRoles.length > 0) {
-        setError(`Invalid role(s): ${invalidRoles.join(', ')}. Please contact an administrator.`);
-      } else {
-        setError(null);
-      }
+    if (userData && userData.role && !availableRoles.includes(userData.role)) {
+      setError(`Invalid role: ${userData.role}. Please contact an administrator.`);
+    } else {
+      setError(null);
     }
   }, [userData, availableRoles]);
 
@@ -58,13 +55,13 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && userData && userData.roles) {
-      const allComponents = userData.roles.flatMap(role => memoizedRoleConfig[role] || []);
+    if (isAuthenticated && userData && userData.role && memoizedRoleConfig[userData.role]) {
+      const components = memoizedRoleConfig[userData.role];
       let currentIndex = 0;
 
       const loadNextComponent = () => {
-        if (currentIndex < allComponents.length) {
-          const currentComponent = allComponents[currentIndex];
+        if (currentIndex < components.length) {
+          const currentComponent = components[currentIndex];
           setLoadedComponents(prev => [...prev, currentComponent]);
           currentIndex++;
           setTimeout(loadNextComponent, 500); // Adjust this delay as needed
@@ -76,7 +73,7 @@ const Dashboard = () => {
   }, [isAuthenticated, userData, memoizedRoleConfig]);
 
   const renderDashboardContent = useMemo(() => {
-    if (!userData || !userData.roles) return null;
+    if (!userData || !userData.role || !memoizedRoleConfig[userData.role]) return null;
 
     const cardComponents = ['Lister', 'Checkout', 'Accounting', 'TaskManager'];
 
@@ -111,17 +108,16 @@ const Dashboard = () => {
         })}
       </Grid>
     );
-  }, [userData, handleOpenComponent, loadedComponents]);
+  }, [userData, handleOpenComponent, memoizedRoleConfig, loadedComponents]);
 
   const dialogContent = useMemo(() => {
-    if (!openComponent || !userData || !userData.roles) return null;
+    if (!openComponent || !userData || !userData.role || !memoizedRoleConfig[userData.role]) return null;
     
     if (openComponent === 'TaskManager') {
       return <TaskManager onClose={handleCloseComponent} />;
     }
     
-    const componentConfig = userData.roles.flatMap(role => memoizedRoleConfig[role] || [])
-      .find(c => c.name === openComponent);
+    const componentConfig = memoizedRoleConfig[userData.role].find(c => c.name === openComponent);
     if (!componentConfig || !componentConfig.component) return null;
     const Component = componentConfig.component;
     return <Component onClose={handleCloseComponent} />;
@@ -158,11 +154,9 @@ const Dashboard = () => {
             <Typography variant="subtitle1" sx={{ mr: 2 }}>
               Welcome, {userData?.username}
             </Typography>
-            <Box>
-              {userData?.roles.map((role, index) => (
-                <Chip key={index} label={role} sx={{ mr: 1 }} />
-              ))}
-            </Box>
+            <Typography variant="subtitle1">
+              Role: {userData?.role}
+            </Typography>
           </Toolbar>
         </AppBar>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
