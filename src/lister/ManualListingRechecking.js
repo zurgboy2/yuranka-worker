@@ -47,7 +47,7 @@ const ManualListingRechecking = () => {
       };
 
       const response = await apiCall('cardmanager_script', action, data);
-      const processedCards = processCardData(response);
+      const processedCards = processCardData(response.data);
       setReturnedCards(processedCards);
     } catch (err) {
       setError(err.message);

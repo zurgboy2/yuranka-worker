@@ -44,23 +44,20 @@ const theme = createTheme({
 });
 
 const globalStyles = {
-  '*::-webkit-scrollbar': {
-    width: '8px',
-    height: '8px',
-  },
-  '*::-webkit-scrollbar-track': {
-    background: 'transparent',
-  },
-  '*::-webkit-scrollbar-thumb': {
-    background: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: '20px',
-  },
-  '*::-webkit-scrollbar-thumb:hover': {
-    background: 'rgba(255, 255, 255, 0.3)',
-  },
-  'body': {
-    scrollbarWidth: 'thin',
-    scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
+  '@import': 'url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200)',
+  '.material-symbols-outlined': {
+    fontFamily: 'Material Symbols Outlined',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    fontSize: '24px',
+    lineHeight: 1,
+    letterSpacing: 'normal',
+    textTransform: 'none',
+    display: 'inline-block',
+    whiteSpace: 'nowrap',
+    wordWrap: 'normal',
+    direction: 'ltr',
+    fontVariationSettings: '"FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24',
   },
 };
 

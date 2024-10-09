@@ -20,6 +20,7 @@ const ResponsiveEditableVariantCardTable = ({ cards, headers, onSave, mode, coll
         ...card,
         ...variant,
         document_id: card.document_id,
+        title: card.title,
         variantId: variant.variantId,
         id: `${cardIndex}-${variantIndex}`
       }))
@@ -77,6 +78,7 @@ const ResponsiveEditableVariantCardTable = ({ cards, headers, onSave, mode, coll
     try {
       const cardsToSave = validCards.map(card => ({
         document_id: card.document_id,
+        title: card.title,
         variantId: card.variantId,
         sku: card.sku,
         construction: card.construction,
@@ -116,6 +118,7 @@ const ResponsiveEditableVariantCardTable = ({ cards, headers, onSave, mode, coll
         const response = await apiCall('cardmanager_script', 'deleteVariant', {
           variantId: cardToDelete.variantId,
           document_id: cardToDelete.document_id,
+          title: cardToDelete.title,
           collectionName,
           username: userData.username,
           role: userData.role
@@ -168,6 +171,25 @@ const ResponsiveEditableVariantCardTable = ({ cards, headers, onSave, mode, coll
       }
     };
 
+    if (header.name === 'language') {
+      return (
+        <TextField
+          {...commonProps}
+          disabled={true}
+          InputProps={{
+            readOnly: true,
+            sx: {
+              ...commonProps.sx['& .MuiInputBase-root'],
+              '& input': {
+                ...commonProps.sx['& .MuiInputBase-root']['& input'],
+                color: 'text.primary',
+              }
+            }
+          }}
+        />
+      );
+    }
+    
     switch (header.type) {
       case 'boolean':
         return (

@@ -1,167 +1,278 @@
-import React, { useState } from 'react';
-import { TextField, Button, Grid, Select, MenuItem, FormControl, InputLabel, Typography, Box } from '@mui/material';
-import { useUserData } from '../UserContext'; // Import the useUserData hook
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, CircularProgress } from '@mui/material';
+import { useUserData } from '../UserContext';
+import apiCall from '../api.js';
+import ExistingOrders from './ExistingOrders';
+import OrderForm from './OrderForm';
 
-const NewOrderForm = ({ onSave }) => {
-  const { userData } = useUserData(); // Use the userData context
-  const [orderDetails, setOrderDetails] = useState('');
-  const [orderType, setOrderType] = useState('');
-  const [dimensions, setDimensions] = useState({ length: '', width: '', height: '' });
-  const [totalPrice, setTotalPrice] = useState('');
-  const [shippingPrice, setShippingPrice] = useState('');
+const OrderManagement = () => {
+  const { userData } = useUserData();
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [orderDetails, setOrderDetails] = useState({
+    orderDetails: '',
+    orderType: '',
+    totalPrice: '',
+    shippingPrice: '',
+    status: 'OnGoing',
+    approval: 'Needed',
+    shipments: [
+      {
+        name: 'Shipment 1',
+        trackingNumber: '',
+        method: '',
+        shippingPrice: '',
+        dimensions: { length: '', width: '', height: '', weight: '' }
+      }
+    ]
+  });
+
   const [customerDetails, setCustomerDetails] = useState({
     name: '',
     username: '',
     email: '',
-    address: '',
-    orderNumber: ''
+    addressCountry: '',
+    addressCity: '',
+    addressPostCode: '',
+    addressStreet: '',
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const orderData = {
-      orderDetails,
-      orderType,
-      dimensions,
-      totalPrice,
-      shippingPrice,
-      customerDetails,
-      createdBy: userData.username, // Add the user who created the order
-      role: userData.role // Add the user's role
-    };
-    onSave(orderData);
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const scriptId = 'orders_script';
+      const action = 'getOrders';
+      
+      const response = await apiCall(scriptId, action, {
+        role: userData.role,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+      
+      if (response.status === "success") {
+        setOrders(response.data);
+      } else {
+        throw new Error('Failed to fetch orders');
+      }
+    } catch (err) {
+      console.error('Error in fetchOrders:', err);
+      setError(`Failed to load orders: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [userData.role, userData.googleToken, userData.username]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const resetForm = () => {
+    setOrderDetails({
+      orderDetails: '',
+      orderType: '',
+      totalPrice: '',
+      shippingPrice: '',
+      status: 'OnGoing',
+      approval: 'Needed',
+      shipments: [
+        {
+          name: 'Shipment 1',
+          trackingNumber: '',
+          method: '',
+          shippingPrice: '',
+          dimensions: { length: '', width: '', height: '', weight: '' }
+        }
+      ]
+    });
+    setCustomerDetails({
+      name: '',
+      username: '',
+      email: '',
+      addressCountry: '',
+      addressCity: '',
+      addressPostCode: '',
+      addressStreet: '',
+    });
+    setSelectedOrder(null);
+    setIsEditing(false);
   };
 
+
+  const handleEdit = async (editedOrder) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const scriptId = 'orders_script';
+      const action = 'updateOrder';
+      
+      // The editedOrder should already be in the correct format, so we don't need to transform it
+      const response = await apiCall(scriptId, action, {
+        orderData: editedOrder,
+        orderId: editedOrder.orderNumber, // Assuming orderNumber is used as the ID
+        username: userData.username,
+        googleToken: userData.googleToken
+      });
+      
+      if (response.status === "success") {
+        await fetchOrders();
+        return true; // Indicate success
+      } else {
+        throw new Error(response.message || 'Failed to update order');
+      }
+    } catch (err) {
+      console.error('Error in handleEdit:', err);
+      setError(`Failed to update order: ${err.message}`);
+      return false; // Indicate failure
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (orderId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const scriptId = 'orders_script';
+      const action = 'deleteOrder';
+      
+      const response = await apiCall(scriptId, action, {
+        orderId,
+        role: userData.role,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+      
+      if (response.status === "success") {
+        await fetchOrders();
+      } else {
+        throw new Error(response.message || 'Failed to delete order');
+      }
+    } catch (err) {
+      console.error('Error in handleDelete:', err);
+      setError(`Failed to delete order: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormChange = (section, field, value) => {
+    if (section === 'orderDetails') {
+      if (field === 'shipments') {
+        setOrderDetails(prev => ({ ...prev, shipments: value }));
+      } else if (field.startsWith('shipments.')) {
+        const [, index, shipmentField, dimensionField] = field.split('.');
+        setOrderDetails(prev => ({
+          ...prev,
+          shipments: prev.shipments.map((shipment, i) => {
+            if (i === parseInt(index)) {
+              if (dimensionField) {
+                return {
+                  ...shipment,
+                  dimensions: {
+                    ...shipment.dimensions,
+                    [dimensionField]: value
+                  }
+                };
+              } else {
+                return { ...shipment, [shipmentField]: value };
+              }
+            }
+            return shipment;
+          })
+        }));
+      } else {
+        setOrderDetails(prev => ({ ...prev, [field]: value }));
+      }
+    } else if (section === 'customerDetails') {
+      setCustomerDetails(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const scriptId = 'orders_script';
+      const action = isEditing ? 'updateOrder' : 'createOrder';
+      
+      const formattedOrderData = {
+        ...orderDetails,
+        shipments: orderDetails.shipments.map(shipment => ({
+          ...shipment,
+          dimensions: {
+            length: shipment.dimensions.length,
+            width: shipment.dimensions.width,
+            height: shipment.dimensions.height,
+            weight: shipment.dimensions.weight
+          }
+        }))
+      };
+  
+      const formattedCustomerData = Object.fromEntries(
+        Object.entries(customerDetails).map(([key, value]) => [key, value])
+      );
+  
+      const response = await apiCall(scriptId, action, {
+        orderData: formattedOrderData,
+        customerData: formattedCustomerData,
+        orderId: isEditing ? selectedOrder.id : undefined,
+        username: userData.username,
+        googleToken: userData.googleToken
+      });
+      
+      if (response.status === "success") {
+        await fetchOrders();
+        resetForm();
+        setIsEditing(false);
+      } else {
+        throw new Error(response.message || 'Failed to save order');
+      }
+    } catch (err) {
+      console.error('Error in handleSubmit:', err);
+      setError(`Failed to ${isEditing ? 'update' : 'add'} order: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
+
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            label="Order Details"
-            value={orderDetails}
-            onChange={(e) => setOrderDetails(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Order Type</InputLabel>
-            <Select
-              value={orderType}
-              label="Order Type"
-              onChange={(e) => setOrderType(e.target.value)}
-            >
-              <MenuItem value="CardMarket">CardMarket Order</MenuItem>
-              <MenuItem value="Shopify">Shopify Order</MenuItem>
-              <MenuItem value="Personal">Personal Order</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={4}>
-          <TextField
-            fullWidth
-            label="Length"
-            type="number"
-            value={dimensions.length}
-            onChange={(e) => setDimensions({ ...dimensions, length: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={4}>
-          <TextField
-            fullWidth
-            label="Width"
-            type="number"
-            value={dimensions.width}
-            onChange={(e) => setDimensions({ ...dimensions, width: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={4}>
-          <TextField
-            fullWidth
-            label="Height"
-            type="number"
-            value={dimensions.height}
-            onChange={(e) => setDimensions({ ...dimensions, height: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <TextField
-            fullWidth
-            label="Total Price"
-            type="number"
-            value={totalPrice}
-            onChange={(e) => setTotalPrice(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <TextField
-            fullWidth
-            label="Shipping Price"
-            type="number"
-            value={shippingPrice}
-            onChange={(e) => setShippingPrice(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>
-            Customer Details
-          </Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Name"
-            value={customerDetails.name}
-            onChange={(e) => setCustomerDetails({ ...customerDetails, name: e.target.value })}
-          />
-        </Grid>
-        {orderType === 'CardMarket' && (
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Username"
-              value={customerDetails.username}
-              onChange={(e) => setCustomerDetails({ ...customerDetails, username: e.target.value })}
-            />
-          </Grid>
-        )}
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={customerDetails.email}
-            onChange={(e) => setCustomerDetails({ ...customerDetails, email: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Address"
-            multiline
-            rows={2}
-            value={customerDetails.address}
-            onChange={(e) => setCustomerDetails({ ...customerDetails, address: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Order Number"
-            value={customerDetails.orderNumber}
-            onChange={(e) => setCustomerDetails({ ...customerDetails, orderNumber: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
-            Submit Order
-          </Button>
-        </Grid>
-      </Grid>
+    <Box sx={{ mt: 3 }}>
+      <Typography variant="h4" gutterBottom>Order Management</Typography>
+      
+      <ExistingOrders 
+        orders={orders}
+        loading={loading}
+        error={error}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <OrderForm 
+        orderDetails={orderDetails}
+        customerDetails={customerDetails}
+        isEditing={isEditing}
+        onSubmit={handleSubmit}
+        onChange={handleFormChange}
+        onReset={resetForm}
+      />
     </Box>
   );
 };
 
-export default NewOrderForm;
+export default OrderManagement;

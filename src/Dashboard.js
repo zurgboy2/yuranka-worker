@@ -9,6 +9,7 @@ import { useUserData } from './UserContext';
 import { CheckInProvider } from './CheckInContext';
 import AuthComponent from './AuthComponent';
 import TaskManager from './TaskManager';
+import Approvals from './Approvals';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -75,7 +76,7 @@ const Dashboard = () => {
   const renderDashboardContent = useMemo(() => {
     if (!userData || !userData.role || !memoizedRoleConfig[userData.role]) return null;
 
-    const cardComponents = ['Lister', 'Checkout', 'Accounting', 'TaskManager'];
+    const cardComponents = ['Lister', 'Checkout', 'Accounting', 'TaskManager', 'Register', 'EventManager','StoreSearch', 'QrCodeGenerator', 'LoyaltyDashboard', 'ScheduleForm'];
 
     return (
       <Grid container spacing={3}>
@@ -90,7 +91,7 @@ const Dashboard = () => {
                 <Card>
                   <CardActionArea onClick={() => handleOpenComponent(name)}>
                     <CardContent>
-                      {name === 'TaskManager' ? (
+                      {name === 'TaskManager' || name === 'Approvals' ? (
                         <Component onOpenFullApp={() => handleOpenComponent(name)} />
                       ) : (
                         <Typography variant="h5" component="div">
@@ -115,6 +116,10 @@ const Dashboard = () => {
     
     if (openComponent === 'TaskManager') {
       return <TaskManager onClose={handleCloseComponent} />;
+    }
+    
+    if (openComponent === 'Approvals') {
+      return <Approvals onClose={handleCloseComponent} />;
     }
     
     const componentConfig = memoizedRoleConfig[userData.role].find(c => c.name === openComponent);

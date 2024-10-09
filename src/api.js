@@ -1,4 +1,4 @@
-const CORS_BYPASS_KEY = 'Naleefwhatare102035940123';
+// const CORS_BYPASS_KEY = '';
 
 const handleApiError = (error, response) => {
   console.error('API call failed:', error);
@@ -13,18 +13,18 @@ const handleApiError = (error, response) => {
 
 const getProxyToken = async (scriptId, action) => {
     const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/get_token');
-    url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
+    // url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
     try {
         const response = await fetch(url, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'X-CORS-Bypass-Key': CORS_BYPASS_KEY
+            // 'X-CORS-Bypass-Key': CORS_BYPASS_KEY
         },
         body: JSON.stringify({ 
             script_id: scriptId, 
             action: action,
-            bypass_key: CORS_BYPASS_KEY 
+            // bypass_key: CORS_BYPASS_KEY 
         }),
         });
 
@@ -45,7 +45,7 @@ const apiCall = async (scriptId, action, additionalData = {}) => {
   try {
     const token = await getProxyToken(scriptId, action);
     const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/proxy');
-    url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
+    // url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -56,7 +56,7 @@ const apiCall = async (scriptId, action, additionalData = {}) => {
         token, 
         action, 
         script_id: scriptId, 
-        bypass_key: CORS_BYPASS_KEY,  // Add the bypass key here
+        // bypass_key: CORS_BYPASS_KEY,  // Add the bypass key here
         ...additionalData 
       }),
     });
