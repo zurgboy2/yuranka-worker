@@ -19,17 +19,30 @@ import { styled } from '@mui/system';
 import apiCall from './api';
 import { useUserData } from './UserContext';
 
-const StyledCard = styled(Card)({
+// Update the StyledCard component definition
+const StyledCard = styled(Card)(({ theme }) => ({
   border: '1px solid #b22222',
   borderRadius: '5px',
   margin: '16px',
   display: 'inline-block',
   verticalAlign: 'top',
-  width: 'calc(25% - 32px)',
   backgroundColor: '#333',
   color: '#fff',
   cursor: 'pointer',
-});
+  // Responsive width
+  [theme.breakpoints.down('sm')]: {
+    width: 'calc(100% - 32px)', // One card per row on mobile
+  },
+  [theme.breakpoints.up('sm')]: {
+    width: 'calc(50% - 32px)', // Two cards per row on tablet
+  },
+  [theme.breakpoints.up('md')]: {
+    width: 'calc(33.33% - 32px)', // Three cards per row on medium screens
+  },
+  [theme.breakpoints.up('lg')]: {
+    width: 'calc(25% - 32px)', // Four cards per row on large screens
+  },
+}));
 
 const StyledButton = styled(Button)({
   backgroundColor: '#b22222',

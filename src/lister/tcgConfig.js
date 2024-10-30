@@ -8,7 +8,20 @@ const tcgConfig = [
       type: 'image',
       value: 'https://example.com/mtg-background.jpg'
     },
-    headers: [] // To be filled in later
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Mythic Rare'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
+      { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'German', 'Italian', 'Spanish'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
   },
   { 
     name: 'Pokemon', 
@@ -24,11 +37,12 @@ const tcgConfig = [
       { name: 'expansion', type: 'text' },
       { name: 'collectorNumber', type: 'text' },
       { name: 'expansionCode', type: 'text' },
-      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Ultra Rare', 'Secret Rare'] },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Rare Holo', 'Ultra Rare', 'Secret Rare', 'Rainbow Rare', 'Hyper Rare'] },
       { name: 'cardmarketId', type: 'number' },
       { name: 'firstEdition', type: 'boolean' },
       { name: 'reverseHolo', type: 'boolean' },
       { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'German', 'Italian', 'Spanish'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
       { name: 'location', type: 'text' },
@@ -37,7 +51,7 @@ const tcgConfig = [
   { 
     name: 'Yu-Gi-Oh!', 
     imageUrl: 'https://ik.imagekit.io/mcgszbooe/Y2.jpg?updatedAt=1709207356017',
-    stockCollectionName: 'yu-gi-oh',
+    stockCollectionName: 'yu-gi-oh_stock',
     existingStockCollectionName: 'yu-gi-oh_existing_stock',
     background: {
       type: 'image',
@@ -48,7 +62,7 @@ const tcgConfig = [
       { name: 'expansion', type: 'text' },
       { name: 'collectorNumber', type: 'text' },
       { name: 'expansionCode', type: 'text' },
-      { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Ultra Rare', 'Secret Rare'] },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Ultra Rare', 'Secret Rare', 'Ultimate Rare', 'Ghost Rare', 'Starlight Rare'] },
       { name: 'cardmarketId', type: 'number' },
       { name: 'firstEdition', type: 'boolean' },
       { name: 'construction', type: 'selection', options: ['American', 'European'] },
@@ -73,7 +87,7 @@ const tcgConfig = [
       { name: 'expansion', type: 'text' },
       { name: 'collectorNumber', type: 'text' },
       { name: 'expansionCode', type: 'text' },
-      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Secret Rare'] },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Secret Rare', 'Leader Rare'] },
       { name: 'cardmarketId', type: 'number' },
       { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'German', 'Italian', 'Spanish'] },
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
@@ -82,7 +96,147 @@ const tcgConfig = [
       { name: 'location', type: 'text' },
     ]
   },
-  // Add more TCGs as needed
+  {
+    name: 'Flesh and Blood',
+    imageUrl: 'https://example.com/fab.png',
+    stockCollectionName: 'fab_stock',
+    existingStockCollectionName: 'fab_existing_stock',
+    background: {
+      type: 'color',
+      value: '#8B0000'  // Dark red
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Majestic', 'Legendary', 'Fabled'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
+      { name: 'language', type: 'selection', options: ['English'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
+  {
+    name: 'Disney Lorcana',
+    imageUrl: 'https://example.com/lorcana.png',
+    stockCollectionName: 'lorcana_stock',
+    existingStockCollectionName: 'lorcana_existing_stock',
+    background: {
+      type: 'color',
+      value: '#4B0082'  // Deep purple
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Legendary'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
+      { name: 'language', type: 'selection', options: ['English', 'French', 'German'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
+  {
+    name: 'Star Wars Unlimited',
+    imageUrl: 'https://example.com/swu.png',
+    stockCollectionName: 'swu_stock',
+    existingStockCollectionName: 'swu_existing_stock',
+    background: {
+      type: 'color',
+      value: '#000000'  
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Legendary'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
+      { name: 'language', type: 'selection', options: ['English'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
+  {
+    name: 'Battle Spirits Saga',
+    imageUrl: 'https://example.com/bss.png',
+    stockCollectionName: 'bss_stock',
+    existingStockCollectionName: 'bss_existing_stock',
+    background: {
+      type: 'color',
+      value: '#FF4500'  
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Master Rare', 'X Rare'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'language', type: 'selection', options: ['English', 'Japanese'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
+  {
+    name: 'Dragon Ball Super Card Game',
+    imageUrl: 'https://example.com/dbs.png',
+    stockCollectionName: 'dbs_stock',
+    existingStockCollectionName: 'dbs_existing_stock',
+    background: {
+      type: 'color',
+      value: '#FFA500'  // Orange
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Secret Rare', 'Special Rare'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'Italian', 'Spanish'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
+  {
+    name: 'Digimon Card Game',
+    imageUrl: 'https://example.com/digimon.png',
+    stockCollectionName: 'digimon_stock',
+    existingStockCollectionName: 'digimon_existing_stock',
+    background: {
+      type: 'color',
+      value: '#4169E1'  // Royal Blue
+    },
+    headers: [
+      { name: 'name', type: 'text' },
+      { name: 'expansion', type: 'text' },
+      { name: 'collectorNumber', type: 'text' },
+      { name: 'expansionCode', type: 'text' },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Secret Rare'] },
+      { name: 'cardmarketId', type: 'number' },
+      { name: 'language', type: 'selection', options: ['English', 'Japanese'] },
+      { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
+      { name: 'quantity', type: 'number' },
+      { name: 'price', type: 'number' },
+      { name: 'location', type: 'text' },
+    ]
+  },
 ];
 
 export default tcgConfig;
