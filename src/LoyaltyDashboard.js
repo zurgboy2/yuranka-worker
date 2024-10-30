@@ -256,28 +256,59 @@ const LoyaltyDashboard = () => {
       <Dialog open={profileOpen} onClose={handleCloseProfile}>
         <DialogTitle>{currentPerson?.Name}</DialogTitle>
         <DialogContent>
-          <Typography>Store Credit: {currentPerson?.Value}</Typography>
-          <StyledButton onClick={handleOpenChangeValue}>Change</StyledButton>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Store Credit Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>Store Credit</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography>{currentPerson?.Value}</Typography>
+                <StyledButton onClick={handleOpenChangeValue}>Change</StyledButton>
+              </Box>
+            </Box>
 
-          <Typography>Raffle Points: {currentPerson?.RafflePoints}</Typography>
-          <StyledButton onClick={handleOpenChangeRafflePoints}>Change</StyledButton>
+            {/* Raffle Points Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>Raffle Points</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography>{currentPerson?.RafflePoints}</Typography>
+                <StyledButton onClick={handleOpenChangeRafflePoints}>Change</StyledButton>
+              </Box>
+            </Box>
 
-          <Typography>
-            Details: 
-            <TextField
-              defaultValue={currentPerson?.Details}
-              onBlur={(e) => handleEditField('Details', e.target.value)}
-            />
-          </Typography>
-          <Typography>Subscription: {currentPerson?.Subscription}</Typography>
-          <StyledButton onClick={handleOpenSubscription}>Change Subscription</StyledButton>
-          <Typography>Expiry Date: {currentPerson?.['Expiry Date']}</Typography>
-          <Typography>Member ID: {currentPerson?.Username}</Typography>
-          <TextField
-            label="Email"
-            defaultValue={currentPerson?.Email}
-            onBlur={(e) => handleEditField('Email', e.target.value)}
-          />
+            {/* Details Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>Details</Typography>
+              <TextField
+                fullWidth
+                defaultValue={currentPerson?.Details}
+                onBlur={(e) => handleEditField('Details', e.target.value)}
+              />
+            </Box>
+
+            {/* Subscription Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>Subscription Details</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography>Current Tier: {currentPerson?.Subscription}</Typography>
+                <Typography>Expiry Date: {currentPerson?.['Expiry Date']}</Typography>
+                <StyledButton onClick={handleOpenSubscription}>Change Subscription</StyledButton>
+              </Box>
+            </Box>
+
+            {/* Member Info Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>Member Information</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography>Member ID: {currentPerson?.Username}</Typography>
+                <TextField
+                  label="Email"
+                  fullWidth
+                  defaultValue={currentPerson?.Email}
+                  onBlur={(e) => handleEditField('Email', e.target.value)}
+                />
+              </Box>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <StyledButton onClick={handleCloseProfile}>Close</StyledButton>
