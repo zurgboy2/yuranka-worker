@@ -75,6 +75,7 @@ const OrderForm = ({ orderDetails, customerDetails, isEditing, onSubmit, onChang
             >
               <MenuItem value="CardMarket">CardMarket Order</MenuItem>
               <MenuItem value="Personal">Personal Order</MenuItem>
+              <MenuItem value="Shopify" disabled>Shopify Order</MenuItem>
             </Select>
           </FormControl>
         </Grid>

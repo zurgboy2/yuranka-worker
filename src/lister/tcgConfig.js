@@ -26,6 +26,7 @@ const tcgConfig = [
       { name: 'expansionCode', type: 'text' },
       { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Ultra Rare', 'Secret Rare'] },
       { name: 'cardmarketId', type: 'number' },
+      { name: 'firstEdition', type: 'boolean' },
       { name: 'reverseHolo', type: 'boolean' },
       { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'German', 'Italian', 'Spanish'] },
       { name: 'quantity', type: 'number' },

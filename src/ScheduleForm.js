@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Select, MenuItem, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
+import { Box, Typography, Select, MenuItem, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton } from '@mui/material';
 import { styled } from '@mui/system';
 import apiCall from './api';
 import { useUserData } from './UserContext';
+import 'material-icons/iconfont/material-icons.css';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   fontFamily: 'Arial, sans-serif',
@@ -13,6 +14,13 @@ const StyledBox = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   minHeight: '100vh',
   margin: 0,
+}));
+
+const StyledDeleteButton = styled(IconButton)(({ theme }) => ({
+  color: '#fff',
+  '&:hover': {
+    color: '#ff0000',
+  },
 }));
 
 const StyledForm = styled('form')(({ theme }) => ({
@@ -81,6 +89,11 @@ const ScheduleForm = () => {
   
     const addRow = () => {
       setScheduleRows([...scheduleRows, { day: '', startTime: '', endTime: '' }]);
+    };
+
+    const deleteRow = (index) => {
+      const newRows = scheduleRows.filter((_, i) => i !== index);
+      setScheduleRows(newRows);
     };
   
     const updateRow = (index, field, value) => {
@@ -190,6 +203,7 @@ const ScheduleForm = () => {
                   <StyledTableCell>Day</StyledTableCell>
                   <StyledTableCell>Start Time</StyledTableCell>
                   <StyledTableCell>End Time</StyledTableCell>
+                  <StyledTableCell>Actions</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -249,6 +263,11 @@ const ScheduleForm = () => {
                           });
                         })}
                       </StyledSelect>
+                    </TableCell>
+                    <TableCell>
+                      <StyledDeleteButton onClick={() => deleteRow(index)}>
+                        <span className="material-icons">delete</span>
+                      </StyledDeleteButton>
                     </TableCell>
                   </StyledTableRow>
                 ))}

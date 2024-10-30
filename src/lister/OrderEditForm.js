@@ -27,7 +27,19 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
     },
     status: '',
     approval: '',
-    shipments: [],
+    shipments: [{
+      name: '',
+      trackingNumber: '',
+      method: '',
+      shippingPrice: '',
+      status: '',
+      dimensions: {
+        length: '',
+        width: '',
+        height: '',
+        weight: ''
+      }
+    }],
     customerDetails: {
       name: '',
       username: '',
@@ -50,7 +62,15 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
         },
         status: order.status || '',
         approval: order.approval || '',
-        shipments: order.shipments || [],
+        shipments: order.shipments.map(shipment => ({
+          ...shipment,
+          dimensions: shipment.dimensions || {
+            length: '',
+            width: '',
+            height: '',
+            weight: ''
+          }
+        })),
         customerDetails: {
           name: order.customerDetails.name || '',
           username: order.customerDetails.username || '',
@@ -95,7 +115,11 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
     setEditedOrder(prev => ({
       ...prev,
       shipments: prev.shipments.map((shipment, i) => 
-        i === index ? { ...shipment, [field]: value } : shipment
+        i === index 
+          ? field.startsWith('dimensions.')
+            ? { ...shipment, dimensions: { ...shipment.dimensions, [field.split('.')[1]]: value } }
+            : { ...shipment, [field]: value }
+          : shipment
       )
     }));
   };
@@ -111,6 +135,12 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
           method: '',
           shippingPrice: '',
           status: '',
+          dimensions: {
+            length: '',
+            width: '',
+            height: '',
+            weight: ''
+          }
         }
       ]
     }));
@@ -161,6 +191,7 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
             >
               <MenuItem value="CardMarket">CardMarket Order</MenuItem>
               <MenuItem value="Personal">Personal Order</MenuItem>
+              <MenuItem value="Shopify" disabled>Shopify Order</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -226,6 +257,38 @@ const OrderEditForm = ({ order, onSave, onCancel, loading }) => {
                     label="Status"
                     value={shipment.status}
                     onChange={(e) => handleShipmentChange(index, 'status', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Length (cm)"
+                    value={shipment.dimensions.length}
+                    onChange={(e) => handleShipmentChange(index, 'dimensions.length', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Width (cm)"
+                    value={shipment.dimensions.width}
+                    onChange={(e) => handleShipmentChange(index, 'dimensions.width', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Height (cm)"
+                    value={shipment.dimensions.height}
+                    onChange={(e) => handleShipmentChange(index, 'dimensions.height', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Weight (kg)"
+                    value={shipment.dimensions.weight}
+                    onChange={(e) => handleShipmentChange(index, 'dimensions.weight', e.target.value)}
                   />
                 </Grid>
               </Grid>

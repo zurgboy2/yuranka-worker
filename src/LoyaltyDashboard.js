@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   TextField,
@@ -52,22 +52,28 @@ const LoyaltyDashboard = () => {
   const [newSubscriptionTier, setNewSubscriptionTier] = useState('0');
   const [monthsToAdd, setMonthsToAdd] = useState('');
   const [subscriptionCost, setSubscriptionCost] = useState('');
-
-  useEffect(() => {
-    fetchLoyaltyData();
-  }, [fetchLoyaltyData]);
-
+  const [changeRafflePointsOpen, setChangeRafflePointsOpen] = useState(false);
+  const [rafflePointsChange, setRafflePointsChange] = useState('');
+  const [rafflePointsChangeReason, setRafflePointsChangeReason] = useState('');
 
   const fetchLoyaltyData = useCallback(async () => {
     try {
       const scriptId = 'loyalty_script';
       const action = 'getLoyaltyData';
-      const response = await apiCall(scriptId, action,{ username: userData.username, googleToken: userData.googleToken});
+      const response = await apiCall(scriptId, action, { 
+        username: userData.username, 
+        googleToken: userData.googleToken
+      });
       setLoyaltyData(response);
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
     }
-  };
+  }, [userData.username, userData.googleToken]);
+  
+  useEffect(() => {
+    fetchLoyaltyData();
+  }, [fetchLoyaltyData]);
+
 
   const handleOpenProfile = (person) => {
     setCurrentPerson(person);
@@ -98,6 +104,40 @@ const LoyaltyDashboard = () => {
     setNewSubscriptionTier('0');
     setMonthsToAdd('');
     setSubscriptionCost('');
+  };
+
+  const handleOpenChangeRafflePoints = () => {
+    setChangeRafflePointsOpen(true);
+  };
+  
+  const handleCloseChangeRafflePoints = () => {
+    setChangeRafflePointsOpen(false);
+    setRafflePointsChange('');
+    setRafflePointsChangeReason('');
+  };
+  
+  const handleSubmitRafflePointsChange = async () => {
+    if (!rafflePointsChange || !rafflePointsChangeReason) {
+      alert('Please fill out both fields before submitting.');
+      return;
+    }
+  
+    try {
+      const scriptId = 'loyalty_script';
+      const action = 'changeRafflePoints';
+      await apiCall(scriptId, action, {
+        id: currentPerson.Username, 
+        valueChange: rafflePointsChange, 
+        changeReason: rafflePointsChangeReason,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+      alert('Change has been made');
+      handleCloseChangeRafflePoints();
+      fetchLoyaltyData();
+    } catch (error) {
+      console.error('Error submitting raffle points change:', error);
+    }
   };
 
   const handleEditField = async (field, value) => {
@@ -218,6 +258,10 @@ const LoyaltyDashboard = () => {
         <DialogContent>
           <Typography>Store Credit: {currentPerson?.Value}</Typography>
           <StyledButton onClick={handleOpenChangeValue}>Change</StyledButton>
+
+          <Typography>Raffle Points: {currentPerson?.RafflePoints}</Typography>
+          <StyledButton onClick={handleOpenChangeRafflePoints}>Change</StyledButton>
+
           <Typography>
             Details: 
             <TextField
@@ -306,6 +350,33 @@ const LoyaltyDashboard = () => {
           <StyledButton onClick={handleCloseSubscription}>Cancel</StyledButton>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={changeRafflePointsOpen} onClose={handleCloseChangeRafflePoints}>
+      <DialogTitle>Change Raffle Points</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Points Change"
+          type="number"
+          value={rafflePointsChange}
+          onChange={(e) => setRafflePointsChange(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Reason"
+          multiline
+          rows={4}
+          value={rafflePointsChangeReason}
+          onChange={(e) => setRafflePointsChangeReason(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+      </DialogContent>
+      <DialogActions>
+        <StyledButton onClick={handleSubmitRafflePointsChange}>Submit</StyledButton>
+        <StyledButton onClick={handleCloseChangeRafflePoints}>Cancel</StyledButton>
+      </DialogActions>
+    </Dialog>
     </Box>
   );
 };

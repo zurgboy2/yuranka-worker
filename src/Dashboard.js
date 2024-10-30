@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   AppBar, Toolbar, Typography, Container, Grid, 
   useTheme, CircularProgress, Alert, Card, CardActionArea, CardContent,
-  Dialog, DialogContent, Box
+  Dialog, DialogContent, Box, Button, DialogTitle, DialogActions, List, ListItem, ListItemText
 } from '@mui/material';
 import roleConfig from './roleConfig';
 import { useUserData } from './UserContext';
@@ -19,6 +19,8 @@ const Dashboard = () => {
   const [openComponent, setOpenComponent] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loadedComponents, setLoadedComponents] = useState([]);
+  const [jobDescription, setJobDescription] = useState(null);
+  const [showJobDescription, setShowJobDescription] = useState(false);
 
   const memoizedRoleConfig = useMemo(() => 
     Object.fromEntries(
@@ -45,6 +47,15 @@ const Dashboard = () => {
 
   useEffect(() => {
     setIsAuthenticated(!!userData);
+    if (userData && userData.jobDescription) {
+      try {
+        const parsedJobDescription = JSON.parse(userData.jobDescription);
+        setJobDescription(parsedJobDescription);
+      } catch (error) {
+        console.error('Error parsing job description:', error);
+        setJobDescription(null);
+      }
+    }
   }, [userData]);
 
   const handleOpenComponent = useCallback((componentName) => {
@@ -54,6 +65,35 @@ const Dashboard = () => {
   const handleCloseComponent = useCallback(() => {
     setOpenComponent(null);
   }, []);
+
+  const renderJobDescription = (description) => {
+    if (!description) return null;
+
+    return (
+      <>
+        <Typography variant="h4" gutterBottom>{description.title}</Typography>
+        {description.sections.map((section, sectionIndex) => (
+          <div key={sectionIndex}>
+            <Typography variant="h5" gutterBottom>{section.title}</Typography>
+            {section.subsections.map((subsection, subsectionIndex) => (
+              <div key={subsectionIndex}>
+                {subsection.title && (
+                  <Typography variant="h6" gutterBottom>{subsection.title}</Typography>
+                )}
+                <List>
+                  {subsection.items.map((item, itemIndex) => (
+                    <ListItem key={itemIndex}>
+                      <ListItemText primary={item} />
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            ))}
+          </div>
+        ))}
+      </>
+    );
+  };
 
   useEffect(() => {
     if (isAuthenticated && userData && userData.role && memoizedRoleConfig[userData.role]) {
@@ -148,10 +188,12 @@ const Dashboard = () => {
     return <AuthComponent onAuthenticated={setIsAuthenticated} setUserData={setUserData} />;
   }
 
+
+
   return (
     <CheckInProvider>
       <div style={{ flexGrow: 1, backgroundColor: theme.palette.background.default, minHeight: '100vh' }}>
-        <AppBar position="static">
+      <AppBar position="static">
           <Toolbar>
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
               Dashboard
@@ -159,9 +201,12 @@ const Dashboard = () => {
             <Typography variant="subtitle1" sx={{ mr: 2 }}>
               Welcome, {userData?.username}
             </Typography>
-            <Typography variant="subtitle1">
+            <Typography variant="subtitle1" sx={{ mr: 2 }}>
               Role: {userData?.role}
             </Typography>
+            <Button color="inherit" onClick={() => setShowJobDescription(true)}>
+              View Job Description
+            </Button>
           </Toolbar>
         </AppBar>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -173,6 +218,16 @@ const Dashboard = () => {
             {dialogContent}
           </DialogContent>
         </Dialog>
+
+      <Dialog open={showJobDescription} onClose={() => setShowJobDescription(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Job Description</DialogTitle>
+        <DialogContent>
+          {jobDescription ? renderJobDescription(jobDescription) : <Typography>No job description available.</Typography>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowJobDescription(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
       </div>
     </CheckInProvider>
   );
