@@ -2,7 +2,7 @@ const tcgConfig = [
   { 
     name: 'Magic: The Gathering', 
     imageUrl: 'https://example.com/mtg.png',
-    stockCollectionName: 'mtg_stock',
+    stockCollectionName: 'mtg',
     existingStockCollectionName: 'mtg_existing_stock',
     background: {
       type: 'image',
@@ -26,7 +26,7 @@ const tcgConfig = [
   { 
     name: 'Pokemon', 
     imageUrl: 'https://example.com/pokemon.png',
-    stockCollectionName: 'pokemon_stock',
+    stockCollectionName: 'pokemon',
     existingStockCollectionName: 'pokemon_existing_stock',
     background: {
       type: 'color',
@@ -51,7 +51,7 @@ const tcgConfig = [
   { 
     name: 'Yu-Gi-Oh!', 
     imageUrl: 'https://ik.imagekit.io/mcgszbooe/Y2.jpg?updatedAt=1709207356017',
-    stockCollectionName: 'yu-gi-oh_stock',
+    stockCollectionName: 'yu-gi-oh',
     existingStockCollectionName: 'yu-gi-oh_existing_stock',
     background: {
       type: 'image',
@@ -99,7 +99,7 @@ const tcgConfig = [
   {
     name: 'Flesh and Blood',
     imageUrl: 'https://example.com/fab.png',
-    stockCollectionName: 'fab_stock',
+    stockCollectionName: 'fab',
     existingStockCollectionName: 'fab_existing_stock',
     background: {
       type: 'color',
@@ -112,7 +112,6 @@ const tcgConfig = [
       { name: 'expansionCode', type: 'text' },
       { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Majestic', 'Legendary', 'Fabled'] },
       { name: 'cardmarketId', type: 'number' },
-      { name: 'foil', type: 'boolean' },
       { name: 'language', type: 'selection', options: ['English'] },
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
@@ -123,7 +122,7 @@ const tcgConfig = [
   {
     name: 'Disney Lorcana',
     imageUrl: 'https://example.com/lorcana.png',
-    stockCollectionName: 'lorcana_stock',
+    stockCollectionName: 'lorcana',
     existingStockCollectionName: 'lorcana_existing_stock',
     background: {
       type: 'color',
@@ -147,7 +146,7 @@ const tcgConfig = [
   {
     name: 'Star Wars Unlimited',
     imageUrl: 'https://example.com/swu.png',
-    stockCollectionName: 'swu_stock',
+    stockCollectionName: 'swu',
     existingStockCollectionName: 'swu_existing_stock',
     background: {
       type: 'color',
@@ -171,7 +170,7 @@ const tcgConfig = [
   {
     name: 'Battle Spirits Saga',
     imageUrl: 'https://example.com/bss.png',
-    stockCollectionName: 'bss_stock',
+    stockCollectionName: 'bss',
     existingStockCollectionName: 'bss_existing_stock',
     background: {
       type: 'color',
@@ -184,6 +183,7 @@ const tcgConfig = [
       { name: 'expansionCode', type: 'text' },
       { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Master Rare', 'X Rare'] },
       { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
       { name: 'language', type: 'selection', options: ['English', 'Japanese'] },
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
@@ -207,6 +207,7 @@ const tcgConfig = [
       { name: 'expansionCode', type: 'text' },
       { name: 'rarity', type: 'selection', options: ['Common', 'Uncommon', 'Rare', 'Super Rare', 'Secret Rare', 'Special Rare'] },
       { name: 'cardmarketId', type: 'number' },
+      { name: 'foil', type: 'boolean' },
       { name: 'language', type: 'selection', options: ['English', 'Japanese', 'French', 'Italian', 'Spanish'] },
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
@@ -217,7 +218,7 @@ const tcgConfig = [
   {
     name: 'Digimon Card Game',
     imageUrl: 'https://example.com/digimon.png',
-    stockCollectionName: 'digimon_stock',
+    stockCollectionName: 'digimon',
     existingStockCollectionName: 'digimon_existing_stock',
     background: {
       type: 'color',
