@@ -62,7 +62,7 @@ const tcgConfig = [
       { name: 'expansion', type: 'text' },
       { name: 'collectorNumber', type: 'text' },
       { name: 'expansionCode', type: 'text' },
-      { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Ultra Rare', 'Secret Rare', 'Ultimate Rare', 'Ghost Rare', 'Starlight Rare'] },
+      { name: 'rarity', type: 'selection', options: ['Common', 'Rare', 'Super Rare', 'Ultra Rare', 'Secret Rare', 'Ultimate Rare', 'Ghost Rare', 'Starlight Rare','Parallel Rare'] },
       { name: 'cardmarketId', type: 'number' },
       { name: 'firstEdition', type: 'boolean' },
       { name: 'construction', type: 'selection', options: ['American', 'European'] },

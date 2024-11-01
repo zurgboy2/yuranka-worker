@@ -68,7 +68,9 @@ const LoyaltyDashboard = () => {
   const [changeRafflePointsOpen, setChangeRafflePointsOpen] = useState(false);
   const [rafflePointsChange, setRafflePointsChange] = useState('');
   const [rafflePointsChangeReason, setRafflePointsChangeReason] = useState('');
-
+  const [isValueChangeLoading, setIsValueChangeLoading] = useState(false);
+  const [isRafflePointsLoading, setIsRafflePointsLoading] = useState(false);
+  
   const fetchLoyaltyData = useCallback(async () => {
     try {
       const scriptId = 'loyalty_script';
@@ -135,21 +137,25 @@ const LoyaltyDashboard = () => {
       return;
     }
   
+    setIsRafflePointsLoading(true);
     try {
       const scriptId = 'loyalty_script';
       const action = 'changeRafflePoints';
       await apiCall(scriptId, action, {
-        id: currentPerson.Username, 
-        valueChange: rafflePointsChange, 
+        id: currentPerson.Username,
+        valueChange: rafflePointsChange,
         changeReason: rafflePointsChangeReason,
         googleToken: userData.googleToken,
         username: userData.username
       });
+      await fetchLoyaltyData();
       alert('Change has been made');
       handleCloseChangeRafflePoints();
-      fetchLoyaltyData();
     } catch (error) {
       console.error('Error submitting raffle points change:', error);
+      alert('Error making change. Please try again.');
+    } finally {
+      setIsRafflePointsLoading(false);
     }
   };
 
@@ -169,16 +175,26 @@ const LoyaltyDashboard = () => {
       alert('Please fill out both fields before submitting.');
       return;
     }
-
+  
+    setIsValueChangeLoading(true);
     try {
       const scriptId = 'loyalty_script';
       const action = 'changeValue';
-      await apiCall(scriptId, action, {id: currentPerson.Username, valueChange, changeReason, googleToken: userData.googleToken , username: userData.username });
+      await apiCall(scriptId, action, {
+        id: currentPerson.Username, 
+        valueChange, 
+        changeReason, 
+        googleToken: userData.googleToken, 
+        username: userData.username 
+      });
+      await fetchLoyaltyData();
       alert('Change has been made');
       handleCloseChangeValue();
-      fetchLoyaltyData();
     } catch (error) {
       console.error('Error submitting change:', error);
+      alert('Error making change. Please try again.');
+    } finally {
+      setIsValueChangeLoading(false);
     }
   };
 
@@ -349,10 +365,20 @@ const LoyaltyDashboard = () => {
             margin="normal"
           />
         </DialogContent>
-        <DialogActions>
-          <StyledButton onClick={handleSubmitChange}>Submit</StyledButton>
-          <StyledButton onClick={handleCloseChangeValue}>Cancel</StyledButton>
-        </DialogActions>
+          <DialogActions>
+            <StyledButton 
+              onClick={handleSubmitChange} 
+              disabled={isValueChangeLoading}
+            >
+              {isValueChangeLoading ? 'Loading...' : 'Submit'}
+            </StyledButton>
+            <StyledButton 
+              onClick={handleCloseChangeValue}
+              disabled={isValueChangeLoading}
+            >
+              Cancel
+            </StyledButton>
+          </DialogActions>
       </Dialog>
 
       <Dialog open={subscriptionOpen} onClose={handleCloseSubscription}>
@@ -417,8 +443,18 @@ const LoyaltyDashboard = () => {
         />
       </DialogContent>
       <DialogActions>
-        <StyledButton onClick={handleSubmitRafflePointsChange}>Submit</StyledButton>
-        <StyledButton onClick={handleCloseChangeRafflePoints}>Cancel</StyledButton>
+        <StyledButton 
+          onClick={handleSubmitRafflePointsChange}
+          disabled={isRafflePointsLoading}
+        >
+          {isRafflePointsLoading ? 'Loading...' : 'Submit'}
+        </StyledButton>
+        <StyledButton 
+          onClick={handleCloseChangeRafflePoints}
+          disabled={isRafflePointsLoading}
+        >
+          Cancel
+        </StyledButton>
       </DialogActions>
     </Dialog>
     </Box>
