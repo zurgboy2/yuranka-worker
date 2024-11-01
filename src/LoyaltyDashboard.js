@@ -68,10 +68,12 @@ const LoyaltyDashboard = () => {
   const [changeRafflePointsOpen, setChangeRafflePointsOpen] = useState(false);
   const [rafflePointsChange, setRafflePointsChange] = useState('');
   const [rafflePointsChangeReason, setRafflePointsChangeReason] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isValueChangeLoading, setIsValueChangeLoading] = useState(false);
   const [isRafflePointsLoading, setIsRafflePointsLoading] = useState(false);
   
   const fetchLoyaltyData = useCallback(async () => {
+    setIsLoading(true);
     try {
       const scriptId = 'loyalty_script';
       const action = 'getLoyaltyData';
@@ -82,6 +84,9 @@ const LoyaltyDashboard = () => {
       setLoyaltyData(response);
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
+      alert('Error loading data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   }, [userData.username, userData.googleToken]);
   
@@ -96,40 +101,47 @@ const LoyaltyDashboard = () => {
   };
 
   const handleCloseProfile = () => {
+    if (isLoading) return;
     setProfileOpen(false);
     setCurrentPerson(null);
   };
-
-  const handleOpenChangeValue = () => {
-    setChangeValueOpen(true);
-  };
-
+  
   const handleCloseChangeValue = () => {
+    if (isLoading) return;
     setChangeValueOpen(false);
     setValueChange('');
     setChangeReason('');
   };
-
-  const handleOpenSubscription = () => {
-    setSubscriptionOpen(true);
+  
+  const handleCloseChangeRafflePoints = () => {
+    if (isLoading) return;
+    setChangeRafflePointsOpen(false);
+    setRafflePointsChange('');
+    setRafflePointsChangeReason('');
   };
-
+  
   const handleCloseSubscription = () => {
+    if (isLoading) return;
     setSubscriptionOpen(false);
     setNewSubscriptionTier('0');
     setMonthsToAdd('');
     setSubscriptionCost('');
   };
 
+  const handleOpenChangeValue = () => {
+    setChangeValueOpen(true);
+  };
+
+
+  const handleOpenSubscription = () => {
+    setSubscriptionOpen(true);
+  };
+
+
   const handleOpenChangeRafflePoints = () => {
     setChangeRafflePointsOpen(true);
   };
-  
-  const handleCloseChangeRafflePoints = () => {
-    setChangeRafflePointsOpen(false);
-    setRafflePointsChange('');
-    setRafflePointsChangeReason('');
-  };
+
   
   const handleSubmitRafflePointsChange = async () => {
     if (!rafflePointsChange || !rafflePointsChangeReason) {
@@ -253,13 +265,64 @@ const LoyaltyDashboard = () => {
   );
 
   return (
-    <Box sx={{ backgroundColor: '#000', color: '#fff', padding: '20px' }}>
+    <Box sx={{ backgroundColor: '#000', color: '#fff', padding: '20px', position: 'relative' }}>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: '#333',
+              padding: '20px',
+              borderRadius: '8px',
+              textAlign: 'center'
+            }}
+          >
+            <Typography variant="h6" sx={{ color: '#fff', marginBottom: '10px' }}>
+              Loading Data...
+            </Typography>
+            <Box
+              sx={{
+                display: 'inline-block',
+                width: '40px',
+                height: '40px',
+                border: '4px solid #b22222',
+                borderTop: '4px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                '@keyframes spin': {
+                  '0%': {
+                    transform: 'rotate(0deg)',
+                  },
+                  '100%': {
+                    transform: 'rotate(360deg)',
+                  },
+                },
+              }}
+            />
+          </Box>
+        </Box>
+      )}
+  
       <TextField
         fullWidth
         variant="outlined"
         placeholder="Search for names..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        disabled={isLoading}
         sx={{ 
           marginBottom: '16px',
           '& .MuiOutlinedInput-root': {
@@ -270,19 +333,37 @@ const LoyaltyDashboard = () => {
           '& .MuiInputBase-input': { color: '#fff' },
         }}
       />
-      <StyledButton onClick={fetchLoyaltyData}>Refresh</StyledButton>
+      <StyledButton 
+        onClick={fetchLoyaltyData}
+        disabled={isLoading}
+      >
+        {isLoading ? 'Loading...' : 'Refresh'}
+      </StyledButton>
       
-      <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap',
+        pointerEvents: isLoading ? 'none' : 'auto',
+        opacity: isLoading ? 0.7 : 1
+      }}>
         {filteredData.map((person, index) => (
-          <StyledCard key={index} onClick={() => handleOpenProfile(person)}>
+          <StyledCard 
+            key={index} 
+            onClick={() => handleOpenProfile(person)}
+            sx={{ cursor: isLoading ? 'default' : 'pointer' }}
+          >
             <CardContent>
               <Typography variant="h6">{person.Name}</Typography>
             </CardContent>
           </StyledCard>
         ))}
       </Box>
-
-      <Dialog open={profileOpen} onClose={handleCloseProfile}>
+  
+      <Dialog 
+        open={profileOpen} 
+        onClose={handleCloseProfile}
+        disableEscapeKeyDown={isLoading}
+      >
         <DialogTitle>{currentPerson?.Name}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -291,19 +372,29 @@ const LoyaltyDashboard = () => {
               <Typography variant="h6" gutterBottom>Store Credit</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography>{currentPerson?.Value}</Typography>
-                <StyledButton onClick={handleOpenChangeValue}>Change</StyledButton>
+                <StyledButton 
+                  onClick={handleOpenChangeValue}
+                  disabled={isLoading}
+                >
+                  Change
+                </StyledButton>
               </Box>
             </Box>
-
+  
             {/* Raffle Points Section */}
             <Box>
               <Typography variant="h6" gutterBottom>Raffle Points</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Typography>{currentPerson?.RafflePoints}</Typography>
-                <StyledButton onClick={handleOpenChangeRafflePoints}>Change</StyledButton>
+                <StyledButton 
+                  onClick={handleOpenChangeRafflePoints}
+                  disabled={isLoading}
+                >
+                  Change
+                </StyledButton>
               </Box>
             </Box>
-
+  
             {/* Details Section */}
             <Box>
               <Typography variant="h6" gutterBottom>Details</Typography>
@@ -311,19 +402,25 @@ const LoyaltyDashboard = () => {
                 fullWidth
                 defaultValue={currentPerson?.Details}
                 onBlur={(e) => handleEditField('Details', e.target.value)}
+                disabled={isLoading}
               />
             </Box>
-
+  
             {/* Subscription Section */}
             <Box>
               <Typography variant="h6" gutterBottom>Subscription Details</Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography>Current Tier: {currentPerson?.Subscription}</Typography>
                 <Typography>Expiry Date: {currentPerson?.['Expiry Date']}</Typography>
-                <StyledButton onClick={handleOpenSubscription}>Change Subscription</StyledButton>
+                <StyledButton 
+                  onClick={handleOpenSubscription}
+                  disabled={isLoading}
+                >
+                  Change Subscription
+                </StyledButton>
               </Box>
             </Box>
-
+  
             {/* Member Info Section */}
             <Box>
               <Typography variant="h6" gutterBottom>Member Information</Typography>
@@ -334,17 +431,27 @@ const LoyaltyDashboard = () => {
                   fullWidth
                   defaultValue={currentPerson?.Email}
                   onBlur={(e) => handleEditField('Email', e.target.value)}
+                  disabled={isLoading}
                 />
               </Box>
             </Box>
           </Box>
         </DialogContent>
         <DialogActions>
-          <StyledButton onClick={handleCloseProfile}>Close</StyledButton>
+          <StyledButton 
+            onClick={handleCloseProfile}
+            disabled={isLoading}
+          >
+            Close
+          </StyledButton>
         </DialogActions>
       </Dialog>
-
-      <Dialog open={changeValueOpen} onClose={handleCloseChangeValue}>
+  
+      <Dialog 
+        open={changeValueOpen} 
+        onClose={handleCloseChangeValue}
+        disableEscapeKeyDown={isValueChangeLoading}
+      >
         <DialogTitle>Change Value</DialogTitle>
         <DialogContent>
           <TextField
@@ -354,6 +461,7 @@ const LoyaltyDashboard = () => {
             onChange={(e) => setValueChange(e.target.value)}
             fullWidth
             margin="normal"
+            disabled={isValueChangeLoading}
           />
           <TextField
             label="Reason"
@@ -363,25 +471,30 @@ const LoyaltyDashboard = () => {
             onChange={(e) => setChangeReason(e.target.value)}
             fullWidth
             margin="normal"
+            disabled={isValueChangeLoading}
           />
         </DialogContent>
-          <DialogActions>
-            <StyledButton 
-              onClick={handleSubmitChange} 
-              disabled={isValueChangeLoading}
-            >
-              {isValueChangeLoading ? 'Loading...' : 'Submit'}
-            </StyledButton>
-            <StyledButton 
-              onClick={handleCloseChangeValue}
-              disabled={isValueChangeLoading}
-            >
-              Cancel
-            </StyledButton>
-          </DialogActions>
+        <DialogActions>
+          <StyledButton 
+            onClick={handleSubmitChange} 
+            disabled={isValueChangeLoading}
+          >
+            {isValueChangeLoading ? 'Loading...' : 'Submit'}
+          </StyledButton>
+          <StyledButton 
+            onClick={handleCloseChangeValue}
+            disabled={isValueChangeLoading}
+          >
+            Cancel
+          </StyledButton>
+        </DialogActions>
       </Dialog>
-
-      <Dialog open={subscriptionOpen} onClose={handleCloseSubscription}>
+  
+      <Dialog 
+        open={subscriptionOpen} 
+        onClose={handleCloseSubscription}
+        disableEscapeKeyDown={isLoading}
+      >
         <DialogTitle>Change Subscription</DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="normal">
@@ -389,6 +502,7 @@ const LoyaltyDashboard = () => {
             <Select
               value={newSubscriptionTier}
               onChange={(e) => setNewSubscriptionTier(e.target.value)}
+              disabled={isLoading}
             >
               <MenuItem value="0">Tier 0</MenuItem>
               <MenuItem value="1">Tier 1</MenuItem>
@@ -404,6 +518,7 @@ const LoyaltyDashboard = () => {
             onChange={(e) => setMonthsToAdd(e.target.value)}
             fullWidth
             margin="normal"
+            disabled={isLoading}
           />
           <TextField
             label="Email"
@@ -412,51 +527,72 @@ const LoyaltyDashboard = () => {
             fullWidth
             margin="normal"
           />
-          <StyledButton onClick={calculateSubscriptionCost}>Calculate Cost</StyledButton>
+          <StyledButton 
+            onClick={calculateSubscriptionCost}
+            disabled={isLoading}
+          >
+            Calculate Cost
+          </StyledButton>
           <Typography>{subscriptionCost}</Typography>
         </DialogContent>
         <DialogActions>
-          <StyledButton onClick={handleSubmitSubscriptionChange}>Submit</StyledButton>
-          <StyledButton onClick={handleCloseSubscription}>Cancel</StyledButton>
+          <StyledButton 
+            onClick={handleSubmitSubscriptionChange}
+            disabled={isLoading}
+          >
+            Submit
+          </StyledButton>
+          <StyledButton 
+            onClick={handleCloseSubscription}
+            disabled={isLoading}
+          >
+            Cancel
+          </StyledButton>
         </DialogActions>
       </Dialog>
-
-      <Dialog open={changeRafflePointsOpen} onClose={handleCloseChangeRafflePoints}>
-      <DialogTitle>Change Raffle Points</DialogTitle>
-      <DialogContent>
-        <TextField
-          label="Points Change"
-          type="number"
-          value={rafflePointsChange}
-          onChange={(e) => setRafflePointsChange(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Reason"
-          multiline
-          rows={4}
-          value={rafflePointsChangeReason}
-          onChange={(e) => setRafflePointsChangeReason(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-      </DialogContent>
-      <DialogActions>
-        <StyledButton 
-          onClick={handleSubmitRafflePointsChange}
-          disabled={isRafflePointsLoading}
-        >
-          {isRafflePointsLoading ? 'Loading...' : 'Submit'}
-        </StyledButton>
-        <StyledButton 
-          onClick={handleCloseChangeRafflePoints}
-          disabled={isRafflePointsLoading}
-        >
-          Cancel
-        </StyledButton>
-      </DialogActions>
-    </Dialog>
+  
+      <Dialog 
+        open={changeRafflePointsOpen} 
+        onClose={handleCloseChangeRafflePoints}
+        disableEscapeKeyDown={isRafflePointsLoading}
+      >
+        <DialogTitle>Change Raffle Points</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Points Change"
+            type="number"
+            value={rafflePointsChange}
+            onChange={(e) => setRafflePointsChange(e.target.value)}
+            fullWidth
+            margin="normal"
+            disabled={isRafflePointsLoading}
+          />
+          <TextField
+            label="Reason"
+            multiline
+            rows={4}
+            value={rafflePointsChangeReason}
+            onChange={(e) => setRafflePointsChangeReason(e.target.value)}
+            fullWidth
+            margin="normal"
+            disabled={isRafflePointsLoading}
+          />
+        </DialogContent>
+        <DialogActions>
+          <StyledButton 
+            onClick={handleSubmitRafflePointsChange}
+            disabled={isRafflePointsLoading}
+          >
+            {isRafflePointsLoading ? 'Loading...' : 'Submit'}
+          </StyledButton>
+          <StyledButton 
+            onClick={handleCloseChangeRafflePoints}
+            disabled={isRafflePointsLoading}
+          >
+            Cancel
+          </StyledButton>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
