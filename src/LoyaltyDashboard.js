@@ -104,29 +104,29 @@ const LoyaltyDashboard = () => {
     if (isLoading) return;
     setProfileOpen(false);
     setCurrentPerson(null);
-  };
-  
-  const handleCloseChangeValue = () => {
-    if (isLoading) return;
+};
+
+const handleCloseChangeValue = () => {
+    if (isValueChangeLoading) return;  // Check valueChange-specific loading
     setChangeValueOpen(false);
     setValueChange('');
     setChangeReason('');
-  };
-  
-  const handleCloseChangeRafflePoints = () => {
-    if (isLoading) return;
+};
+
+const handleCloseChangeRafflePoints = () => {
+    if (isRafflePointsLoading) return;  // Check rafflePoints-specific loading
     setChangeRafflePointsOpen(false);
     setRafflePointsChange('');
     setRafflePointsChangeReason('');
-  };
-  
-  const handleCloseSubscription = () => {
+};
+
+const handleCloseSubscription = () => {
     if (isLoading) return;
     setSubscriptionOpen(false);
     setNewSubscriptionTier('0');
     setMonthsToAdd('');
     setSubscriptionCost('');
-  };
+};
 
   const handleOpenChangeValue = () => {
     setChangeValueOpen(true);
