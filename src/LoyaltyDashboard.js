@@ -143,33 +143,6 @@ const LoyaltyDashboard = () => {
   };
 
   
-  const handleSubmitRafflePointsChange = async () => {
-    if (!rafflePointsChange || !rafflePointsChangeReason) {
-      alert('Please fill out both fields before submitting.');
-      return;
-    }
-  
-    setIsRafflePointsLoading(true);
-    try {
-      const scriptId = 'loyalty_script';
-      const action = 'changeRafflePoints';
-      await apiCall(scriptId, action, {
-        id: currentPerson.Username,
-        valueChange: rafflePointsChange,
-        changeReason: rafflePointsChangeReason,
-        googleToken: userData.googleToken,
-        username: userData.username
-      });
-      await fetchLoyaltyData();
-      alert('Change has been made');
-      handleCloseChangeRafflePoints();
-    } catch (error) {
-      console.error('Error submitting raffle points change:', error);
-      alert('Error making change. Please try again.');
-    } finally {
-      setIsRafflePointsLoading(false);
-    }
-  };
 
   const handleEditField = async (field, value) => {
     try {
@@ -199,14 +172,42 @@ const LoyaltyDashboard = () => {
         googleToken: userData.googleToken, 
         username: userData.username 
       });
+      handleCloseChangeValue(); // Move this before fetchLoyaltyData
       await fetchLoyaltyData();
       alert('Change has been made');
-      handleCloseChangeValue();
     } catch (error) {
       console.error('Error submitting change:', error);
       alert('Error making change. Please try again.');
     } finally {
       setIsValueChangeLoading(false);
+    }
+  };
+  
+  const handleSubmitRafflePointsChange = async () => {
+    if (!rafflePointsChange || !rafflePointsChangeReason) {
+      alert('Please fill out both fields before submitting.');
+      return;
+    }
+  
+    setIsRafflePointsLoading(true);
+    try {
+      const scriptId = 'loyalty_script';
+      const action = 'changeRafflePoints';
+      await apiCall(scriptId, action, {
+        id: currentPerson.Username,
+        valueChange: rafflePointsChange,
+        changeReason: rafflePointsChangeReason,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+      handleCloseChangeRafflePoints(); // Move this before fetchLoyaltyData
+      await fetchLoyaltyData();
+      alert('Change has been made');
+    } catch (error) {
+      console.error('Error submitting raffle points change:', error);
+      alert('Error making change. Please try again.');
+    } finally {
+      setIsRafflePointsLoading(false);
     }
   };
 
