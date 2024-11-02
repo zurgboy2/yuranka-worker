@@ -2,8 +2,8 @@ const tcgConfig = [
   { 
     name: 'Magic: The Gathering', 
     imageUrl: 'https://ik.imagekit.io/mcgszbooe/M1.jpg?updatedAt=1723031170168',
-    stockCollectionName: 'magic-the-gathering',
-    existingStockCollectionName: 'magic-the-gathering_existing_stock',
+    stockCollectionName: 'mtg',
+    existingStockCollectionName: 'mtg_existing_stock',
     background: {
       type: 'image',
       value: 'https://ik.imagekit.io/mcgszbooe/M1.jpg?updatedAt=1723031170168'
@@ -99,8 +99,8 @@ const tcgConfig = [
   {
     name: 'Flesh and Blood',
     imageUrl: 'https://ik.imagekit.io/mcgszbooe/FAB.jpg?updatedAt=1730565998814',
-    stockCollectionName: 'flesh-and-blood',
-    existingStockCollectionName: 'flesh-and-blood_existing_stock',
+    stockCollectionName: 'fab',
+    existingStockCollectionName: 'fab_existing_stock',
     background: {
       type: 'image',
       value: 'https://ik.imagekit.io/mcgszbooe/FAB.jpg?updatedAt=1730565998814'  // Dark red
@@ -122,8 +122,8 @@ const tcgConfig = [
   {
     name: 'Disney Lorcana',
     imageUrl: 'https://example.com/lorcana.png',
-    stockCollectionName: 'disney-lorcana',
-    existingStockCollectionName: 'disney-lorcana_existing_stock',
+    stockCollectionName: 'lorcana',
+    existingStockCollectionName: 'lorcana_existing_stock',
     background: {
       type: 'color',
       value: '#4B0082'  // Deep purple
@@ -146,8 +146,8 @@ const tcgConfig = [
   {
     name: 'Star Wars Unlimited',
     imageUrl: 'https://example.com/swu.png',
-    stockCollectionName: 'star-wars-unlimited',
-    existingStockCollectionName: 'star-wars-unlimited_existing_stock',
+    stockCollectionName: 'swu',
+    existingStockCollectionName: 'swu_existing_stock',
     background: {
       type: 'color',
       value: '#000000'  
