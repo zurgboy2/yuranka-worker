@@ -1,12 +1,12 @@
 const tcgConfig = [
   { 
     name: 'Magic: The Gathering', 
-    imageUrl: 'https://example.com/mtg.png',
+    imageUrl: 'https://ik.imagekit.io/mcgszbooe/M1.jpg?updatedAt=1723031170168',
     stockCollectionName: 'mtg',
     existingStockCollectionName: 'mtg_existing_stock',
     background: {
       type: 'image',
-      value: 'https://example.com/mtg-background.jpg'
+      value: 'https://ik.imagekit.io/mcgszbooe/M1.jpg?updatedAt=1723031170168'
     },
     headers: [
       { name: 'name', type: 'text' },
@@ -25,12 +25,12 @@ const tcgConfig = [
   },
   { 
     name: 'Pokemon', 
-    imageUrl: 'https://example.com/pokemon.png',
+    imageUrl: 'https://ik.imagekit.io/mcgszbooe/Pokemon_fb_1.jpg?updatedAt=1708283575415',
     stockCollectionName: 'pokemon',
     existingStockCollectionName: 'pokemon_existing_stock',
     background: {
-      type: 'color',
-      value: '#FFCB05'  // Pokemon yellow
+      type: 'image',
+      value: 'https://ik.imagekit.io/mcgszbooe/Pokemon_fb_1.jpg?updatedAt=1708283575415'  // Pokemon yellow
     },
     headers: [
       { name: 'name', type: 'text' },
@@ -98,12 +98,12 @@ const tcgConfig = [
   },
   {
     name: 'Flesh and Blood',
-    imageUrl: 'https://example.com/fab.png',
+    imageUrl: 'https://ik.imagekit.io/mcgszbooe/FAB.jpg?updatedAt=1730565998814',
     stockCollectionName: 'fab',
     existingStockCollectionName: 'fab_existing_stock',
     background: {
-      type: 'color',
-      value: '#8B0000'  // Dark red
+      type: 'image',
+      value: 'https://ik.imagekit.io/mcgszbooe/FAB.jpg?updatedAt=1730565998814'  // Dark red
     },
     headers: [
       { name: 'name', type: 'text' },
