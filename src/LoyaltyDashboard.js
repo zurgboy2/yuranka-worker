@@ -467,12 +467,21 @@ const handleCloseSubscription = () => {
           <TextField
             label="Reason"
             multiline
-            rows={4}
+            rows={8}  // Increased from 4 to 8 rows
             value={changeReason}
             onChange={(e) => setChangeReason(e.target.value)}
             fullWidth
             margin="normal"
             disabled={isValueChangeLoading}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                minHeight: '200px',  // Add minimum height
+              },
+              '& .MuiInputBase-input': {
+                overflowY: 'auto',   // Add scrolling for overflow
+                lineHeight: '1.5',   // Improve line spacing for readability
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
