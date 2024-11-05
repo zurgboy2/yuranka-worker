@@ -177,6 +177,7 @@ const StoreSearch = ({ onClose }) => {
           setError(err.message || 'Failed to upload image. Please try again.');
         } finally {
           setLoading(false);
+          e.target.value = '';
         }
       };
       reader.readAsDataURL(file);
@@ -487,14 +488,13 @@ const StoreSearch = ({ onClose }) => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Date Obtained"
-                type="date"
-                value={product['Date Obtained']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Date Obtained', e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
+            <TextField
+              fullWidth
+              label="Date Obtained"
+              value={product['Date Obtained']}
+              onChange={(e) => handleUpdateField(product.Unique_ID, 'Date Obtained', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
             </Grid>
             <Grid item xs={12}>
               <input
