@@ -339,21 +339,22 @@ const StoreSearch = ({ onClose }) => {
             getOptionLabel={(option) => `${option.title} - €${option.price}`}
             onChange={(event, newValue) => {
               if (newValue) {
-                setSearchText(newValue.title);  // Set the selected item's title as search text
-                handleSearch();  // This will trigger the backend search with the title
+                // Use the complete title when an item is selected
+                setSearchText(newValue.title);
+                handleSearch();
+              }
+            }}
+            // Add this to control input behavior
+            inputValue={searchText}
+            onInputChange={(event, newValue, reason) => {
+              if (reason === 'input') {
+                setSearchText(newValue || '');
               }
             }}
             renderInput={(params) => (
               <TextField
                 {...params}
-                value={searchText}
                 placeholder="Search Store Products..."
-                onChange={(e) => setSearchText(e.target.value)}  // Update searchText when typing
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();  // Trigger search on Enter key
-                  }
-                }}
                 InputProps={{
                   ...params.InputProps,
                   style: { color: '#ffffff' },
@@ -364,6 +365,11 @@ const StoreSearch = ({ onClose }) => {
                       {params.InputProps.startAdornment}
                     </>
                   ),
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
                 }}
               />
             )}
