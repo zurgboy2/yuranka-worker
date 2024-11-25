@@ -336,21 +336,24 @@ const StoreSearch = ({ onClose }) => {
           <Autocomplete
             fullWidth
             options={allItems}
-            getOptionLabel={(option) => `${option.title} - €${option.price}`}  // Changed to match the data structure
+            getOptionLabel={(option) => `${option.title} - €${option.price}`}
             onChange={(event, newValue) => {
               if (newValue) {
-                // When an item is selected, use handleSearch to get the full details
-                setSearchText(newValue.title);  // Set the search text to trigger the backend search
-                handleSearch();  // This will get all the details from the backend
+                setSearchText(newValue.title);  // Set the selected item's title as search text
+                handleSearch();  // This will trigger the backend search with the title
               }
-            }}
-            onInputChange={(event, newValue) => {
-              setSearchText(newValue || '');
             }}
             renderInput={(params) => (
               <TextField
                 {...params}
+                value={searchText}
                 placeholder="Search Store Products..."
+                onChange={(e) => setSearchText(e.target.value)}  // Update searchText when typing
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();  // Trigger search on Enter key
+                  }
+                }}
                 InputProps={{
                   ...params.InputProps,
                   style: { color: '#ffffff' },
