@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Typography, Button, TextField, Grid, Paper,
   CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
@@ -7,6 +7,7 @@ import {
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
 import { useUserData } from './UserContext';
+import { Autocomplete } from '@mui/material';
 
 const StoreSearch = ({ onClose }) => {
   const { userData } = useUserData();
@@ -17,6 +18,7 @@ const StoreSearch = ({ onClose }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [tagSuggestions, setTagSuggestions] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
+  const [allItems, setAllItems] = useState([]);
   const [productData, setProductData] = useState({
     Title: '',
     Type: '',
@@ -36,7 +38,10 @@ const StoreSearch = ({ onClose }) => {
     Length: ''
   });
 
+
   const handleSearch = useCallback(async () => {
+    if (!searchText.trim()) return;
+    
     setLoading(true);
     setError(null);
     try {
@@ -92,6 +97,26 @@ const StoreSearch = ({ onClose }) => {
       setLoading(false);
     }
   };
+
+  const fetchAllItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await apiCall('register_script', 'getSpreadsheetData', {
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+      setAllItems(result);
+    } catch (err) {
+      setError('Failed to fetch products. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    fetchAllItems();
+  }, [fetchAllItems]);
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
@@ -307,37 +332,49 @@ const StoreSearch = ({ onClose }) => {
       
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search Store Products by BarCode..."
-              InputProps={{
-                style: { color: '#ffffff' },
-                sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' }
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button 
-              fullWidth 
-              variant="contained" 
-              onClick={handleSearch}
-              sx={{ bgcolor: '#8b0000' }}
-            >
-              Search
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button 
-              fullWidth
-              variant="contained" 
-              onClick={handleOpenDialog}
-              sx={{ bgcolor: '#4a4a4a' }}
-            >
-              Add Product
-            </Button>
+          <Grid item xs={12} sm={9}>
+          <Autocomplete
+            fullWidth
+            options={allItems}  // Changed from searchResults to allItems
+            getOptionLabel={(option) => `${option.Title} - ${option['Variant Barcode']}`}
+            onChange={(event, newValue) => {
+              if (newValue) {
+                setSearchResults([newValue]);
+              }
+            }}
+            onInputChange={(event, newValue) => {
+              setSearchText(newValue);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Search Store Products..."
+                InputProps={{
+                  ...params.InputProps,
+                  style: { color: '#ffffff' },
+                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                  startAdornment: (
+                    <>
+                      <span className="material-icons">search</span>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <Grid container alignItems="center">
+                  <Grid item xs>
+                    {option.Title} - {option['Variant Barcode']}
+                  </Grid>
+                  <Grid item>
+                    €{option['Variant Price']}
+                  </Grid>
+                </Grid>
+              </li>
+            )}
+          />
           </Grid>
         </Grid>
       </Box>
