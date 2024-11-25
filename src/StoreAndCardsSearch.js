@@ -335,15 +335,17 @@ const StoreSearch = ({ onClose }) => {
           <Grid item xs={12} sm={9}>
           <Autocomplete
             fullWidth
-            options={allItems}  // Changed from searchResults to allItems
-            getOptionLabel={(option) => `${option.Title} - ${option['Variant Barcode']}`}
+            options={allItems}
+            getOptionLabel={(option) => `${option.title} - €${option.price}`}  // Changed to match the data structure
             onChange={(event, newValue) => {
               if (newValue) {
-                setSearchResults([newValue]);
+                // When an item is selected, use handleSearch to get the full details
+                setSearchText(newValue.title);  // Set the search text to trigger the backend search
+                handleSearch();  // This will get all the details from the backend
               }
             }}
             onInputChange={(event, newValue) => {
-              setSearchText(newValue);
+              setSearchText(newValue || '');
             }}
             renderInput={(params) => (
               <TextField
@@ -366,10 +368,10 @@ const StoreSearch = ({ onClose }) => {
               <li {...props}>
                 <Grid container alignItems="center">
                   <Grid item xs>
-                    {option.Title} - {option['Variant Barcode']}
+                    {option.title}
                   </Grid>
                   <Grid item>
-                    €{option['Variant Price']}
+                    €{option.price}
                   </Grid>
                 </Grid>
               </li>
