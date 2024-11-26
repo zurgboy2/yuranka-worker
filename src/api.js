@@ -1,5 +1,3 @@
-// const CORS_BYPASS_KEY = '';
-
 const handleApiError = (error, response) => {
   console.error('API call failed:', error);
   if (response) {
@@ -11,43 +9,78 @@ const handleApiError = (error, response) => {
   }
 };
 
-const getProxyToken = async (scriptId, action) => {
-    const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/get_token');
-    // url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const retryWithBackoff = async (fn, maxRetries = 3, initialDelay = 1000) => {
+  let retries = 0;
+  
+  while (retries < maxRetries) {
     try {
-        const response = await fetch(url, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            // 'X-CORS-Bypass-Key': CORS_BYPASS_KEY
-        },
-        body: JSON.stringify({ 
-            script_id: scriptId, 
-            action: action,
-            // bypass_key: CORS_BYPASS_KEY 
-        }),
-        });
-
-        if (!response.ok) {
-        const errorText = await response.text();
-        handleApiError(new Error(errorText), response);
-        }
-
-        const data = await response.json();
-        if (data.token) return data.token;
-        throw new Error('Failed to get token: ' + JSON.stringify(data));
+      return await fn();
     } catch (error) {
-        handleApiError(error);
+      retries++;
+      if (retries === maxRetries) {
+        throw error;
+      }
+      
+      const delayTime = initialDelay * Math.pow(2, retries - 1);
+      console.log(`Attempt ${retries} failed. Retrying in ${delayTime}ms...`);
+      await delay(delayTime);
     }
+  }
+};
+
+const fetchWithTimeout = async (url, options, timeout = 30000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+};
+
+const getProxyToken = async (scriptId, action) => {
+  const makeRequest = async () => {
+    const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/get_token');
+    
+    const response = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        script_id: scriptId, 
+        action: action,
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      handleApiError(new Error(errorText), response);
+    }
+
+    const data = await response.json();
+    if (data.token) return data.token;
+    throw new Error('Failed to get token: ' + JSON.stringify(data));
+  };
+
+  return retryWithBackoff(makeRequest);
 };
 
 const apiCall = async (scriptId, action, additionalData = {}) => {
-  try {
+  const makeRequest = async () => {
     const token = await getProxyToken(scriptId, action);
     const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/proxy');
-    // url.searchParams.append('bypass_key', CORS_BYPASS_KEY);
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -56,9 +89,8 @@ const apiCall = async (scriptId, action, additionalData = {}) => {
         token, 
         action, 
         script_id: scriptId, 
-        // bypass_key: CORS_BYPASS_KEY,  // Add the bypass key here
         ...additionalData 
-      }),
+      })
     });
 
     if (!response.ok) {
@@ -66,11 +98,10 @@ const apiCall = async (scriptId, action, additionalData = {}) => {
       handleApiError(new Error(errorText), response);
     }
 
-    const returnedData = response.json();
-    return await returnedData;
-  } catch (error) {
-    handleApiError(error);
-  }
+    return await response.json();
+  };
+
+  return retryWithBackoff(makeRequest, 5, 2000);
 };
 
 export default apiCall;
