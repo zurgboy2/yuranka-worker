@@ -30,7 +30,7 @@ const retryWithBackoff = async (fn, maxRetries = 3, initialDelay = 1000) => {
   }
 };
 
-const fetchWithTimeout = async (url, options, timeout = 30000) => {
+const fetchWithTimeout = async (url, options, timeout = 120000) => { // Increased to 120 seconds
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -60,7 +60,7 @@ const getProxyToken = async (scriptId, action) => {
         script_id: scriptId, 
         action: action,
       })
-    });
+    }, 60000); // 60 seconds for token request
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -91,7 +91,7 @@ const apiCall = async (scriptId, action, additionalData = {}) => {
         script_id: scriptId, 
         ...additionalData 
       })
-    });
+    }, 180000); // 180 seconds (3 minutes) for main API call
 
     if (!response.ok) {
       const errorText = await response.text();
