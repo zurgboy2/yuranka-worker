@@ -20,6 +20,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -45,6 +46,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -70,6 +72,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -93,6 +96,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -116,6 +120,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -140,6 +145,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -164,6 +170,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -188,6 +195,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -212,6 +220,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
@@ -235,6 +244,7 @@ const tcgConfig = [
       { name: 'quality', type: 'selection', options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'] },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
+      { name: 'avg7', type: 'number' },
       { name: 'location', type: 'text' },
     ]
   },
