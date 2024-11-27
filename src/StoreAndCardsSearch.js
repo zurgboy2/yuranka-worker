@@ -387,6 +387,16 @@ const StoreSearch = ({ onClose }) => {
             )}
           />
           </Grid>
+          <Grid item xs={12} sm={3}>
+            <Button 
+              fullWidth 
+              variant="contained"
+              onClick={handleOpenDialog}
+              sx={{ height: '100%', bgcolor: '#4a4a4a' }}
+            >
+              + Add Product
+            </Button>
+          </Grid>
         </Grid>
       </Box>
   
