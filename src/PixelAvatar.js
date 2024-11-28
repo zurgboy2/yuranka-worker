@@ -44,38 +44,49 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
 
   const getHairStyle = (style) => {
     const baseStyle = {
-      backgroundColor: '#000',
       position: 'absolute',
+      backgroundColor: '#000',
+      width: '16px',
+      height: '6px',
+      top: '-2px',
+      clipPath: `polygon(
+        0% 100%,
+        20% 50%,
+        40% 100%,
+        60% 50%,
+        80% 100%,
+        100% 50%,
+        100% 0%,
+        0% 0%
+      )`, // Create spiky hair effect
     };
     
     const styles = {
       short: {
         ...baseStyle,
-        height: '10px',
-        width: '44px',
-        top: '-5px',
-        borderRadius: '5px'
+        height: '4px',
       },
       long: {
         ...baseStyle,
-        height: '50px',
-        width: '44px',
-        top: '-5px',
-        borderRadius: '5px 5px 10px 10px'
+        height: '8px',
       },
       curly: {
         ...baseStyle,
-        height: '30px',
-        width: '44px',
-        top: '-5px',
-        borderRadius: '50%'
+        clipPath: `polygon(
+          0% 100%,
+          25% 0%,
+          50% 100%,
+          75% 0%,
+          100% 100%,
+          100% 0%,
+          0% 0%
+        )`,
       },
       mohawk: {
         ...baseStyle,
-        height: '20px',
-        width: '6px',
-        top: '-15px',
-        left: '17px'
+        width: '4px',
+        height: '8px',
+        left: '6px',
       }
     };
 
@@ -93,29 +104,140 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
   };
 
   const pixelStyles = {
+    container: {
+      imageRendering: 'pixelated',
+      transform: 'scale(3)',
+      margin: '50px',
+    },
     head: {
       backgroundColor: settings.skinTone,
-      width: '40px',
-      height: '40px',
-      borderRadius: '20px',
+      width: '16px',
+      height: '16px',
       position: 'relative',
+      clipPath: `polygon(
+        0% 25%, 
+        25% 0%, 
+        75% 0%, 
+        100% 25%,
+        100% 75%,
+        75% 100%,
+        25% 100%,
+        0% 75%
+      )`,
+    },
+    face: {
+      left: {
+        position: 'absolute',
+        width: '2px',
+        height: '2px',
+        backgroundColor: '#000',
+        top: '7px',
+        left: '5px',
+      },
+      right: {
+        position: 'absolute',
+        width: '2px',
+        height: '2px',
+        backgroundColor: '#000',
+        top: '7px',
+        right: '5px',
+      },
+      nose: {
+        position: 'absolute',
+        width: '4px',
+        height: '2px',
+        backgroundColor: '#000',
+        top: '8px',
+        left: '8px',
+        transform: 'translateX(-50%)',
+      },
+      mustache: settings.gender === 'male' ? {
+        position: 'absolute',
+        width: '10px',
+        height: '3px',
+        backgroundColor: '#000',
+        top: '10px',
+        left: '3px',
+      } : null,
     },
     body: {
+      width: '16px',
+      height: '16px',
+      position: 'relative',
+      backgroundImage: `
+        linear-gradient(
+          to bottom,
+          ${settings.outfitColor} 0%,
+          ${settings.outfitColor} 60%,
+          #000 60%,
+          #000 65%,
+          ${settings.outfitColor} 65%,
+          ${settings.outfitColor} 100%
+        )`,
+      clipPath: `polygon(
+        25% 0%,
+        75% 0%,
+        100% 100%,
+        0% 100%
+      )`,
+    },
+    overalls: {
+      position: 'absolute',
+      width: '4px',
+      height: '12px',
       backgroundColor: settings.outfitColor,
-      width: '60px',
-      height: '70px',
-      borderRadius: '10px',
+      top: '0',
+      '&.left': {
+        left: '3px',
+      },
+      '&.right': {
+        right: '3px',
+      },
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        width: '3px',
+        height: '3px',
+        backgroundColor: '#FFD700',
+        top: '2px',
+      }
     },
     hair: getHairStyle(settings.hairStyle),
+    hat: settings.accessories.includes('hat') ? {
+      position: 'absolute',
+      width: '20px',
+      height: '6px',
+      backgroundColor: '#FF0000',
+      top: '-6px',
+      left: '-2px',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        width: '10px',
+        height: '6px',
+        backgroundColor: '#FF0000',
+        top: '-4px',
+        left: '5px',
+        borderRadius: '3px 3px 0 0',
+      }
+    } : null,
     accessories: {
       glasses: {
         position: 'absolute',
-        width: '30px',
-        height: '10px',
-        border: '2px solid #000',
-        top: '15px',
-        left: '5px',
-        borderRadius: '5px'
+        width: '12px',
+        height: '4px',
+        border: '1px solid #000',
+        top: '7px',
+        left: '2px',
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          width: '2px',
+          height: '1px',
+          backgroundColor: '#000',
+          top: '1px',
+          left: '5px',
+        }
       }
     }
   };
@@ -126,24 +248,36 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
 
   return (
     <Box sx={{ textAlign: 'center', p: 2 }}>
-      <Box sx={{ position: 'relative', display: 'inline-block' }}>
-        <Box sx={{ position: 'absolute', top: -30, right: -30 }}>
-          {getMood(status).emoji}
-        </Box>
-        
-        {/* Avatar Display */}
+      <Box sx={pixelStyles.container}>
         <Box sx={{ position: 'relative' }}>
-          <Box sx={pixelStyles.head}>
-            <Box sx={pixelStyles.hair} />
-            {settings.accessories.includes('glasses') && 
-              <Box sx={pixelStyles.accessories.glasses} />
-            }
+          <Box sx={{ position: 'absolute', top: -30, right: -30 }}>
+            {getMood(status).emoji}
           </Box>
-          <Box sx={pixelStyles.body} />
+          
+          <Box sx={{ position: 'relative' }}>
+            <Box sx={pixelStyles.head}>
+              <Box sx={pixelStyles.hair} />
+              <Box sx={pixelStyles.face.left} />
+              <Box sx={pixelStyles.face.right} />
+              <Box sx={pixelStyles.face.nose} />
+              {settings.gender === 'male' && 
+                <Box sx={pixelStyles.face.mustache} />
+              }
+              {settings.accessories.includes('hat') && 
+                <Box sx={pixelStyles.hat} />
+              }
+              {settings.accessories.includes('glasses') && 
+                <Box sx={pixelStyles.accessories.glasses} />
+              }
+            </Box>
+            <Box sx={pixelStyles.body}>
+              <Box sx={pixelStyles.overalls} className="left" />
+              <Box sx={pixelStyles.overalls} className="right" />
+            </Box>
+          </Box>
         </Box>
       </Box>
 
-      {/* Customization Controls */}
       <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
         <Grid item>
           <Tooltip title="Change Gender">
@@ -172,8 +306,6 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
             ))}
           </Box>
         </Grid>
-        
-        {/* Additional customization controls */}
       </Grid>
     </Box>
   );

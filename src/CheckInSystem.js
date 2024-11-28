@@ -89,39 +89,39 @@ const CheckInSystem = React.memo(() => {
 
   return (
     <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-        <Typography variant="h5" gutterBottom>Account Details</Typography>
-        <Typography variant="body1" gutterBottom>Current Status: {status}</Typography>
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          {currentStatusActions.map(({ label, action }) => (
-            <Button
-              key={label}
-              variant="contained"
-              onClick={() => handleStatusChange(action)}
-              disabled={loading}
-              startIcon={iconData[label]}
-            >
-              {label}
-            </Button>
-          ))}
-        </Box>
-        {loading && <CircularProgress />}
-        {error && (
-          <Alert severity="error">
-            <AlertTitle>Error</AlertTitle>
-            {error}
-          </Alert>
-        )}
-      </Grid>
-      <Grid item xs={12} md={4}>
+      <Grid container direction="column" spacing={3}>
+        <Grid item xs={12}>
+          <Typography variant="h5" gutterBottom>Account Details</Typography>
+          <Typography variant="body1" gutterBottom>Current Status: {status}</Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+            {currentStatusActions.map(({ label, action }) => (
+              <Button
+                key={label}
+                variant="contained"
+                onClick={() => handleStatusChange(action)}
+                disabled={loading}
+                startIcon={iconData[label]}
+              >
+                {label}
+              </Button>
+            ))}
+          </Box>
+          {loading && <CircularProgress />}
+          {error && (
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              {error}
+            </Alert>
+          )}
+        </Grid>
+        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
           <PixelAvatar 
             settings={avatarSettings}
             onSettingsChange={setAvatarSettings}
             status={status}
           />
         </Grid>
-    </Grid>
+      </Grid>
     </Paper>
   );
 });
