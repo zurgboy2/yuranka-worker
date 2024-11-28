@@ -10,6 +10,15 @@ export const UserProvider = ({ children }) => {
     setUserDataState(data);
   }, []);
 
+  const [avatarSettings, setAvatarSettings] = useState({
+    gender: 'male',
+    skinTone: '#FFD5B4',
+    outfitColor: '#2196F3',
+    hairStyle: 'short',
+    accessories: [],
+    facialExpression: 'smile'
+  });
+
   const value = {
     userData,
     setUserData,
@@ -17,7 +26,12 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider value={{ 
+      userData, 
+      setUserData, 
+      avatarSettings, 
+      setAvatarSettings 
+    }}>
       {children}
     </UserContext.Provider>
   );
