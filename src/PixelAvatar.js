@@ -178,3 +178,5 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
     </Box>
   );
 };
+
+export default PixelAvatar;
