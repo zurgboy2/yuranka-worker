@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { 
-  Paper, Typography, Button, Box, CircularProgress,
-  Alert, AlertTitle
+  Paper, 
+  Typography, 
+  Button, 
+  Box, 
+  CircularProgress,
+  Alert, 
+  AlertTitle, 
+  Grid
 } from '@mui/material';
 import { useUserData } from './UserContext';
 import { useCheckIn } from './CheckInContext';
 import apiCall from './api';
+import PixelAvatar from './PixelAvatar';  // Add this import
+
 
 const CheckInSystem = React.memo(() => {
   const { userData, avatarSettings, setAvatarSettings } = useUserData();

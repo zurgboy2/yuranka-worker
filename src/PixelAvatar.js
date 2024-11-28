@@ -1,8 +1,17 @@
 import React from 'react';
-import { Box, IconButton, Grid, Tooltip } from '@mui/material';
 import { 
-  Face, WbSunny, CheckroomOutlined, 
-  ContentCut, EmojiEmotions, Accessibility 
+  Box, 
+  IconButton, 
+  Grid, 
+  Tooltip 
+} from '@mui/material';
+import { 
+  Face, 
+  WbSunny, 
+  CheckroomOutlined, 
+  ContentCut, 
+  EmojiEmotions, 
+  Accessibility 
 } from '@mui/icons-material';
 
 const PixelAvatar = ({ settings, onSettingsChange, status }) => {
