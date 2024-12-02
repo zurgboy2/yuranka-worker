@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/yuranka-worker/static/css/main.c8e1d536.css",
+    "main.css": "/yuranka-worker/static/css/main.7897ad4f.css",
     "main.js": "/yuranka-worker/static/js/main.f12deff3.js",
     "static/js/453.a12cfbd9.chunk.js": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js",
     "static/media/material-icons-two-tone.woff": "/yuranka-worker/static/media/material-icons-two-tone.3baa5b8f3469222b822d.woff",
@@ -14,12 +14,12 @@
     "static/media/material-icons-sharp.woff2": "/yuranka-worker/static/media/material-icons-sharp.219aa9140e099e6c72ed.woff2",
     "static/media/material-icons.woff2": "/yuranka-worker/static/media/material-icons.0c35d18bf06992036b69.woff2",
     "index.html": "/yuranka-worker/index.html",
-    "main.c8e1d536.css.map": "/yuranka-worker/static/css/main.c8e1d536.css.map",
+    "main.7897ad4f.css.map": "/yuranka-worker/static/css/main.7897ad4f.css.map",
     "main.f12deff3.js.map": "/yuranka-worker/static/js/main.f12deff3.js.map",
     "453.a12cfbd9.chunk.js.map": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.c8e1d536.css",
+    "static/css/main.7897ad4f.css",
     "static/js/main.f12deff3.js"
   ]
 }
