@@ -116,7 +116,7 @@ const Dashboard = () => {
   const renderDashboardContent = useMemo(() => {
     if (!userData || !userData.role || !memoizedRoleConfig[userData.role]) return null;
 
-    const cardComponents = ['Lister', 'Checkout', 'Accounting', 'TaskManager', 'Register', 'EventManager','StoreSearch', 'QrCodeGenerator', 'LoyaltyDashboard', 'ScheduleForm'];
+    const cardComponents = ['Lister', 'Checkout', 'Accounting', 'TaskManager', 'Register', 'EventManager','StoreSearch', 'QrCodeGenerator', 'LoyaltyDashboard', 'ScheduleForm','CardSearch'];
 
     return (
       <Grid container spacing={3}>
