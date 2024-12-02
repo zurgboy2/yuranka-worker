@@ -45,7 +45,7 @@ const roleConfig = {
     { component: QrCodeGenerator, gridProps: { xs: 6, md: 3 }, name: 'QrCodeGenerator' },
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
-    { component: CardSearch, gridProps: { xs: 6, md: 3 }, name: 'Tests Admin' },
+    { component: CardSearch, gridProps: { xs: 6, md: 3 }, name: 'CardSearch' },
   ],
   'Store Manager': [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
