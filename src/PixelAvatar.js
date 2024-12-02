@@ -5,14 +5,7 @@ import {
   Grid, 
   Tooltip 
 } from '@mui/material';
-import { 
-  Face, 
-  WbSunny, 
-  CheckroomOutlined, 
-  ContentCut, 
-  EmojiEmotions, 
-  Accessibility 
-} from '@mui/icons-material';
+import 'material-icons/iconfont/material-icons.css';
 
 const PixelAvatar = ({ settings, onSettingsChange, status }) => {
   const skinTones = [
@@ -282,7 +275,7 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
         <Grid item>
           <Tooltip title="Change Gender">
             <IconButton onClick={() => updateSetting('gender', settings.gender === 'male' ? 'female' : 'male')}>
-              <Accessibility />
+              <span className="material-icons">accessibility</span>
             </IconButton>
           </Tooltip>
         </Grid>
@@ -300,7 +293,7 @@ const PixelAvatar = ({ settings, onSettingsChange, status }) => {
                     '&:hover': { backgroundColor: color }
                   }}
                 >
-                  <WbSunny sx={{ fontSize: 16 }} />
+                  <span className="material-icons" style={{ fontSize: 16 }}>wb_sunny</span>
                 </IconButton>
               </Tooltip>
             ))}
