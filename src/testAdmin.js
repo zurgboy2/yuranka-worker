@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import tcgConfig from './lister/tcgConfig';
 import apiCall from './api';
 import './styles/CardSearch.css';
+import { useUserData } from './UserContext';
 
 function CardSearch() {
   const [selectedTcg, setSelectedTcg] = useState('');
@@ -11,6 +12,7 @@ function CardSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeView, setActiveView] = useState('front');
+  const { userData } = useUserData();
 
   const SCRIPT_ID = 'tester_script'; // Replace with your Google Apps Script ID
 
@@ -23,7 +25,9 @@ function CardSearch() {
     try {
       const result = await apiCall(SCRIPT_ID, 'searchCard', {
         tcg: selectedTcg,
-        searchTerm: searchTerm
+        searchTerm: searchTerm,
+        googleToken: userData.googleToken,
+        username: userData.username,
       });
 
       if (result.success) {
@@ -90,41 +94,45 @@ function CardSearch() {
         </div>
       )}
 
-{cardData && (
+        {cardData && (
         <div className="card-details">
-          <div className="card-images">
-            <div className="image-controls">
-              <button 
-                className={`view-button ${activeView === 'front' ? 'active' : ''}`}
-                onClick={() => setActiveView('front')}
-              >
-                Front
-              </button>
-              <button 
-                className={`view-button ${activeView === 'back' ? 'active' : ''}`}
-                onClick={() => setActiveView('back')}
-                disabled={!cardData.backImageBase64}
-              >
-                Back
-              </button>
+            <div className="card-images">
+            {cardData.frontImageBase64 || cardData.backImageBase64 ? (
+                <>
+                <div className="image-controls">
+                    <button 
+                    className={`view-button ${activeView === 'front' ? 'active' : ''}`}
+                    onClick={() => setActiveView('front')}
+                    >
+                    Front
+                    </button>
+                    <button 
+                    className={`view-button ${activeView === 'back' ? 'active' : ''}`}
+                    onClick={() => setActiveView('back')}
+                    disabled={!cardData.backImageBase64}
+                    >
+                    Back
+                    </button>
+                </div>
+                
+                <div className="card-image-container">
+                    <img 
+                    src={`data:image/jpeg;base64,${
+                        activeView === 'front' 
+                        ? cardData.frontImageBase64 
+                        : cardData.backImageBase64
+                    }`} 
+                    alt={`${activeView} of card`}
+                    className="card-image"
+                    />
+                </div>
+                </>
+            ) : (
+                <div className="no-card-found">
+                <p>Card Not Found</p>
+                </div>
+            )}
             </div>
-            
-            <div className="card-image-container">
-              <img 
-                src={`data:image/jpeg;base64,${
-                  activeView === 'front' 
-                    ? cardData.frontImageBase64 
-                    : cardData.backImageBase64
-                }`} 
-                alt={`${activeView} of card`}
-                className="card-image"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = 'placeholder-image.jpg';
-                }}
-              />
-            </div>
-          </div>
 
           <div className="manifest-editor">
             <h3>Card Details</h3>
