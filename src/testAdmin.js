@@ -1,7 +1,7 @@
 // CardSearch.js
 import React, { useState } from 'react';
 import tcgConfig from './lister/tcgConfig';
-import apiCall from './apiCall';
+import apiCall from './api';
 import './styles/CardSearch.css';
 
 function CardSearch() {
