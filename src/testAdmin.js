@@ -42,12 +42,43 @@ function CardSearch() {
     }
   };
 
+  const handleUpdateManifest = async () => {
+    if (!cardData?.manifest) return;
+  
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await apiCall(SCRIPT_ID, 'uppendManifest', {
+        tcg: selectedTcg,
+        manifest: cardData.manifest,
+        googleToken: userData.googleToken,
+        username: userData.username,
+      });
+  
+      if (result.success) {
+        // You might want to show a success message
+        console.log('Manifest updated successfully');
+      } else {
+        setError(result.error || 'Failed to update card data');
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getRelevantHeaders = () => {
     const tcg = tcgConfig.find(t => t.name === selectedTcg);
     if (!tcg) return [];
-    return tcg.headers.filter(header => 
-      !['quantity', 'price', 'avg7', 'location'].includes(header.name)
-    );
+    
+    const excludedHeaders = [
+      'quantity', 'price', 'avg7', 'location', 'name', 
+      'expansion', 'collectorNumber', 'expansionCode', 'cardmarketId'
+    ];
+    
+    return tcg.headers.filter(header => !excludedHeaders.includes(header.name));
   };
 
   return (
@@ -204,15 +235,13 @@ function CardSearch() {
             </div>
 
             <div className="manifest-actions">
-              <button 
+            <button 
                 className="save-button"
-                onClick={() => {
-                  // TODO: Add function to save manifest back to backend
-                  console.log('Saving manifest:', cardData.manifest);
-                }}
-              >
-                Save Changes
-              </button>
+                onClick={handleUpdateManifest}
+                disabled={isLoading}
+                >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
             </div>
           </div>
         </div>
