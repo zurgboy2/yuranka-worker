@@ -14,6 +14,7 @@ import QrCodeGenerator from './QrCodeGenerator';
 import LoyaltyDashboard from './LoyaltyDashboard';
 import ScheduleForm from './ScheduleForm';
 import NoticeBoardDisplay from './NoticeBoardDisplay';
+import CardSearch from './testAdmin'
 
 const roleConfig = {
   Worker: [
@@ -44,6 +45,7 @@ const roleConfig = {
     { component: QrCodeGenerator, gridProps: { xs: 6, md: 3 }, name: 'QrCodeGenerator' },
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
+    { component: CardSearch, gridProps: { xs: 6, md: 3 }, name: 'Tests Admin' },
   ],
   'Store Manager': [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },

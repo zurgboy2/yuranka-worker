@@ -1,0 +1,92 @@
+.card-search {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.tcg-select {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.search-button {
+  min-width: 100px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.search-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #fff3f3;
+  border: 1px solid #ffcdd2;
+  color: #d32f2f;
+  border-radius: 4px;
+}
+
+.card-details {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+.card-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.card-image:hover {
+  transform: scale(1.05);
+}
+
+.characteristics-form {
+  display: grid;
+  gap: 15px;
+}
+
+.characteristic-input label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
