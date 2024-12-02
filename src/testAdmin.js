@@ -50,14 +50,15 @@ function CardSearch() {
     
     try {
       const result = await apiCall(SCRIPT_ID, 'uppendManifest', {
+        action: 'uppendManifest',
         tcg: selectedTcg,
+        searchTerm: searchTerm, 
         manifest: cardData.manifest,
         googleToken: userData.googleToken,
         username: userData.username,
       });
   
       if (result.success) {
-        // You might want to show a success message
         console.log('Manifest updated successfully');
       } else {
         setError(result.error || 'Failed to update card data');
