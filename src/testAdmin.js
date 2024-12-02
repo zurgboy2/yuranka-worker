@@ -8,9 +8,9 @@ function CardSearch() {
   const [selectedTcg, setSelectedTcg] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [cardData, setCardData] = useState(null);
-  const [characteristics, setCharacteristics] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeView, setActiveView] = useState('front');
 
   const SCRIPT_ID = 'tester_script'; // Replace with your Google Apps Script ID
 
@@ -54,7 +54,6 @@ function CardSearch() {
           onChange={(e) => {
             setSelectedTcg(e.target.value);
             setCardData(null);
-            setCharacteristics({});
             setError(null);
           }}
           className="tcg-select"
@@ -91,63 +90,122 @@ function CardSearch() {
         </div>
       )}
 
-      {cardData && (
+{cardData && (
         <div className="card-details">
-          <div className="card-info">
-            <img 
-              src={cardData.imageUrl} 
-              alt={cardData.name} 
-              className="card-image"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'placeholder-image.jpg';
-              }}
-            />
-            <h2>{cardData.name}</h2>
-            <p>{cardData.setName}</p>
+          <div className="card-images">
+            <div className="image-controls">
+              <button 
+                className={`view-button ${activeView === 'front' ? 'active' : ''}`}
+                onClick={() => setActiveView('front')}
+              >
+                Front
+              </button>
+              <button 
+                className={`view-button ${activeView === 'back' ? 'active' : ''}`}
+                onClick={() => setActiveView('back')}
+                disabled={!cardData.backImageBase64}
+              >
+                Back
+              </button>
+            </div>
+            
+            <div className="card-image-container">
+              <img 
+                src={`data:image/jpeg;base64,${
+                  activeView === 'front' 
+                    ? cardData.frontImageBase64 
+                    : cardData.backImageBase64
+                }`} 
+                alt={`${activeView} of card`}
+                className="card-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'placeholder-image.jpg';
+                }}
+              />
+            </div>
           </div>
 
-          <div className="characteristics-form">
-            {getRelevantHeaders().map(header => (
-              <div key={header.name} className="characteristic-input">
-                <label>{header.name.replace(/([A-Z])/g, ' $1').trim()}</label>
-                {header.type === 'selection' ? (
-                  <select
-                    value={characteristics[header.name] || ''}
-                    onChange={(e) => setCharacteristics(prev => ({
-                      ...prev,
-                      [header.name]: e.target.value
-                    }))}
-                  >
-                    <option value="">Select {header.name}</option>
-                    {header.options.map(option => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                ) : header.type === 'boolean' ? (
-                  <div className="checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      checked={characteristics[header.name] || false}
-                      onChange={(e) => setCharacteristics(prev => ({
+          <div className="manifest-editor">
+            <h3>Card Details</h3>
+            <div className="manifest-fields">
+              <div className="field-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={cardData.manifest.name || ''}
+                  onChange={(e) => setCardData(prev => ({
+                    ...prev,
+                    manifest: { ...prev.manifest, name: e.target.value }
+                  }))}
+                />
+              </div>
+              
+              <div className="field-group">
+                <label>Set Name</label>
+                <input
+                  type="text"
+                  value={cardData.manifest.setName || ''}
+                  onChange={(e) => setCardData(prev => ({
+                    ...prev,
+                    manifest: { ...prev.manifest, setName: e.target.value }
+                  }))}
+                />
+              </div>
+
+              {getRelevantHeaders().map(header => (
+                <div key={header.name} className="field-group">
+                  <label>{header.name.replace(/([A-Z])/g, ' $1').trim()}</label>
+                  {header.type === 'selection' ? (
+                    <select
+                      value={cardData.manifest[header.name] || ''}
+                      onChange={(e) => setCardData(prev => ({
                         ...prev,
-                        [header.name]: e.target.checked
+                        manifest: { ...prev.manifest, [header.name]: e.target.value }
+                      }))}
+                    >
+                      <option value="">Select {header.name}</option>
+                      {header.options.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  ) : header.type === 'boolean' ? (
+                    <div className="checkbox-wrapper">
+                      <input
+                        type="checkbox"
+                        checked={cardData.manifest[header.name] || false}
+                        onChange={(e) => setCardData(prev => ({
+                          ...prev,
+                          manifest: { ...prev.manifest, [header.name]: e.target.checked }
+                        }))}
+                      />
+                      <span>{header.name}</span>
+                    </div>
+                  ) : (
+                    <input
+                      type={header.type}
+                      value={cardData.manifest[header.name] || ''}
+                      onChange={(e) => setCardData(prev => ({
+                        ...prev,
+                        manifest: { ...prev.manifest, [header.name]: e.target.value }
                       }))}
                     />
-                    <span>{header.name}</span>
-                  </div>
-                ) : (
-                  <input
-                    type={header.type}
-                    value={characteristics[header.name] || ''}
-                    onChange={(e) => setCharacteristics(prev => ({
-                      ...prev,
-                      [header.name]: e.target.value
-                    }))}
-                  />
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="manifest-actions">
+              <button 
+                className="save-button"
+                onClick={() => {
+                  // TODO: Add function to save manifest back to backend
+                  console.log('Saving manifest:', cardData.manifest);
+                }}
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
       )}
