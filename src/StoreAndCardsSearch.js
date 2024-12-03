@@ -347,42 +347,41 @@ const StoreSearch = ({ onClose }) => {
               onInputChange={(event, newValue) => {
                 setSearchText(newValue || '');
               }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search Store Products..."
+                  InputProps={{
+                    ...params.InputProps,
+                    style: { color: '#ffffff' },
+                    sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                    startAdornment: (
+                      <>
+                        <span className="material-icons">search</span>
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch();
+                    }
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Grid container alignItems="center">
+                    <Grid item xs>
+                      {option.title}
+                    </Grid>
+                    <Grid item>
+                      €{option.price}
+                    </Grid>
+                  </Grid>
+                </li>
+              )}
             />
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Search Store Products..."
-                InputProps={{
-                  ...params.InputProps,
-                  style: { color: '#ffffff' },
-                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                  startAdornment: (
-                    <>
-                      <span className="material-icons">search</span>
-                      {params.InputProps.startAdornment}
-                    </>
-                  ),
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
-                  }
-                }}
-              />
-            )}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <Grid container alignItems="center">
-                  <Grid item xs>
-                    {option.title}
-                  </Grid>
-                  <Grid item>
-                    €{option.price}
-                  </Grid>
-                </Grid>
-              </li>
-            )}
-          />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
