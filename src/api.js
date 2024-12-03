@@ -11,24 +11,45 @@ const handleApiError = (error, response) => {
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const retryWithBackoff = async (fn, maxRetries = 3, initialDelay = 1000) => {
-  let retries = 0;
+const retryWithBackoff = async (fn, maxRetries = 3, initialDelay = 1000, forceNoRetry = false) => {
+  if (forceNoRetry) return fn();
   
+  let retries = 0;
   while (retries < maxRetries) {
     try {
       return await fn();
     } catch (error) {
       retries++;
-      if (retries === maxRetries) {
-        throw error;
-      }
-      
+      if (retries === maxRetries) throw error;
       const delayTime = initialDelay * Math.pow(2, retries - 1);
       console.log(`Attempt ${retries} failed. Retrying in ${delayTime}ms...`);
       await delay(delayTime);
     }
   }
 };
+
+const apiCall = async (scriptId, action, additionalData = {}) => {
+  const noRetry = scriptId === 'admin_tournament_script' && action === 'createEvent';
+  const makeRequest = async () => {
+    const token = await getProxyToken(scriptId, action);
+    const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/proxy');
+    const response = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, action, script_id: scriptId, ...additionalData })
+    }, 180000);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      handleApiError(new Error(errorText), response);
+    }
+    return await response.json();
+  };
+
+  return retryWithBackoff(makeRequest, 5, 2000, noRetry);
+};
+
+
 
 const fetchWithTimeout = async (url, options, timeout = 120000) => { // Increased to 120 seconds
   const controller = new AbortController();
@@ -75,33 +96,6 @@ const getProxyToken = async (scriptId, action) => {
   return retryWithBackoff(makeRequest);
 };
 
-const apiCall = async (scriptId, action, additionalData = {}) => {
-  const makeRequest = async () => {
-    const token = await getProxyToken(scriptId, action);
-    const url = new URL('https://isa-scavenger-761151e3e681.herokuapp.com/proxy');
 
-    const response = await fetchWithTimeout(url, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        token, 
-        action, 
-        script_id: scriptId, 
-        ...additionalData 
-      })
-    }, 180000); // 180 seconds (3 minutes) for main API call
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      handleApiError(new Error(errorText), response);
-    }
-
-    return await response.json();
-  };
-
-  return retryWithBackoff(makeRequest, 5, 2000);
-};
 
 export default apiCall;
