@@ -333,19 +333,24 @@ const StoreSearch = ({ onClose }) => {
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={9}>
-            <Autocomplete
-              fullWidth
-              options={allItems}
+            <Autocomplete 
+              fullWidth 
+              options={allItems} 
               getOptionLabel={(option) => `${option.title} - €${option.price}`}
-              onChange={(event, newValue) => {
-                if (newValue) {
+              value={allItems.find(item => item.uniqueId === searchText) || null}
+              onChange={(event, newValue) => { 
+                if (newValue) { 
                   setSearchText(newValue.uniqueId);
-                  handleSearch();
+                  handleSearch(); 
+                } else {
+                  setSearchText('');
                 }
-              }}
+              }} 
               inputValue={searchText}
-              onInputChange={(event, newValue) => {
-                setSearchText(newValue || '');
+              onInputChange={(event, newValue, reason) => {
+                if (reason === 'input') {
+                  setSearchText(newValue || '');
+                }
               }}
               renderInput={(params) => (
                 <TextField
