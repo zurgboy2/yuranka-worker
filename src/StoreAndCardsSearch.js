@@ -339,17 +339,13 @@ const StoreSearch = ({ onClose }) => {
             getOptionLabel={(option) => `${option.title} - €${option.price}`}
             onChange={(event, newValue) => {
               if (newValue) {
-                // Use the complete title when an item is selected
-                setSearchText(newValue.title);
-                handleSearch();
+                setSearchText(newValue.title); 
+                handleSearch(); 
               }
             }}
-            // Add this to control input behavior
             inputValue={searchText}
-            onInputChange={(event, newValue, reason) => {
-              if (reason === 'input') {
-                setSearchText(newValue || '');
-              }
+            onInputChange={(event, newValue) => {
+              setSearchText(newValue || '');
             }}
             renderInput={(params) => (
               <TextField
