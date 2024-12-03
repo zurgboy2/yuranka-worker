@@ -337,21 +337,19 @@ const StoreSearch = ({ onClose }) => {
               fullWidth 
               options={allItems} 
               getOptionLabel={(option) => `${option.title} - €${option.price}`}
-              value={allItems.find(item => item.uniqueId === searchText) || null}
               onChange={(event, newValue) => { 
                 if (newValue) { 
-                  setSearchText(newValue.uniqueId);
+                  setSearchText(newValue.title);
                   handleSearch(); 
                 } else {
                   setSearchText('');
                 }
               }} 
               inputValue={searchText}
-              onInputChange={(event, newValue, reason) => {
-                if (reason === 'input') {
-                  setSearchText(newValue || '');
-                }
+              onInputChange={(event, newValue) => {
+                setSearchText(newValue || '');
               }}
+              isOptionEqualToValue={(option, value) => option.title === value}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -386,7 +384,7 @@ const StoreSearch = ({ onClose }) => {
                   </Grid>
                 </li>
               )}
-            />
+              />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
