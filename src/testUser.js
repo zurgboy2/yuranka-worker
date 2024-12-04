@@ -14,10 +14,10 @@ function TestUser() {
   const [activeView, setActiveView] = useState('front');
   const [testAnswers, setTestAnswers] = useState([]);
   const [testConfig, setTestConfig] = useState({
-    targetCards: 10,
     timeLimit: 0, // 0 means no limit
     specificSet: '',
   });
+  
   const { userData } = useUserData();
 
   const SCRIPT_ID = 'tester_script';
@@ -137,12 +137,13 @@ function TestUser() {
 
   return (
     <div className="test-user">
-      <div className="test-header">
+        <div className="test-header">
         <h2>Card Knowledge Test</h2>
         <div className="test-progress">
-          <span>Cards Completed: {testAnswers.length} / {testConfig.targetCards}</span>
+            <span>Cards Completed: {testAnswers.length}</span>
         </div>
-      </div>
+        </div>
+
 
       <div className="test-config">
         <select 
@@ -264,23 +265,21 @@ function TestUser() {
             </div>
 
             <div className="test-actions">
-              <button 
+            <button 
                 onClick={handleNextCard}
                 disabled={isLoading}
                 className="next-card-button"
-              >
-                Next Card
-              </button>
-              
-              {testAnswers.length > 0 && (
-                <button 
-                  onClick={handleSubmitTest}
-                  disabled={isLoading}
-                  className="submit-test-button"
-                >
-                  Submit Test ({testAnswers.length} cards)
-                </button>
-              )}
+            >
+                Add Card & Continue
+            </button>
+            
+            <button 
+                onClick={handleSubmitTest}
+                disabled={isLoading || testAnswers.length === 0}
+                className="submit-test-button"
+            >
+                {testAnswers.length === 0 ? 'Add cards to submit' : `Submit Test (${testAnswers.length} cards)`}
+            </button>
             </div>
           </div>
         </div>
