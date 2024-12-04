@@ -41,23 +41,21 @@ function TestUser() {
 
   const handleSearch = async () => {
     if (!selectedTcg || !searchTerm) return;
-
+  
     setIsLoading(true);
     setError(null);
     
     try {
-      const result = await apiCall(SCRIPT_ID, 'searchUserCard', {
+      const result = await apiCall(SCRIPT_ID, 'getUserCard', {
         tcg: selectedTcg,
         searchTerm: searchTerm,
-        googleToken: userData.googleToken,
-        username: userData.username,
-        testConfig,
       });
-
-      if (result.success) {
+  
+      if (result.success && result.cardData) {
+        // Combine the received images with an empty manifest
         setCardData({
-          frontImageBase64: result.frontImageBase64,
-          backImageBase64: result.backImageBase64,
+          frontImageBase64: result.cardData.frontImageBase64,
+          backImageBase64: result.cardData.backImageBase64,
           manifest: createEmptyManifest(selectedTcg)
         });
       } else {
