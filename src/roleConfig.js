@@ -14,7 +14,8 @@ import QrCodeGenerator from './QrCodeGenerator';
 import LoyaltyDashboard from './LoyaltyDashboard';
 import ScheduleForm from './ScheduleForm';
 import NoticeBoardDisplay from './NoticeBoardDisplay';
-import CardSearch from './testAdmin'
+import CardSearch from './testAdmin';
+import testUser from './testUser'
 
 const roleConfig = {
   Worker: [
@@ -27,6 +28,7 @@ const roleConfig = {
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
+    { component: testUser, gridProps: { xs: 6, md: 3 }, name: 'testUser' },
   ],
   Admin: [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
@@ -46,6 +48,7 @@ const roleConfig = {
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
     { component: CardSearch, gridProps: { xs: 6, md: 3 }, name: 'CardSearch' },
+    { component: testUser, gridProps: { xs: 6, md: 3 }, name: 'testUser' },
   ],
   'Store Manager': [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
@@ -76,6 +79,7 @@ const roleConfig = {
     { component: StoreSearch, gridProps: { xs: 6, md: 3 }, name: 'StoreSearch' },
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
+    { component: testUser, gridProps: { xs: 6, md: 3 }, name: 'testUser' },
   ],
   'Cashier': [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
@@ -91,6 +95,7 @@ const roleConfig = {
     { component: StoreSearch, gridProps: { xs: 6, md: 3 }, name: 'StoreSearch' },
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
+    { component: testUser, gridProps: { xs: 6, md: 3 }, name: 'testUser' },
   ],
   'Apprentice': [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
