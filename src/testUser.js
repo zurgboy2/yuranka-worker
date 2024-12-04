@@ -69,26 +69,30 @@ function TestUser() {
   };
 
   const handleSubmitTest = async () => {
-    if (testAnswers.length === 0) return;
+    if (testAnswers.length === 0 && !cardData?.manifest) return;
     
     setIsLoading(true);
     setError(null);
     
     try {
+      // Create final answers array including current card if it exists
+      const finalAnswers = cardData?.manifest 
+        ? [...testAnswers, { searchTerm, manifest: cardData.manifest }]
+        : testAnswers;
+  
       const result = await apiCall(SCRIPT_ID, 'submitTestAnswers', {
         tcg: selectedTcg,
-        answers: testAnswers,
+        answers: finalAnswers,
         testConfig,
         googleToken: userData.googleToken,
         username: userData.username,
       });
-
+  
       if (result.success) {
         // Reset the test
         setTestAnswers([]);
         setCardData(null);
         setSearchTerm('');
-        // You might want to show results here
         alert(`Test completed! Score: ${result.score}%`);
       } else {
         setError(result.error || 'Failed to submit test answers');
@@ -274,11 +278,13 @@ function TestUser() {
             </button>
             
             <button 
-                onClick={handleSubmitTest}
-                disabled={isLoading || testAnswers.length === 0}
-                className="submit-test-button"
+            onClick={handleSubmitTest}
+            disabled={isLoading || (testAnswers.length === 0 && !cardData?.manifest)}
+            className="submit-test-button"
             >
-                {testAnswers.length === 0 ? 'Add cards to submit' : `Submit Test (${testAnswers.length} cards)`}
+            {testAnswers.length === 0 && !cardData?.manifest 
+                ? 'Add cards to submit' 
+                : `Submit Test (${cardData?.manifest ? testAnswers.length + 1 : testAnswers.length} cards)`}
             </button>
             </div>
           </div>
