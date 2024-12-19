@@ -242,9 +242,15 @@ const Register = ({ onOpenFullApp }) => {
   }
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={8}></Grid>
-        <>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'row', 
+      gap: '24px', 
+      padding: '16px',
+      height: '100vh',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{ flex: '1 1 auto', overflowY: 'auto' }}>
           <Autocomplete
             fullWidth
             options={allItems}
@@ -433,11 +439,12 @@ const Register = ({ onOpenFullApp }) => {
               </Button>
             </>
           )}
-        </>
-        <Grid item xs={4}>
-        <TransactionPanel transactions={transactions} />
-      </Grid>
-    </Grid>
+    </div>
+    
+    <div style={{ width: '400px', flexShrink: 0 }}>
+      <TransactionPanel transactions={transactions} />
+    </div>
+  </div>
   );
 };
 
