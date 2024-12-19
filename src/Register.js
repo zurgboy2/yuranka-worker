@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Typography, TextField, Button, Grid, 
+  Typography, TextField, Button, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  CircularProgress, Autocomplete, Slider
+  CircularProgress, Autocomplete,Grid, Slider
 } from '@mui/material';
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
 import { useUserData } from './UserContext';
+import TransactionPanel from './TransactionPanel';
 
 const Register = ({ onOpenFullApp }) => {
   const { userData } = useUserData();
@@ -23,6 +24,7 @@ const Register = ({ onOpenFullApp }) => {
   const [costData, setCostData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -118,6 +120,19 @@ const Register = ({ onOpenFullApp }) => {
     }
   };
 
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      setTransactions(prev => 
+        prev.filter(t => 
+          t.status === 'pending' || 
+          Date.now() - new Date(parseInt(t.id)).getTime() < 1800000 // Remove after 30 mins
+        )
+      );
+    }, 60000); // Check every minute
+  
+    return () => clearInterval(cleanup);
+  }, []);
+
   const handleCreditAllocation = (event, newValue) => {
     setAllocatedCredit(newValue);
   };
@@ -128,8 +143,27 @@ const Register = ({ onOpenFullApp }) => {
   }, [items, allocatedCredit]);
 
   const handleSendInvoice = async () => {
+    const transactionId = Date.now().toString();
+    const newTransaction = {
+      id: transactionId,
+      customerName,
+      total,
+      items: [...items],
+      status: 'pending'
+    };
+
+    setTransactions(prev => [...prev, newTransaction]);
+    
+    // Clear current sale form for new transaction
+    setItems([]);
+    setTotal(0);
+    setAllocatedCredit(0);
+    setStoreCredit(0);
+    setCustomerName('');
+    setCustomerEmail('');
+    setMembershipId('');
+
     try {
-      setLoading(true);
       const scriptId = 'register_script';
       const action = 'sendInvoice';
       
@@ -139,7 +173,6 @@ const Register = ({ onOpenFullApp }) => {
         quantity: undefined
       }));
 
-      // Add store credit as an item if allocated
       if (allocatedCredit > 0) {
         transformedItems.push({
           uniqueId: 'store_credit',
@@ -157,19 +190,21 @@ const Register = ({ onOpenFullApp }) => {
         items: transformedItems
       });
       
-      alert('Invoice sent successfully');
-      setItems([]);
-      setTotal(0);
-      setAllocatedCredit(0);
-      setStoreCredit(0);
-      setCustomerName('');
-      setCustomerEmail('');
-      setMembershipId('');
+      setTransactions(prev => 
+        prev.map(t => 
+          t.id === transactionId 
+            ? { ...t, status: 'completed' }
+            : t
+        )
+      );
     } catch (err) {
-      console.error('Error sending invoice:', err);
-      setError(`Failed to send invoice: ${err.message}`);
-    } finally {
-      setLoading(false);
+      setTransactions(prev => 
+        prev.map(t => 
+          t.id === transactionId 
+            ? { ...t, status: 'error', error: err.message }
+            : t
+        )
+      );
     }
   };
 
@@ -207,196 +242,202 @@ const Register = ({ onOpenFullApp }) => {
   }
 
   return (
-    <>
-      <Autocomplete
-        fullWidth
-        options={allItems}
-        getOptionLabel={(option) => `${option.title} - €${option.price}`}
-        value={selectedItem}
-        onChange={handleSearch}
-        isOptionEqualToValue={(option, value) => option.uniqueId === value.uniqueId}
-        getOptionKey={(option) => option.uniqueId}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Search for item"
-            variant="outlined"
-            margin="normal"
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <>
-                  <span className="material-icons">search</span>
-                  {params.InputProps.startAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
-        renderOption={(props, option) => (
-          <li {...props} key={option.uniqueId}>
-            {option.title} - €{option.price}
-          </li>
-        )}
-      />
-      
-      <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Item</TableCell>
-              <TableCell align="right">Price</TableCell>
-              <TableCell align="right">Quantity</TableCell>
-              <TableCell align="right">Total</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.uniqueId}>
-                <TableCell>{item.title}</TableCell>
-                <TableCell align="right">€{item.price.toFixed(2)}</TableCell>
-                <TableCell align="right">
-                  <TextField
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => updateQuantity(item.uniqueId, parseInt(e.target.value))}
-                    inputProps={{ min: 1 }}
-                  />
-                </TableCell>
-                <TableCell align="right">€{(item.price * item.quantity).toFixed(2)}</TableCell>
-                <TableCell align="right">
-                  <Button onClick={() => removeItem(item.uniqueId)}>
-                    <span className="material-icons">delete</span>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {allocatedCredit > 0 && (
-              <TableRow>
-                <TableCell>Store Credit</TableCell>
-                <TableCell align="right">-€{allocatedCredit.toFixed(2)}</TableCell>
-                <TableCell align="right">1</TableCell>
-                <TableCell align="right">-€{allocatedCredit.toFixed(2)}</TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Typography variant="h6" style={{ marginTop: '20px' }}>
-        Total: €{total.toFixed(2)}
-      </Typography>
-
-      {items.length > 0 && (
+    <Grid container spacing={2}>
+      <Grid item xs={8}></Grid>
         <>
-          <TextField
+          <Autocomplete
             fullWidth
-            label="Membership ID"
-            value={membershipId}
-            onChange={(e) => setMembershipId(e.target.value)}
-            margin="normal"
-            InputProps={{
-              startAdornment: <span className="material-icons">card_membership</span>,
-            }}
-          />
-          <Button onClick={handleMembershipSubmit} startIcon={<span className="material-icons">search</span>}>
-            Submit Membership
-          </Button>
-          {storeCredit > 0 && (
-            <>
-              <Typography gutterBottom>
-                Available Store Credit: €{storeCredit.toFixed(2)}
-              </Typography>
-              <Typography gutterBottom>
-                Allocate Store Credit: €{allocatedCredit.toFixed(2)}
-              </Typography>
-              <Slider
-                value={allocatedCredit}
-                onChange={handleCreditAllocation}
-                aria-labelledby="store-credit-slider"
-                valueLabelDisplay="auto"
-                step={0.01}
-                marks
-                min={0}
-                max={Math.min(storeCredit, total + allocatedCredit)}
+            options={allItems}
+            getOptionLabel={(option) => `${option.title} - €${option.price}`}
+            value={selectedItem}
+            onChange={handleSearch}
+            isOptionEqualToValue={(option, value) => option.uniqueId === value.uniqueId}
+            getOptionKey={(option) => option.uniqueId}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Search for item"
+                variant="outlined"
+                margin="normal"
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <span className="material-icons">search</span>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
               />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} key={option.uniqueId}>
+                {option.title} - €{option.price}
+              </li>
+            )}
+          />
+          
+          <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Item</TableCell>
+                  <TableCell align="right">Price</TableCell>
+                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Total</TableCell>
+                  <TableCell align="right">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.uniqueId}>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell align="right">€{item.price.toFixed(2)}</TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateQuantity(item.uniqueId, parseInt(e.target.value))}
+                        inputProps={{ min: 1 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">€{(item.price * item.quantity).toFixed(2)}</TableCell>
+                    <TableCell align="right">
+                      <Button onClick={() => removeItem(item.uniqueId)}>
+                        <span className="material-icons">delete</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {allocatedCredit > 0 && (
+                  <TableRow>
+                    <TableCell>Store Credit</TableCell>
+                    <TableCell align="right">-€{allocatedCredit.toFixed(2)}</TableCell>
+                    <TableCell align="right">1</TableCell>
+                    <TableCell align="right">-€{allocatedCredit.toFixed(2)}</TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <Typography variant="h6" style={{ marginTop: '20px' }}>
+            Total: €{total.toFixed(2)}
+          </Typography>
+
+          {items.length > 0 && (
+            <>
+              <TextField
+                fullWidth
+                label="Membership ID"
+                value={membershipId}
+                onChange={(e) => setMembershipId(e.target.value)}
+                margin="normal"
+                InputProps={{
+                  startAdornment: <span className="material-icons">card_membership</span>,
+                }}
+              />
+              <Button onClick={handleMembershipSubmit} startIcon={<span className="material-icons">search</span>}>
+                Submit Membership
+              </Button>
+              {storeCredit > 0 && (
+                <>
+                  <Typography gutterBottom>
+                    Available Store Credit: €{storeCredit.toFixed(2)}
+                  </Typography>
+                  <Typography gutterBottom>
+                    Allocate Store Credit: €{allocatedCredit.toFixed(2)}
+                  </Typography>
+                  <Slider
+                    value={allocatedCredit}
+                    onChange={handleCreditAllocation}
+                    aria-labelledby="store-credit-slider"
+                    valueLabelDisplay="auto"
+                    step={0.01}
+                    marks
+                    min={0}
+                    max={Math.min(storeCredit, total + allocatedCredit)}
+                  />
+                </>
+              )}
+              <TextField
+                fullWidth
+                label="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                margin="normal"
+                InputProps={{
+                  startAdornment: <span className="material-icons">person</span>,
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Customer Email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                margin="normal"
+                InputProps={{
+                  startAdornment: <span className="material-icons">email</span>,
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Country"
+                value={deliveryInfo.country}
+                onChange={(e) => setDeliveryInfo({ ...deliveryInfo, country: e.target.value })}
+                margin="normal"
+                InputProps={{
+                  startAdornment: <span className="material-icons">public</span>,
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Postal Code"
+                value={deliveryInfo.postcode}
+                onChange={(e) => setDeliveryInfo({ ...deliveryInfo, postcode: e.target.value })}
+                margin="normal"
+                InputProps={{
+                  startAdornment: <span className="material-icons">markunread_mailbox</span>,
+                }}
+              />
+              <Button onClick={handleDeliverySubmit} startIcon={<span className="material-icons">local_shipping</span>}>
+                Calculate Delivery Cost
+              </Button>
+              {costData.length > 0 && (
+                <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Service Type</TableCell>
+                        <TableCell align="right">Discounted Price</TableCell>
+                        <TableCell align="right">Max Weight</TableCell>
+                        <TableCell align="right">Delivery Date</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {costData.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{item.deliveryName}</TableCell>
+                          <TableCell align="right">{item.discountedPrice} EUR</TableCell>
+                          <TableCell align="right">{item.maxWeight} kg</TableCell>
+                          <TableCell align="right">{item.deliveryDate}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+              <Button onClick={handleSendInvoice} color="primary" startIcon={<span className="material-icons">send</span>}>
+                Send Invoice
+              </Button>
             </>
           )}
-          <TextField
-            fullWidth
-            label="Customer Name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            margin="normal"
-            InputProps={{
-              startAdornment: <span className="material-icons">person</span>,
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Customer Email"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-            margin="normal"
-            InputProps={{
-              startAdornment: <span className="material-icons">email</span>,
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Country"
-            value={deliveryInfo.country}
-            onChange={(e) => setDeliveryInfo({ ...deliveryInfo, country: e.target.value })}
-            margin="normal"
-            InputProps={{
-              startAdornment: <span className="material-icons">public</span>,
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Postal Code"
-            value={deliveryInfo.postcode}
-            onChange={(e) => setDeliveryInfo({ ...deliveryInfo, postcode: e.target.value })}
-            margin="normal"
-            InputProps={{
-              startAdornment: <span className="material-icons">markunread_mailbox</span>,
-            }}
-          />
-          <Button onClick={handleDeliverySubmit} startIcon={<span className="material-icons">local_shipping</span>}>
-            Calculate Delivery Cost
-          </Button>
-          {costData.length > 0 && (
-            <TableContainer component={Paper} style={{ marginTop: '20px' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Service Type</TableCell>
-                    <TableCell align="right">Discounted Price</TableCell>
-                    <TableCell align="right">Max Weight</TableCell>
-                    <TableCell align="right">Delivery Date</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {costData.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{item.deliveryName}</TableCell>
-                      <TableCell align="right">{item.discountedPrice} EUR</TableCell>
-                      <TableCell align="right">{item.maxWeight} kg</TableCell>
-                      <TableCell align="right">{item.deliveryDate}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-          <Button onClick={handleSendInvoice} color="primary" startIcon={<span className="material-icons">send</span>}>
-            Send Invoice
-          </Button>
         </>
-      )}
-    </>
+        <Grid item xs={4}>
+        <TransactionPanel transactions={transactions} />
+      </Grid>
+    </Grid>
   );
 };
 
