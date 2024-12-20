@@ -2,7 +2,13 @@
 import React from 'react';
 import { Paper, Typography, CircularProgress } from '@mui/material';
 
-const TransactionPanel = ({ transactions }) => {
+const TransactionPanel = ({ transactions, onRetryTransaction }) => {
+  const handleTransactionClick = (transaction) => {
+    if (transaction.status === 'error' && onRetryTransaction) {
+      onRetryTransaction(transaction);
+    }
+  };
+
   return (
     <Paper sx={{ 
       p: 2, 
@@ -19,13 +25,19 @@ const TransactionPanel = ({ transactions }) => {
           key={transaction.id} 
           sx={{ 
             p: 2, 
-            mb: 2, 
+            mb: 2,
             backgroundColor: 
               transaction.status === 'pending' ? '#4a3f10' :
               transaction.status === 'completed' ? '#1b4332' :
               transaction.status === 'error' ? '#4a1010' : '#333333',
-            color: 'white'
+            color: 'white',
+            cursor: transaction.status === 'error' ? 'pointer' : 'default',
+            '&:hover': transaction.status === 'error' ? {
+              backgroundColor: '#5a1515',
+              transition: 'background-color 0.3s'
+            } : {}
           }}
+          onClick={() => handleTransactionClick(transaction)}
         >
           <Typography variant="subtitle1" sx={{ color: 'white' }}>
             {transaction.customerName || 'Anonymous Customer'}
@@ -42,6 +54,9 @@ const TransactionPanel = ({ transactions }) => {
           {transaction.error && (
             <Typography sx={{ color: '#ff8a80' }} variant="body2">
               {transaction.error}
+              <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#bbb' }}>
+                Click to retry this transaction
+              </Typography>
             </Typography>
           )}
         </Paper>

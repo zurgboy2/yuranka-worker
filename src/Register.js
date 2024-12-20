@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Typography, TextField, Button, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  CircularProgress, Autocomplete,Grid, Slider
+  CircularProgress, Autocomplete, Slider
 } from '@mui/material';
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
@@ -137,6 +137,16 @@ const Register = ({ onOpenFullApp }) => {
     setAllocatedCredit(newValue);
   };
 
+  const handleRetryTransaction = (failedTransaction) => {
+    setItems(failedTransaction.items);
+    setCustomerName(failedTransaction.customerName);
+    setCustomerEmail(failedTransaction.customerEmail);
+    setDeliveryInfo(failedTransaction.deliveryInfo);
+    setTotal(failedTransaction.total);
+    setTransactions(prev => prev.filter(t => t.id !== failedTransaction.id));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   useEffect(() => {
     const itemsTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     setTotal(itemsTotal - allocatedCredit);
@@ -147,6 +157,8 @@ const Register = ({ onOpenFullApp }) => {
     const newTransaction = {
       id: transactionId,
       customerName,
+      customerEmail,
+      deliveryInfo,
       total,
       items: [...items],
       status: 'pending'
@@ -442,7 +454,10 @@ const Register = ({ onOpenFullApp }) => {
     </div>
     
     <div style={{ width: '400px', flexShrink: 0 }}>
-      <TransactionPanel transactions={transactions} />
+      <TransactionPanel 
+        transactions={transactions} 
+        onRetryTransaction={handleRetryTransaction}
+      />
     </div>
   </div>
   );
