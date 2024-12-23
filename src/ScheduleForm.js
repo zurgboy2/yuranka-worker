@@ -16,13 +16,36 @@ const StyledBox = styled(Box)(({ theme }) => ({
   margin: 0,
 }));
 
+const StyledTableContainer = styled(TableContainer)({
+  maxHeight: '80vh',
+  maxWidth: '95vw',
+  overflowX: 'auto',
+  '& .MuiTable-root': {
+    tableLayout: 'fixed'
+  }
+});
 
+const StyledTableCell = styled(TableCell)(({ theme, selected }) => ({
+  color: '#fff',
+  backgroundColor: selected ? '#800000' : '#660000',
+  padding: '4px',
+  minWidth: '60px', // Reduced from 80px
+  maxWidth: '60px',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  '&:hover': {
+    backgroundColor: '#990000',
+  }
+}));
 
+// Update StyledForm
 const StyledForm = styled('form')(({ theme }) => ({
   backgroundColor: '#4c0000',
   padding: theme.spacing(2),
   borderRadius: '10px',
   boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+  width: '95vw', // Add this
+  maxWidth: '1400px' // Add this
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -36,16 +59,6 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 
-const StyledTableCell = styled(TableCell)(({ theme, selected }) => ({
-  color: '#fff',
-  backgroundColor: selected ? '#800000' : '#660000',
-  padding: '8px',
-  minWidth: '80px',
-  cursor: 'pointer',
-  '&:hover': {
-    backgroundColor: '#990000',
-  }
-}));
 
 const ScheduleForm = () => {
   const { userData } = useUserData();
@@ -109,7 +122,7 @@ const ScheduleForm = () => {
           Monthly Schedule
         </Typography>
 
-        <TableContainer sx={{ maxHeight: '80vh', position: 'relative' }}>
+        <StyledTableContainer sx={{ maxHeight: '80vh', position: 'relative' }}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
@@ -152,7 +165,7 @@ const ScheduleForm = () => {
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </StyledTableContainer>
 
         <StyledButton 
           type="submit" 

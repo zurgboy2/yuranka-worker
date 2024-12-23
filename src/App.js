@@ -62,7 +62,7 @@ const globalStyles = {
 };
 
 const App = () => {
-  return (
+   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <GlobalStyles styles={globalStyles} />
