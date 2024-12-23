@@ -27,11 +27,12 @@ const StyledTableContainer = styled(TableContainer)({
 
 const StyledTableCell = styled(TableCell)(({ theme, selected }) => ({
   color: '#fff',
-  backgroundColor: selected ? '#800000' : '#660000',
+  backgroundColor: selected ? '#800000' : '#660000', 
   padding: '4px',
-  minWidth: '60px', // Reduced from 80px
-  maxWidth: '60px',
+  minWidth: '40px',
+  maxWidth: '40px',
   cursor: 'pointer',
+  textAlign: 'center',
   whiteSpace: 'nowrap',
   '&:hover': {
     backgroundColor: '#990000',
@@ -65,13 +66,26 @@ const ScheduleForm = () => {
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [loading, setLoading] = useState(false);
 
-  const timeSlots = [...Array(28)].map((_, i) => {
-    const hour = Math.floor(i/2) + 8;
-    const minute = i%2 === 0 ? '00' : '30';
-    return `${hour}:${minute}`;
+
+  // Change days array
+  const days = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
+
+  // Update timeSlots
+  const timeSlots = [...Array(14)].map((_, i) => {
+  const hour = i + 8;
+  return `${hour}`; 
   });
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  // Update handleSubmit entries mapping
+  const entries = Array.from(selectedCells).map(cellId => {
+  const [day, hour] = cellId.split('-');
+  return {
+    day: day,
+    startTime: `${hour}:00`,
+    endTime: `${parseInt(hour) + 1}:00`,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+  });
 
   const toggleCell = (day, time) => {
     const cellId = `${day}-${time}`;
