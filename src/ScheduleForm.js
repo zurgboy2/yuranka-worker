@@ -4,6 +4,10 @@ import { styled } from '@mui/system';
 import apiCall from './api';
 import { useUserData } from './UserContext';
 import 'material-icons/iconfont/material-icons.css';
+import { useEffect } from 'react';
+import { IconButton } from '@mui/material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   fontFamily: 'Arial, sans-serif',
@@ -65,7 +69,73 @@ const ScheduleForm = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [loading, setLoading] = useState(false);
+  const [existingSchedule, setExistingSchedule] = useState([]);
   const { userData } = useUserData();
+
+  const disabledDate = new Date();
+  disabledDate.setDate(disabledDate.getDate() + 7);
+
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const response = await fetch('/api/schedule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: userData.username,
+            month: currentMonth.getMonth() + 1,
+            year: currentMonth.getFullYear()
+          })
+        });
+        const data = await response.json();
+        setExistingSchedule(data);
+        
+        // Convert existing schedule to selected cells format
+        const newSelected = new Set();
+        data.forEach(entry => {
+          const hour = parseInt(entry.startTime.split(':')[0]);
+          newSelected.add(`${entry.day}-${hour}`);
+        });
+        setSelectedCells(newSelected);
+      } catch (error) {
+        console.error('Error fetching schedule:', error);
+      }
+    };
+
+    fetchSchedule();
+  }, [currentMonth, userData.username]);
+
+  const changeMonth = (increment) => {
+    setCurrentMonth(prevMonth => {
+      const newMonth = new Date(prevMonth);
+      newMonth.setMonth(newMonth.getMonth() + increment);
+      return newMonth;
+    });
+  };
+
+  const isDisabled = (date) => {
+    const cellDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      parseInt(date)
+    );
+    return cellDate < disabledDate;
+  };
+
+  // Modified toggleCell to check for disabled dates
+  const toggleCell = (day, time, date) => {
+    if (isDisabled(date)) return;
+    const cellId = `${day}-${time}`;
+    const newSelected = new Set(selectedCells);
+    if (newSelected.has(cellId)) {
+      newSelected.delete(cellId);
+    } else {
+      newSelected.add(cellId);
+    }
+    setSelectedCells(newSelected);
+  };
 
   // Change days array
   const days = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
@@ -99,16 +169,6 @@ const ScheduleForm = () => {
   };
   });
 
-  const toggleCell = (day, time) => {
-    const cellId = `${day}-${time}`;
-    const newSelected = new Set(selectedCells);
-    if (newSelected.has(cellId)) {
-      newSelected.delete(cellId);
-    } else {
-      newSelected.add(cellId);
-    }
-    setSelectedCells(newSelected);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -143,9 +203,17 @@ const ScheduleForm = () => {
   return (
     <StyledBox>
       <StyledForm onSubmit={handleSubmit}>
-        <Typography variant="h5" gutterBottom>
-          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+          <IconButton onClick={() => changeMonth(-1)} sx={{ color: '#fff' }}>
+            <ArrowBackIosIcon />
+          </IconButton>
+          <Typography variant="h5">
+            {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </Typography>
+          <IconButton onClick={() => changeMonth(1)} sx={{ color: '#fff' }}>
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Box>
 
         <StyledTableContainer>
           <Table stickyHeader>
@@ -169,7 +237,11 @@ const ScheduleForm = () => {
                     <StyledTableCell 
                       key={`${day}${date}-${hour}`}
                       selected={selectedCells.has(`${day}${date}-${hour}`)}
-                      onClick={() => toggleCell(`${day}${date}`, hour)}
+                      onClick={() => toggleCell(`${day}${date}`, hour, date)}
+                      sx={{
+                        opacity: isDisabled(date) ? 0.5 : 1,
+                        cursor: isDisabled(date) ? 'not-allowed' : 'pointer',
+                      }}
                     />
                   ))}
                 </TableRow>
