@@ -62,19 +62,31 @@ const StyledButton = styled(Button)(({ theme }) => ({
 
 
 const ScheduleForm = () => {
-  const { userData } = useUserData();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [loading, setLoading] = useState(false);
-
+  const { userData } = useUserData();
 
   // Change days array
   const days = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
 
-  // Update timeSlots
-  const timeSlots = [...Array(14)].map((_, i) => {
-  const hour = i + 8;
-  return `${hour}`; 
-  });
+  const timeSlots = [...Array(14)].map((_, i) => i + 8);
+
+  const getDaysInMonth = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const days = [];
+    const date = new Date(year, month, 1);
+    
+    while (date.getMonth() === month) {
+      days.push({
+        date: date.getDate(),
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)
+      });
+      date.setDate(date.getDate() + 1);
+    }
+    return days;
+  };
 
   // Update handleSubmit entries mapping
   const entries = Array.from(selectedCells).map(cellId => {
@@ -103,12 +115,11 @@ const ScheduleForm = () => {
     setLoading(true);
 
     const entries = Array.from(selectedCells).map(cellId => {
-      const [day, time] = cellId.split('-');
-      const hour = parseInt(time.split(':')[0]);
+      const [dayInfo, hour] = cellId.split('-');
       return {
-        day,
-        startTime: time,
-        endTime: `${hour + 1}:${time.split(':')[1]}`,
+        day: dayInfo,
+        startTime: `${hour}:00`,
+        endTime: `${parseInt(hour) + 1}:00`,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
     });
@@ -133,46 +144,32 @@ const ScheduleForm = () => {
     <StyledBox>
       <StyledForm onSubmit={handleSubmit}>
         <Typography variant="h5" gutterBottom>
-          Monthly Schedule
+          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </Typography>
 
-        <StyledTableContainer sx={{ maxHeight: '80vh', position: 'relative' }}>
+        <StyledTableContainer>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <StyledTableCell 
-                  sx={{ 
-                    position: 'sticky', 
-                    left: 0, 
-                    zIndex: 3,
-                    backgroundColor: '#2c2c2c'
-                  }}
-                >
-                  Day/Time
+                <StyledTableCell sx={{ position: 'sticky', left: 0, zIndex: 3 }}>
+                  Day
                 </StyledTableCell>
-                {timeSlots.map(time => (
-                  <StyledTableCell key={time}>{time}</StyledTableCell>
+                {timeSlots.map(hour => (
+                  <StyledTableCell key={hour}>{hour}</StyledTableCell>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {days.map(day => (
-                <TableRow key={day}>
-                  <StyledTableCell 
-                    sx={{ 
-                      position: 'sticky', 
-                      left: 0, 
-                      zIndex: 2,
-                      backgroundColor: '#4c0000'
-                    }}
-                  >
-                    {day}
+              {getDaysInMonth().map(({ day, date }) => (
+                <TableRow key={`${day}${date}`}>
+                  <StyledTableCell sx={{ position: 'sticky', left: 0, zIndex: 2 }}>
+                    {`${day}:${date}`}
                   </StyledTableCell>
-                  {timeSlots.map(time => (
+                  {timeSlots.map(hour => (
                     <StyledTableCell 
-                      key={`${day}-${time}`}
-                      selected={selectedCells.has(`${day}-${time}`)}
-                      onClick={() => toggleCell(day, time)}
+                      key={`${day}${date}-${hour}`}
+                      selected={selectedCells.has(`${day}${date}-${hour}`)}
+                      onClick={() => toggleCell(`${day}${date}`, hour)}
                     />
                   ))}
                 </TableRow>
@@ -181,13 +178,8 @@ const ScheduleForm = () => {
           </Table>
         </StyledTableContainer>
 
-        <StyledButton 
-          type="submit" 
-          variant="contained" 
-          disabled={loading || selectedCells.size === 0}
-          sx={{ marginTop: 2 }}
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit Schedule'}
+        <StyledButton type="submit" disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Submit'}
         </StyledButton>
       </StyledForm>
     </StyledBox>
