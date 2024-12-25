@@ -21,7 +21,8 @@ const EventManager = ({ onClose }) => {
   const [currentTab, setCurrentTab] = useState(0);
   const [newEvent, setNewEvent] = useState({
     name: '',
-    datetime: '',
+    startDateTime: '',
+    endDateTime: '',   
     description: '',
     messageToBuyer: '',
     price: '',
@@ -90,7 +91,25 @@ const EventManager = ({ onClose }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewEvent(prev => ({ ...prev, [name]: value }));
+    setNewEvent(prev => {
+      const updated = { ...prev, [name]: value };
+      
+      // Validate dates if both are set
+      if (name === 'startDateTime' || name === 'endDateTime') {
+        if (updated.startDateTime && updated.endDateTime) {
+          const start = new Date(updated.startDateTime);
+          const end = new Date(updated.endDateTime);
+          
+          if (end < start) {
+            setError('End date/time must be after start date/time');
+            return prev;
+          }
+        }
+      }
+      
+      setError(null);
+      return updated;
+    });
   };
 
   const handleFileChange = async (e) => {
@@ -123,7 +142,8 @@ const EventManager = ({ onClose }) => {
       
       const eventData = {
         name: newEvent.name,
-        datetime: newEvent.datetime,
+        startDateTime: newEvent.startDateTime,
+        endDateTime: newEvent.endDateTime,   
         description: newEvent.description,
         messageToBuyer: newEvent.messageToBuyer,
         price: newEvent.price,
@@ -166,7 +186,8 @@ const EventManager = ({ onClose }) => {
     await fetchEvents();
     setNewEvent({
       name: '',
-      datetime: '',
+      startDateTime: '',
+      endDateTime:'',
       description: '',
       messageToBuyer: '',
       price: '',
@@ -410,10 +431,25 @@ const EventManager = ({ onClose }) => {
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
-            label="Date and Time"
-            name="datetime"
+            label="Start Date and Time"
+            name="startDateTime"
             type="datetime-local"
-            value={newEvent.datetime}
+            value={newEvent.startDateTime}
+            onChange={handleInputChange}
+            InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
+            InputProps={{
+              style: { color: '#ffffff' },
+            }}
+            required
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="End Date and Time"
+            name="endDateTime"
+            type="datetime-local"
+            value={newEvent.endDateTime}
             onChange={handleInputChange}
             InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
             InputProps={{
@@ -538,11 +574,14 @@ const EventManager = ({ onClose }) => {
               </TableHead>
               <TableBody>
                 {events
-                  .filter(event => new Date(event.Date) >= new Date())
+                  .filter(event => new Date(event.endDateTime) >= new Date())
                   .map((event) => (
                     <TableRow key={event['Event ID']}>
                       <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
-                      <TableCell style={{ color: '#ffffff' }}>{new Date(event.Date).toLocaleString()}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>
+                        {new Date(event['Start Date']).toLocaleString()} - 
+                        {new Date(event['End Date']).toLocaleString()}
+                      </TableCell>
                       <TableCell style={{ color: '#ffffff' }}>{event['Type of event']}</TableCell>
                       <TableCell style={{ color: '#ffffff' }}>€{event.Price}</TableCell>
                       <TableCell style={{ color: '#ffffff' }}>{event.Attendees ? event.Attendees.length : 0}</TableCell>
@@ -578,7 +617,7 @@ const EventManager = ({ onClose }) => {
                 </TableHead>
                 <TableBody>
                   {events
-                    .filter(event => new Date(event.Date) < new Date())
+                    .filter(event => new Date(event.endDateTime) < new Date())
                     .map((event) => (
                       <TableRow key={event['Event ID']}>
                         <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
@@ -641,10 +680,25 @@ const EventManager = ({ onClose }) => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Date"
-                      name="Date"
+                      label="Start Date and Time"
+                      name="startDateTime"
                       type="datetime-local"
-                      value={editingEvent.Date}
+                      value={editingEvent.startDateTime}
+                      onChange={handleEditChange}
+                      InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
+                      InputProps={{ 
+                        style: { color: '#ffffff' },
+                        sx: { backgroundColor: 'rgba(74, 74, 74, 0.8)' }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="End Date and Time"
+                      name="endDateTime"
+                      type="datetime-local"
+                      value={editingEvent.endDateTime}
                       onChange={handleEditChange}
                       InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
                       InputProps={{ 
@@ -785,7 +839,10 @@ const EventManager = ({ onClose }) => {
               ) : (
                 <>
                   <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px' }}>
-                    Date: {new Date(selectedEvent.Date).toLocaleString()}
+                    Start: {new Date(selectedEvent.startDateTime).toLocaleString()}
+                  </Typography>
+                  <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px', mt: 1 }}>
+                    End: {new Date(selectedEvent.endDateTime).toLocaleString()}
                   </Typography>
                   <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px', mt: 1 }}>
                     TCG Type: {selectedEvent['Type of event']}
