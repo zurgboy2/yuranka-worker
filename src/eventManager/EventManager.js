@@ -621,7 +621,10 @@ const EventManager = ({ onClose }) => {
                     .map((event) => (
                       <TableRow key={event['Event ID']}>
                         <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
-                        <TableCell style={{ color: '#ffffff' }}>{new Date(event.Date).toLocaleString()}</TableCell>
+                        <TableCell style={{ color: '#ffffff' }}>
+                        {new Date(event['Start Date']).toLocaleString()} - 
+                        {new Date(event['End Date']).toLocaleString()}
+                        </TableCell>
                         <TableCell style={{ color: '#ffffff' }}>{event['Type of event']}</TableCell>
                         <TableCell style={{ color: '#ffffff' }}>€{event.Price}</TableCell>
                         <TableCell style={{ color: '#ffffff' }}>{event.Attendees ? event.Attendees.length : 0}</TableCell>
@@ -839,10 +842,10 @@ const EventManager = ({ onClose }) => {
               ) : (
                 <>
                   <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px' }}>
-                    Start: {new Date(selectedEvent.startDateTime).toLocaleString()}
+                    Start: {new Date(selectedEvent["Start Date"]).toLocaleString()}
                   </Typography>
                   <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px', mt: 1 }}>
-                    End: {new Date(selectedEvent.endDateTime).toLocaleString()}
+                    End: {new Date(selectedEvent["End Date"]).toLocaleString()}
                   </Typography>
                   <Typography sx={{ backgroundColor: 'rgba(74, 74, 74, 0.8)', padding: '5px', mt: 1 }}>
                     TCG Type: {selectedEvent['Type of event']}
