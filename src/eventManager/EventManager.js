@@ -574,7 +574,7 @@ const EventManager = ({ onClose }) => {
               </TableHead>
               <TableBody>
                 {events
-                  .filter(event => new Date(event['End Date']) >= new Date())
+                  .filter(event => new Date(event['Start Date']) >= new Date())
                   .map((event) => (
                     <TableRow key={event['Event ID']}>
                       <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
@@ -617,7 +617,7 @@ const EventManager = ({ onClose }) => {
                 </TableHead>
                 <TableBody>
                   {events
-                    .filter(event => new Date(event['End Date']) < new Date())
+                    .filter(event => new Date(event['Start Date']) < new Date())
                     .map((event) => (
                       <TableRow key={event['Event ID']}>
                         <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
