@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,TextField, CircularProgress } from '@mui/material';
 import { styled } from '@mui/system';
 import apiCall from './api';
 import { useUserData } from './UserContext';
@@ -63,13 +63,49 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-
+const ReasonForm = ({ removedShifts, reasons, setReasons, onSubmit }) => {
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6">Please provide reasons for removed shifts:</Typography>
+      {removedShifts.map(shift => (
+        <Box key={shift.startTime} sx={{ mb: 2 }}>
+          <Typography>
+            {new Date(shift.startTime).toLocaleString()}
+          </Typography>
+          <TextField
+            fullWidth
+            required
+            label="Reason"
+            value={reasons[shift.startTime] || ''}
+            onChange={(e) => setReasons(prev => ({
+              ...prev,
+              [shift.startTime]: e.target.value
+            }))}
+          />
+        </Box>
+      ))}
+      <Button 
+        variant="contained" 
+        onClick={onSubmit}
+        sx={{ mt: 2 }}
+      >
+        Submit Changes
+      </Button>
+    </Box>
+  );
+};
 
 const ScheduleForm = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
+  const [isDragging, setIsDragging] = useState(false);
+  const [previousSchedule, setPreviousSchedule] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(true);
   const { userData } = useUserData();
+  const [removedShifts, setRemovedShifts] = useState([]);
+  const [reasons, setReasons] = useState({});
+  const [showReasonForm, setShowReasonForm] = useState(false);
 
   const disabledDate = new Date();
   disabledDate.setDate(disabledDate.getDate() + 7);
@@ -84,6 +120,8 @@ const ScheduleForm = () => {
           year: currentMonth.getFullYear()
         });
         
+        setPreviousSchedule(data); // Store the original schedule
+    
         const newSelected = new Set();
         data.forEach(entry => {
           const startDate = new Date(entry.startTime);
@@ -101,6 +139,28 @@ const ScheduleForm = () => {
     fetchSchedule();
   }, [currentMonth, userData]);
 
+  const compareChanges = (newEntries) => {
+    const oneWeekFromNow = new Date();
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+    
+    const removed = Array.from(previousSchedule).filter(oldEntry => {
+      const oldDate = new Date(oldEntry.startTime);
+      const isWithinWeek = oldDate <= oneWeekFromNow;
+      const stillExists = newEntries.some(newEntry => 
+        new Date(newEntry.startTime).getTime() === oldDate.getTime()
+      );
+      return isWithinWeek && !stillExists;
+    });
+  
+    if (removed.length > 0) {
+      setRemovedShifts(removed);
+      setShowReasonForm(true);
+      return true;
+    }
+    return false;
+  };
+
+
   const changeMonth = (increment) => {
     setCurrentMonth(prevMonth => {
       const newMonth = new Date(prevMonth);
@@ -109,19 +169,104 @@ const ScheduleForm = () => {
     });
   };
 
+  const handleReasonSubmit = async (event) => {
+    event.preventDefault();
+    // Validate all reasons are filled
+    if (removedShifts.some(shift => !reasons[shift.startTime])) {
+      alert("Please provide reasons for all removed shifts");
+      return;
+    }
+    
+    // Proceed with submission
+    await submitScheduleWithReasons();
+  };
+
+  const submitScheduleWithReasons = async () => {
+    const entries = Array.from(selectedCells).map(cellId => {
+      const [dayDate, hour] = cellId.split('-');
+      // Create a date object from the current month and day
+      const date = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        parseInt(dayDate.match(/\d+/)[0]), // Extract the date number
+        parseInt(hour) // Hour
+      );
+  
+      const startTime = date.toISOString();
+      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString(); // Add 1 hour
+  
+      return {
+        startTime,
+        endTime,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      };
+    });
+  
+    try {
+      await apiCall('worker_script', 'addScheduleEntries', {
+        entries,
+        removedEntries: removedShifts.map(shift => ({
+          startTime: shift.startTime,
+          reason: reasons[shift.startTime]
+        })),
+        username: userData.username,
+        googleToken: userData.googleToken
+      });
+      
+      alert("Schedule submitted successfully");
+      setSelectedCells(new Set());
+      setShowReasonForm(false);
+      setReasons({});
+      setRemovedShifts([]);
+    } catch (error) {
+      alert("Failed to submit schedule");
+      console.error('Error:', error);
+    }
+  };
+
+  const handleMouseDown = (cellId) => {
+    setIsDragging(true);
+    setIsSelecting(!selectedCells.has(cellId));
+    toggleCell(cellId);
+  };
+
+  const handleMouseEnter = (cellId) => {
+    if (isDragging) {
+      if (isSelecting) {
+        selectedCells.add(cellId);
+      } else {
+        selectedCells.delete(cellId);
+      }
+      setSelectedCells(new Set(selectedCells));
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => window.removeEventListener('mouseup', handleMouseUp);
+  }, []);
+
   const isDisabled = (date) => {
     const cellDate = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
       parseInt(date)
     );
-    return cellDate < disabledDate;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return cellDate < tomorrow;
   };
 
-  // Modified toggleCell to check for disabled dates
-  const toggleCell = (dayDate, hour, date) => {
+  const toggleCell = (cellId) => {
+    const [dayDate] = cellId.split('-');  // Only destructure what we need
+    const date = parseInt(dayDate.match(/\d+/)[0]);
     if (isDisabled(date)) return;
-    const cellId = `${dayDate}-${hour}`;
+    
     const newSelected = new Set(selectedCells);
     if (newSelected.has(cellId)) {
       newSelected.delete(cellId);
@@ -154,41 +299,34 @@ const ScheduleForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-
+  
     const entries = Array.from(selectedCells).map(cellId => {
       const [dayDate, hour] = cellId.split('-');
-      // Create a date object from the current month and day
       const date = new Date(
         currentMonth.getFullYear(),
         currentMonth.getMonth(),
-        parseInt(dayDate.match(/\d+/)[0]), // Extract the date number
-        parseInt(hour) // Hour
+        parseInt(dayDate.match(/\d+/)[0]),
+        parseInt(hour)
       );
-
+  
       const startTime = date.toISOString();
-      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString(); // Add 1 hour
-
+      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString();
+  
       return {
         startTime,
         endTime,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
       };
     });
-
-    try {
-      await apiCall('worker_script', 'addScheduleEntries', {
-        entries,
-        username: userData.username,
-        googleToken: userData.googleToken
-      });
-      alert("Schedule submitted successfully");
-      setSelectedCells(new Set());
-    } catch (error) {
-      alert("Failed to submit schedule");
-      console.error('Error:', error);
-    } finally {
+  
+    if (compareChanges(entries)) {
       setLoading(false);
+      return; // Will show reason form instead
     }
+  
+    // If no removed shifts within week, proceed with normal submission
+    await submitScheduleWithReasons();
+    setLoading(false);
   };
 
 
@@ -229,7 +367,8 @@ const ScheduleForm = () => {
                     <StyledTableCell 
                       key={`${day}${date}-${hour}`}
                       selected={selectedCells.has(`${day}${date}-${hour}`)}
-                      onClick={() => toggleCell(`${day}${date}`, hour, date)}
+                      onMouseDown={() => handleMouseDown(`${day}${date}-${hour}`)}
+                      onMouseEnter={() => handleMouseEnter(`${day}${date}-${hour}`)}
                       sx={{
                         opacity: isDisabled(date) ? 0.5 : 1,
                         cursor: isDisabled(date) ? 'not-allowed' : 'pointer',
@@ -242,10 +381,19 @@ const ScheduleForm = () => {
           </Table>
         </StyledTableContainer>
 
+        {showReasonForm ? (
+        <ReasonForm
+          removedShifts={removedShifts}
+          reasons={reasons}
+          setReasons={setReasons}
+          onSubmit={handleReasonSubmit}
+        />
+      ) : (
         <StyledButton type="submit" disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Submit'}
         </StyledButton>
-      </StyledForm>
+      )}
+    </StyledForm>
     </StyledBox>
   );
 };
