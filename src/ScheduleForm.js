@@ -80,6 +80,7 @@ const ScheduleForm = () => {
       try {
         const data = await apiCall('worker_script', 'getSchedule', {
           username: userData.username,
+          googleToken: userData.googleToken,
           month: currentMonth.getMonth() + 1,
           year: currentMonth.getFullYear()
         });
