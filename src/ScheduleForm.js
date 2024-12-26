@@ -69,7 +69,6 @@ const ScheduleForm = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [loading, setLoading] = useState(false);
-  const [existingSchedule, setExistingSchedule] = useState([]);
   const { userData } = useUserData();
 
   const disabledDate = new Date();
@@ -99,7 +98,7 @@ const ScheduleForm = () => {
     };
   
     fetchSchedule();
-  }, [currentMonth, userData.username]);
+  }, [currentMonth, userData]);
 
   const changeMonth = (increment) => {
     setCurrentMonth(prevMonth => {
@@ -119,9 +118,9 @@ const ScheduleForm = () => {
   };
 
   // Modified toggleCell to check for disabled dates
-  const toggleCell = (day, time, date) => {
+  const toggleCell = (dayDate, hour, date) => {
     if (isDisabled(date)) return;
-    const cellId = `${day}-${time}`;
+    const cellId = `${dayDate}-${hour}`;
     const newSelected = new Set(selectedCells);
     if (newSelected.has(cellId)) {
       newSelected.delete(cellId);
@@ -131,8 +130,6 @@ const ScheduleForm = () => {
     setSelectedCells(newSelected);
   };
 
-  // Change days array
-  const days = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
 
   const timeSlots = [...Array(14)].map((_, i) => i + 8);
 
@@ -152,29 +149,28 @@ const ScheduleForm = () => {
     return days;
   };
 
-  // Update handleSubmit entries mapping
-  const entries = Array.from(selectedCells).map(cellId => {
-  const [day, hour] = cellId.split('-');
-  return {
-    day: day,
-    startTime: `${hour}:00`,
-    endTime: `${parseInt(hour) + 1}:00`,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  };
-  });
-
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
 
     const entries = Array.from(selectedCells).map(cellId => {
-      const [dayInfo, hour] = cellId.split('-');
+      const [dayDate, hour] = cellId.split('-');
+      // Create a date object from the current month and day
+      const date = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        parseInt(dayDate.match(/\d+/)[0]), // Extract the date number
+        parseInt(hour) // Hour
+      );
+
+      const startTime = date.toISOString();
+      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString(); // Add 1 hour
+
       return {
-        day: dayInfo,
-        startTime: `${hour}:00`,
-        endTime: `${parseInt(hour) + 1}:00`,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        startTime,
+        endTime,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
       };
     });
 
@@ -193,6 +189,7 @@ const ScheduleForm = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <StyledBox>
