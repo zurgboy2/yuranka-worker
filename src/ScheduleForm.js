@@ -86,9 +86,10 @@ const ScheduleForm = () => {
         
         const newSelected = new Set();
         data.forEach(entry => {
-          const day = entry.day.charAt(0);
-          const date = entry.date;
-          const hour = parseInt(entry.startTime.split(':')[0]);
+          const startDate = new Date(entry.startTime);
+          const day = startDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+          const date = startDate.getDate();
+          const hour = startDate.getHours();
           newSelected.add(`${day}${date}-${hour}`);
         });
         setSelectedCells(newSelected);
