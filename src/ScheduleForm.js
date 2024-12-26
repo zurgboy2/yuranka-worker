@@ -95,6 +95,25 @@ const ReasonForm = ({ removedShifts, reasons, setReasons, onSubmit }) => {
   );
 };
 
+const LoadingOverlay = () => (
+  <Box
+    sx={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+    }}
+  >
+    <CircularProgress sx={{ color: '#fff' }} size={60} />
+  </Box>
+);
+
 const ScheduleForm = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
@@ -192,27 +211,28 @@ const ScheduleForm = () => {
   };
 
   const submitScheduleWithReasons = async () => {
-    const entries = Array.from(selectedCells).map(cellId => {
-      const [dayDate, hour] = cellId.split('-');
-      // Create a date object from the current month and day
-      const date = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        parseInt(dayDate.match(/\d+/)[0]), // Extract the date number
-        parseInt(hour) // Hour
-      );
-  
-      const startTime = date.toISOString();
-      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString(); // Add 1 hour
-  
-      return {
-        startTime,
-        endTime,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      };
-    });
-  
+    setLoading(true);
     try {
+      // Generate entries from selectedCells
+      const entries = Array.from(selectedCells).map(cellId => {
+        const [dayDate, hour] = cellId.split('-');
+        const date = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          parseInt(dayDate.match(/\d+/)[0]),
+          parseInt(hour)
+        );
+    
+        const startTime = date.toISOString();
+        const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString();
+    
+        return {
+          startTime,
+          endTime,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+      });
+  
       await apiCall('worker_script', 'addScheduleEntries', {
         entries,
         removedEntries: removedShifts.map(shift => ({
@@ -223,14 +243,34 @@ const ScheduleForm = () => {
         googleToken: userData.googleToken
       });
       
+      // Fetch updated schedule
+      const updatedSchedule = await apiCall('worker_script', 'getSchedule', {
+        username: userData.username,
+        googleToken: userData.googleToken,
+        month: currentMonth.getMonth() + 1,
+        year: currentMonth.getFullYear()
+      });
+      
+      setPreviousSchedule(updatedSchedule);
+      const newSelected = new Set();
+      updatedSchedule.forEach(entry => {
+        const startDate = new Date(entry.startTime);
+        const day = startDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+        const date = startDate.getDate();
+        const hour = startDate.getHours();
+        newSelected.add(`${day}${date}-${hour}`);
+      });
+      setSelectedCells(newSelected);
+      
       alert("Schedule submitted successfully");
-      setSelectedCells(new Set());
       setShowReasonForm(false);
       setReasons({});
       setRemovedShifts([]);
     } catch (error) {
       alert("Failed to submit schedule");
       console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -342,6 +382,7 @@ const ScheduleForm = () => {
 
   return (
     <StyledBox>
+      {loading && <LoadingOverlay />}
       <StyledForm onSubmit={handleSubmit}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
           <IconButton onClick={() => changeMonth(-1)} sx={{ color: '#fff' }}>
