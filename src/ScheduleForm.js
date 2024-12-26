@@ -78,32 +78,25 @@ const ScheduleForm = () => {
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const response = await fetch('/api/schedule', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: userData.username,
-            month: currentMonth.getMonth() + 1,
-            year: currentMonth.getFullYear()
-          })
+        const data = await apiCall('worker_script', 'getSchedule', {
+          username: userData.username,
+          month: currentMonth.getMonth() + 1,
+          year: currentMonth.getFullYear()
         });
-        const data = await response.json();
-        setExistingSchedule(data);
         
-        // Convert existing schedule to selected cells format
         const newSelected = new Set();
         data.forEach(entry => {
+          const day = entry.day.charAt(0);
+          const date = entry.date;
           const hour = parseInt(entry.startTime.split(':')[0]);
-          newSelected.add(`${entry.day}-${hour}`);
+          newSelected.add(`${day}${date}-${hour}`);
         });
         setSelectedCells(newSelected);
       } catch (error) {
         console.error('Error fetching schedule:', error);
       }
     };
-
+  
     fetchSchedule();
   }, [currentMonth, userData.username]);
 
