@@ -131,6 +131,7 @@ const ScheduleForm = () => {
 
   useEffect(() => {
     const fetchSchedule = async () => {
+      setLoading(true);
       try {
         const data = await apiCall('worker_script', 'getSchedule', {
           username: userData.username,
@@ -152,6 +153,8 @@ const ScheduleForm = () => {
         setSelectedCells(newSelected);
       } catch (error) {
         console.error('Error fetching schedule:', error);
+      } finally {
+        setLoading(false);
       }
     };
   
