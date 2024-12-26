@@ -143,14 +143,24 @@ const ScheduleForm = () => {
     const oneWeekFromNow = new Date();
     oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
     
+    console.log('Previous schedule:', previousSchedule);
+    console.log('New entries:', newEntries);
+    
     const removed = Array.from(previousSchedule).filter(oldEntry => {
       const oldDate = new Date(oldEntry.startTime);
       const isWithinWeek = oldDate <= oneWeekFromNow;
       const stillExists = newEntries.some(newEntry => 
         new Date(newEntry.startTime).getTime() === oldDate.getTime()
       );
+      
+      console.log('Checking entry:', oldEntry);
+      console.log('Is within week:', isWithinWeek);
+      console.log('Still exists:', stillExists);
+      
       return isWithinWeek && !stillExists;
     });
+  
+    console.log('Removed shifts:', removed);
   
     if (removed.length > 0) {
       setRemovedShifts(removed);
