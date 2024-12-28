@@ -419,7 +419,14 @@ const Register = ({ onOpenFullApp }) => {
                   startAdornment: <span className="material-icons">markunread_mailbox</span>,
                 }}
               />
-              <Button onClick={handleDeliverySubmit} startIcon={<span className="material-icons">local_shipping</span>}>
+              <Button 
+                onClick={handleDeliverySubmit} 
+                startIcon={<span className="material-icons">local_shipping</span>}
+                variant="contained" // Add this
+                color="primary" // Add this
+                size="large" // Optional: make it larger
+                style={{ marginTop: '10px' }} // Add some spacing
+              >
                 Calculate Delivery Cost
               </Button>
               {costData.length > 0 && (
@@ -446,7 +453,14 @@ const Register = ({ onOpenFullApp }) => {
                   </Table>
                 </TableContainer>
               )}
-              <Button onClick={handleSendInvoice} color="primary" startIcon={<span className="material-icons">send</span>}>
+              <Button 
+                onClick={handleSendInvoice} 
+                startIcon={<span className="material-icons">send</span>}
+                variant="contained" // Add this
+                color="secondary" // Or keep "primary" if you want them the same color
+                size="large" // Optional: make it larger
+                style={{ marginTop: '20px' }} // Add some spacing
+              >
                 Send Invoice
               </Button>
             </>
