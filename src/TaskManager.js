@@ -364,7 +364,7 @@ const TaskManager = () => {
       try {
         const scriptId = 'task_script';
         const action = 'updatetasks';
-        await apiCall(scriptId, action, {
+        const response = await apiCall(scriptId, action, {
           username: userData.username,
           googleToken: userData.googleToken,
           subtaskUniqueId: subtask.uniqueId,
@@ -374,9 +374,26 @@ const TaskManager = () => {
           personResponsible,
           dueDate
         });
-        setIsEditing(false);
+    
+        if (response && response.success) {
+          // Update local state with the new data
+          updateSubtaskLocal(taskId, subtask.uniqueId, {
+            name,
+            details,
+            status,
+            personResponsible,
+            dueDate
+          });
+          setIsEditing(false);
+          // Optionally refresh the whole task list
+          onUpdate();
+        } else {
+          console.error('Update failed:', response?.message);
+          alert('Failed to update task. Please try again.');
+        }
       } catch (error) {
         console.error('Error updating subtask:', error);
+        alert('An error occurred while updating the task. Please try again.');
       } finally {
         setIsUpdating(false);
       }
