@@ -317,32 +317,8 @@ const TaskManager = () => {
     const [dueDate, setDueDate] = useState(subtask.dueDate);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
   
-    const handleUpdate = async (updatedField, value) => {
-      setIsUpdating(true);
-      try {
-        const scriptId = 'task_script';
-        const action = 'updatetasks';
-        await apiCall(scriptId, action, {
-          username: userData.username,
-          googleToken: userData.googleToken,
-          subtaskUniqueId: subtask.uniqueId,
-          name,
-          details,
-          status,
-          personResponsible,
-          dueDate,
-          [updatedField]: value
-        });
-        // Update local state
-        updateSubtaskLocal(taskId, subtask.uniqueId, { [updatedField]: value });
-      } catch (error) {
-        console.error('Error updating subtask:', error);
-        // Optionally, revert the local state if the update fails
-      } finally {
-        setIsUpdating(false);
-      }
-    };
   
     const handleDelete = async () => {
       if (window.confirm('Are you sure you want to delete this subtask?')) {
@@ -383,75 +359,122 @@ const TaskManager = () => {
       }
     };
   
+    const handleSubmit = async () => {
+      setIsUpdating(true);
+      try {
+        const scriptId = 'task_script';
+        const action = 'updatetasks';
+        await apiCall(scriptId, action, {
+          username: userData.username,
+          googleToken: userData.googleToken,
+          subtaskUniqueId: subtask.uniqueId,
+          name,
+          details,
+          status,
+          personResponsible,
+          dueDate
+        });
+        setIsEditing(false);
+      } catch (error) {
+        console.error('Error updating subtask:', error);
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+  
     return (
       <Card variant="outlined" sx={{ mb: 2, p: 2 }}>
-        <TextField
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => handleUpdate('name', name)}
-          fullWidth
-          variant="standard"
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          onBlur={() => handleUpdate('details', details)}
-          fullWidth
-          multiline
-          variant="standard"
-          sx={{ mb: 2 }}
-        />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Select
-            value={status}
-            onChange={(e) => {
-              const newStatus = e.target.value;
-              setStatus(newStatus);
-              updateSubtaskLocal(taskId, subtask.uniqueId, { status: newStatus });
-              handleUpdate('status', newStatus);
-            }}
-            size="small"
-            disabled={isUpdating}
-          >
-            {['Upcoming', 'Ongoing', 'Completed', 'Abandoned'].map(s => (
-              <MenuItem key={s} value={s}>
-                <Chip 
-                  label={`${getStatusSymbol(s)} ${s}`} 
-                  size="small" 
-                  color={getStatusColor(s)} 
-                />
-              </MenuItem>
-            ))}
-          </Select>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            value={personResponsible}
-            onChange={(e) => setPersonResponsible(e.target.value)}
-            onBlur={() => handleUpdate('personResponsible', personResponsible)}
-            placeholder="Person Responsible"
-            size="small"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            variant="standard"
+            disabled={!isEditing}
           />
           <TextField
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            onBlur={() => handleUpdate('dueDate', dueDate)}
-            size="small"
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            fullWidth
+            multiline
+            variant="standard"
+            disabled={!isEditing}
           />
-          <Button 
-            onClick={handleDelete} 
-            size="small" 
-            color="error" 
-            disabled={isDeleting || isUpdating}
-            startIcon={isDeleting ? <CircularProgress size={20} color="inherit" /> : null}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </Button>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              size="small"
+              disabled={!isEditing || isUpdating}
+            >
+              {['Upcoming', 'Ongoing', 'Completed', 'Abandoned'].map(s => (
+                <MenuItem key={s} value={s}>
+                  <Chip 
+                    label={`${getStatusSymbol(s)} ${s}`} 
+                    size="small" 
+                    color={getStatusColor(s)} 
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+            
+            <TextField
+              value={personResponsible}
+              onChange={(e) => setPersonResponsible(e.target.value)}
+              placeholder="Person Responsible"
+              size="small"
+              disabled={!isEditing}
+            />
+            
+            <TextField
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              size="small"
+              disabled={!isEditing}
+            />
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            {isEditing ? (
+              <>
+                <Button 
+                  onClick={() => setIsEditing(false)}
+                  variant="outlined"
+                  disabled={isUpdating}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  variant="contained"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? <CircularProgress size={20} /> : 'Save Changes'}
+                </Button>
+              </>
+            ) : (
+              <Button 
+                onClick={() => setIsEditing(true)}
+                variant="outlined"
+              >
+                Edit
+              </Button>
+            )}
+            <Button 
+              onClick={handleDelete} 
+              color="error" 
+              disabled={isDeleting || isUpdating}
+              startIcon={isDeleting ? <CircularProgress size={20} /> : null}
+            >
+              Delete
+            </Button>
+          </Box>
         </Box>
-        {isUpdating && <CircularProgress size={20} sx={{ mt: 1 }} />}
       </Card>
     );
-  };
+};
 
     const AddTaskForm = ({ onTaskAdded, userData }) => {
       const [taskName, setTaskName] = useState('');

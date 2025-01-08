@@ -10,13 +10,18 @@ import CardTableDirectory from './CardTableDirectory';
 
 const ManualListingRechecking = () => {
   const { userData } = useUserData();
-  const [currentTcg, setCurrentTcg] = useState(0);
+  const [currentTcg, setCurrentTcg] = useState('mtg'); // Default to MTG
   const [cardCode, setCardCode] = useState('');
   const [mode, setMode] = useState('add');
   const [returnedCards, setReturnedCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [existingStockCollectionName, setStockCollectionName] = useState('');
+
+  const getTcgEntries = () => Object.entries(tcgConfig.games).map(([key, game]) => ({
+    key,
+    ...game
+  }));
 
   const processCardData = (cardData) => {
     return Array.isArray(cardData) ? cardData : [cardData];
@@ -30,15 +35,15 @@ const ManualListingRechecking = () => {
 
     try {
       const action = 'getCard';
+      const currentGame = tcgConfig.games[currentTcg];
       const currentStockCollectionName = mode === 'add' 
-        ? tcgConfig[currentTcg].stockCollectionName 
-        : tcgConfig[currentTcg].existingStockCollectionName;
+        ? currentGame.collectionNames.stock 
+        : currentGame.collectionNames.existing;
 
-      const existingCollection = tcgConfig[currentTcg].existingStockCollectionName;
-      setStockCollectionName(existingCollection);
+      setStockCollectionName(currentGame.collectionNames.existing);
 
       const data = {
-        tcg: tcgConfig[currentTcg].name,
+        tcg: currentGame.name,
         cardCode,
         stockCollectionName: currentStockCollectionName,
         username: userData.username,
@@ -76,7 +81,7 @@ const ManualListingRechecking = () => {
   };
 
   const getBackgroundStyle = () => {
-    const background = tcgConfig[currentTcg].background;
+    const background = tcgConfig.games[currentTcg].display.background;
     if (background.type === 'image') {
       return {
         backgroundImage: `url(${background.value})`,
@@ -90,6 +95,18 @@ const ManualListingRechecking = () => {
     }
   };
 
+  const getCurrentHeaders = () => {
+    const game = tcgConfig.games[currentTcg];
+    return [
+      ...tcgConfig.commonFields.required,
+      { name: 'rarity', type: 'selection', options: game.rarity.options },
+      ...game.variantFields,
+      { name: 'language', type: 'selection', options: game.language.options },
+      ...tcgConfig.commonFields.variants
+    ];
+  };
+
+
   return (
     <Box>
       <Tabs
@@ -99,11 +116,12 @@ const ManualListingRechecking = () => {
         variant="scrollable"
         scrollButtons="auto"
       >
-        {tcgConfig.map((tcg, index) => (
+        {getTcgEntries().map((tcg) => (
           <Tab 
-            key={index}
+            key={tcg.key}
+            value={tcg.key}
             label={tcg.name} 
-            icon={<Avatar src={tcg.imageUrl} />}
+            icon={<Avatar src={tcg.display.imageUrl} />}
             iconPosition="start"
           />
         ))}
@@ -118,6 +136,7 @@ const ManualListingRechecking = () => {
           transition: 'background-image 0.5s ease-in-out, background-color 0.5s ease-in-out'
         }}
       >
+
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <ToggleButtonGroup
             color="primary"
@@ -180,7 +199,7 @@ const ManualListingRechecking = () => {
         {returnedCards.length > 0 && (
           <CardTableDirectory
             cards={returnedCards}
-            headers={tcgConfig[currentTcg].headers}
+            headers={getCurrentHeaders()}
             mode={mode}
             collectionName={existingStockCollectionName}
           />
