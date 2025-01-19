@@ -236,12 +236,21 @@ const ScheduleForm = () => {
         };
       });
   
-      await apiCall('worker_script', 'addScheduleEntries', {
-        entries,
-        removedEntries: removedShifts.map(shift => ({
+      // Consolidate consecutive time blocks
+      const consolidatedEntries = consolidateTimeBlocks(entries);
+  
+      // For removed entries, also consolidate them
+      const consolidatedRemovedEntries = consolidateTimeBlocks(
+        removedShifts.map(shift => ({
           startTime: shift.startTime,
+          endTime: new Date(new Date(shift.startTime).getTime() + 60 * 60 * 1000).toISOString(),
           reason: reasons[shift.startTime]
-        })),
+        }))
+      );
+  
+      await apiCall('worker_script', 'addScheduleEntries', {
+        entries: consolidatedEntries,
+        removedEntries: consolidatedRemovedEntries,
         username: userData.username,
         googleToken: userData.googleToken
       });
@@ -313,6 +322,39 @@ const ScheduleForm = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     return cellDate < tomorrow;
+  };
+
+  const consolidateTimeBlocks = (entries) => {
+    // Sort entries by start time
+    entries.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    
+    const consolidated = [];
+    let currentBlock = null;
+
+    entries.forEach(entry => {
+      if (!currentBlock) {
+        currentBlock = {...entry};
+      } else {
+        // Check if this entry starts right after current block ends
+        const currentEnd = new Date(currentBlock.endTime);
+        const nextStart = new Date(entry.startTime);
+        
+        if (currentEnd.getTime() === nextStart.getTime()) {
+          // Extend current block
+          currentBlock.endTime = entry.endTime;
+        } else {
+          // Start new block
+          consolidated.push(currentBlock);
+          currentBlock = {...entry};
+        }
+      }
+    });
+    
+    if (currentBlock) {
+      consolidated.push(currentBlock);
+    }
+
+    return consolidated;
   };
 
   const toggleCell = (cellId) => {
