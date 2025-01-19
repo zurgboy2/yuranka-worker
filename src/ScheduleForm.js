@@ -293,12 +293,39 @@ const ScheduleForm = () => {
 
   const handleMouseEnter = (cellId) => {
     if (isDragging) {
+      const [dayDate] = cellId.split('-');
+      const date = parseInt(dayDate.match(/\d+/)[0]);
+      if (isDisabled(date)) return;
+  
+      const newSelected = new Set(selectedCells);
+      const newChanges = { ...scheduleChanges };
+  
       if (isSelecting) {
-        selectedCells.add(cellId);
+        newSelected.add(cellId);
+        if (!originalCells.has(cellId)) {
+          newChanges.toAdd.add(cellId);
+        }
       } else {
-        selectedCells.delete(cellId);
+        newSelected.delete(cellId);
+        if (originalCells.has(cellId)) {
+          // Find the original continuous block this cell belongs to
+          const originalBlock = findContinuousBlock(cellId, originalCells);
+          // Mark the entire original block for deletion
+          originalBlock.forEach(cell => newChanges.toDelete.add(cell));
+          
+          // Only add cells that were in the original block AND are still selected
+          originalBlock.forEach(cell => {
+            if (cell !== cellId && newSelected.has(cell)) {
+              newChanges.toAdd.add(cell);
+            }
+          });
+        } else {
+          newChanges.toAdd.delete(cellId);
+        }
       }
-      setSelectedCells(new Set(selectedCells));
+  
+      setSelectedCells(newSelected);
+      setScheduleChanges(newChanges);
     }
   };
 
