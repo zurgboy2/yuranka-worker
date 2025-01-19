@@ -63,36 +63,28 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const ReasonForm = ({ removedBlocks, reasons, setReasons, onSubmit }) => {
+const ReasonForm = ({ daysNeedingReasons, reasons, setReasons, onSubmit }) => {
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Please provide reasons for removed shifts:</Typography>
-      {removedBlocks.map(block => {
-        const startTime = new Date(block.startTime);
-        const endTime = new Date(block.endTime);
-        return (
-          <Box key={block.startTime} sx={{ mb: 2 }}>
-            <Typography>
-              {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()}
-            </Typography>
-            <TextField
-              fullWidth
-              required
-              label="Reason"
-              value={reasons[block.startTime] || ''}
-              onChange={(e) => setReasons(prev => ({
-                ...prev,
-                [block.startTime]: e.target.value
-              }))}
-            />
-          </Box>
-        )
-      })}
-      <Button 
-        variant="contained" 
-        onClick={onSubmit}
-        sx={{ mt: 2 }}
-      >
+      <Typography variant="h6">Please provide reasons for schedule changes:</Typography>
+      {daysNeedingReasons.map(({ dayId }) => (
+        <Box key={dayId} sx={{ mb: 2 }}>
+          <Typography>
+            {new Date(dayId).toLocaleDateString()}
+          </Typography>
+          <TextField
+            fullWidth
+            required
+            label="Reason"
+            value={reasons[dayId] || ''}
+            onChange={(e) => setReasons(prev => ({
+              ...prev,
+              [dayId]: e.target.value
+            }))}
+          />
+        </Box>
+      ))}
+      <Button variant="contained" onClick={onSubmit}>
         Submit Changes
       </Button>
     </Box>
@@ -123,19 +115,30 @@ const ScheduleForm = () => {
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(true);
   const { userData } = useUserData();
-  const [removedBlocks, setremovedBlocks] = useState([]);
   const [reasons, setReasons] = useState({});
   const [showReasonForm, setShowReasonForm] = useState(false);
+  const [dayChanges, setDayChanges] = useState(new Map());
+  const [daysNeedingReasons, setDaysNeedingReasons] = useState([]);
+
+  const getDayId = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
 
 
-  const [scheduleChanges, setScheduleChanges] = useState({
-    toDelete: new Set(),  
-    toAdd: new Set()      
-  });
 
-  const [originalCells, setOriginalCells] = useState(new Set());
+  const getDaySchedule = (dayId) => {
+    const selectedHours = new Set();
+    for (let hour = 8; hour <= 21; hour++) {
+      const date = new Date(dayId);
+      const day = date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+      const cellId = `${day}${date.getDate()}-${hour}`;
+      if (selectedCells.has(cellId)) {
+        selectedHours.add(cellId);
+      }
+    }
+    return selectedHours;
+  };
 
   const disabledDate = new Date();
   disabledDate.setDate(disabledDate.getDate() + 7);
@@ -172,7 +175,6 @@ const ScheduleForm = () => {
         });
         
         setSelectedCells(newSelected);
-        setOriginalCells(originalCellsSet);
         
       } catch (error) {
         console.error('Error fetching schedule:', error);
@@ -197,66 +199,71 @@ const ScheduleForm = () => {
   const handleReasonSubmit = async (event) => {
     event.preventDefault();
     // Validate all reasons are filled
-    if (removedBlocks.some(shift => !reasons[shift.startTime])) {
-      alert("Please provide reasons for all removed shifts");
+    if (daysNeedingReasons.some(day => !reasons[day.dayId])) {
+      alert("Please provide reasons for all schedule changes");
       return;
     }
     
     // Proceed with submission
-    await submitScheduleWithReasons();
+    await submitChanges();
   };
 
-  const submitScheduleWithReasons = async () => {
+
+  const handleMouseDown = (cellId) => {
+    setIsDragging(true);
+    toggleCell(cellId);
+  };
+  
+
+  const handleCellToggle = (cellId) => {
+    const [dayDate, hour] = cellId.split('-');
+    const date = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      parseInt(dayDate.match(/\d+/)[0])
+    );
+    const dayId = getDayId(date);
+  
+    // Get or create day changes
+    const currentDayChanges = dayChanges.get(dayId) || {
+      original: new Set(getDaySchedule(dayId)), // Get existing schedule for the day
+      new: new Set(getDaySchedule(dayId))
+    };
+  
+    // Update the new schedule
+    const cellKey = `${dayDate}-${hour}`;
+    if (currentDayChanges.new.has(cellKey)) {
+      currentDayChanges.new.delete(cellKey);
+    } else {
+      currentDayChanges.new.add(cellKey);
+    }
+  
+    // Update state
+    setDayChanges(new Map(dayChanges.set(dayId, currentDayChanges)));
+  };
+
+  const submitChanges = async () => {
     setLoading(true);
     try {
       const payload = {
-        toDelete: consolidateTimeBlocks([
-          ...Array.from(scheduleChanges.toDelete).map(cellId => {
-            const [dayDate, hour] = cellId.split('-');
-            const date = new Date(
-              currentMonth.getFullYear(),
-              currentMonth.getMonth(),
-              parseInt(dayDate.match(/\d+/)[0]),
-              parseInt(hour)
-            );
-            return {
-              startTime: date.toISOString(),
-              endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
-              reason: reasons[date.toISOString()] // Include reason if exists
-            };
-          })
-        ]),
-        
-        toAdd: consolidateTimeBlocks([
-          ...Array.from(scheduleChanges.toAdd).map(cellId => {
-            const [dayDate, hour] = cellId.split('-');
-            const date = new Date(
-              currentMonth.getFullYear(),
-              currentMonth.getMonth(),
-              parseInt(dayDate.match(/\d+/)[0]),
-              parseInt(hour)
-            );
-            return {
-              startTime: date.toISOString(),
-              endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-            };
-          })
-        ]),
-        
+        changes: Array.from(dayChanges.entries()).map(([dayId, change]) => ({
+          dayId,
+          original: Array.from(change.original),
+          new: Array.from(change.new),
+          reason: reasons[dayId]
+        })),
         username: userData.username,
         googleToken: userData.googleToken
       };
   
-      await apiCall('worker_script', 'addScheduleEntries', payload);
+      await apiCall('worker_script', 'updateSchedule', payload);
       
-      // Reset state after successful submission
-      setScheduleChanges({ toDelete: new Set(), toAdd: new Set() });
-      setShowReasonForm(false);
+      // Reset states
+      setDayChanges(new Map());
       setReasons({});
-      setremovedBlocks([]);
+      setShowReasonForm(false);
       
-      // Refresh the schedule display
+      // Refresh schedule
       const updatedSchedule = await apiCall('worker_script', 'getSchedule', {
         username: userData.username,
         googleToken: userData.googleToken,
@@ -264,7 +271,7 @@ const ScheduleForm = () => {
         year: currentMonth.getFullYear()
       });
       
-      // Update the UI with the new schedule
+      // Update UI
       const newSelected = new Set();
       updatedSchedule.forEach(entry => {
         const startDate = new Date(entry.startTime);
@@ -274,7 +281,6 @@ const ScheduleForm = () => {
         newSelected.add(`${day}${date}-${hour}`);
       });
       setSelectedCells(newSelected);
-      setOriginalCells(new Set(newSelected));
       
       alert("Schedule updated successfully");
     } catch (error) {
@@ -283,110 +289,6 @@ const ScheduleForm = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleMouseDown = (cellId) => {
-    setIsDragging(true);
-    setIsSelecting(!selectedCells.has(cellId));
-    toggleCell(cellId);
-  };
-  
-  // Use a single set of helper functions
-  const getAllBlocksForDay = (dayDate, cellSet) => {
-    const blocks = [];
-    const processed = new Set();
-    
-    for (let hour = 8; hour <= 21; hour++) {
-      const cellId = `${dayDate}-${hour}`;
-      if (cellSet.has(cellId) && !processed.has(cellId)) {
-        const block = findContinuousBlock(cellId, cellSet);
-        blocks.push(block);
-        block.forEach(cell => processed.add(cell));
-      }
-    }
-    return blocks;
-  };
-
-  const areBlocksConnectedByCell = (cellId, blocks) => {
-    const [dayDate, hour] = cellId.split('-');
-    const cellHour = parseInt(hour);
-    
-    // Sort blocks by their start time
-    const sortedBlocks = blocks.sort((a, b) => {
-      const aHours = Array.from(a).map(cell => parseInt(cell.split('-')[1]));
-      const bHours = Array.from(b).map(cell => parseInt(cell.split('-')[1]));
-      return Math.min(...aHours) - Math.min(...bHours);
-    });
-
-    // Check if this cell connects any consecutive blocks
-    for (let i = 0; i < sortedBlocks.length - 1; i++) {
-      const currentBlock = sortedBlocks[i];
-      const nextBlock = sortedBlocks[i + 1];
-      
-      const currentHours = Array.from(currentBlock).map(cell => parseInt(cell.split('-')[1]));
-      const nextHours = Array.from(nextBlock).map(cell => parseInt(cell.split('-')[1]));
-      
-      const maxCurrentHour = Math.max(...currentHours);
-      const minNextHour = Math.min(...nextHours);
-      
-      if (cellHour > maxCurrentHour && cellHour < minNextHour) {
-        return [currentBlock, nextBlock];
-      }
-    }
-    
-    return [];
-  };
-
-  const handleCellToggle = (cellId, isMouseEnter = false) => {
-    const [dayDate] = cellId.split('-');
-    const date = parseInt(dayDate.match(/\d+/)[0]);
-    if (isDisabled(date)) return;
-  
-    const newSelected = new Set(selectedCells);
-    const newChanges = { ...scheduleChanges };
-  
-    const toggleAction = isMouseEnter ? isSelecting : !newSelected.has(cellId);
-  
-    if (toggleAction) {
-      // Selecting cell
-      newSelected.add(cellId);
-      if (!originalCells.has(cellId)) {
-        const dayBlocks = getAllBlocksForDay(dayDate, originalCells);
-        const connectedBlocks = areBlocksConnectedByCell(cellId, dayBlocks);
-        
-        if (connectedBlocks.length > 0) {
-          // Delete connected blocks and add back selected cells
-          connectedBlocks.forEach(block => {
-            block.forEach(cell => newChanges.toDelete.add(cell));
-          });
-          connectedBlocks.forEach(block => {
-            block.forEach(cell => {
-              if (newSelected.has(cell)) {
-                newChanges.toAdd.add(cell);
-              }
-            });
-          });
-        }
-        newChanges.toAdd.add(cellId);
-      }
-    } else {
-      // Deselecting cell
-      newSelected.delete(cellId);
-      if (originalCells.has(cellId)) {
-        const block = findContinuousBlock(cellId, originalCells);
-        block.forEach(cell => newChanges.toDelete.add(cell));
-        block.forEach(cell => {
-          if (newSelected.has(cell)) {
-            newChanges.toAdd.add(cell);
-          }
-        });
-      } else {
-        newChanges.toAdd.delete(cellId);
-      }
-    }
-  
-    setSelectedCells(newSelected);
-    setScheduleChanges(newChanges);
   };
 
   const handleMouseUp = () => {
@@ -410,44 +312,6 @@ const ScheduleForm = () => {
     return cellDate < tomorrow;
   };
 
-  const consolidateTimeBlocks = (entries, reasons = {}) => {
-    // Sort entries by start time
-    entries.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
-    
-    const consolidated = [];
-    let currentBlock = null;
-  
-    entries.forEach(entry => {
-      if (!currentBlock) {
-        currentBlock = {...entry};
-      } else {
-        // Check if this entry starts right after current block ends
-        const currentEnd = new Date(currentBlock.endTime);
-        const nextStart = new Date(entry.startTime);
-        
-        if (currentEnd.getTime() === nextStart.getTime()) {
-          // Extend current block
-          currentBlock.endTime = entry.endTime;
-        } else {
-          // If we have a reason for this block, add it
-          if (reasons[currentBlock.startTime]) {
-            currentBlock.reason = reasons[currentBlock.startTime];
-          }
-          consolidated.push(currentBlock);
-          currentBlock = {...entry};
-        }
-      }
-    });
-    
-    if (currentBlock) {
-      if (reasons[currentBlock.startTime]) {
-        currentBlock.reason = reasons[currentBlock.startTime];
-      }
-      consolidated.push(currentBlock);
-    }
-  
-    return consolidated;
-  };
 
   const handleMouseEnter = (cellId) => {
     if (isDragging) {
@@ -460,32 +324,6 @@ const ScheduleForm = () => {
   };
   
 
-  // Helper function to find continuous block of cells
-  const findContinuousBlock = (cellId, cellSet) => {
-    const [dayDate, hour] = cellId.split('-');
-    const block = new Set();
-    const baseHour = parseInt(hour);
-    
-    // Check backwards
-    let currentHour = baseHour;
-    while (currentHour >= 8) {
-      const currentCellId = `${dayDate}-${currentHour}`;
-      if (!cellSet.has(currentCellId)) break;
-      block.add(currentCellId);
-      currentHour--;
-    }
-    
-    // Check forwards
-    currentHour = baseHour + 1;
-    while (currentHour <= 21) {
-      const currentCellId = `${dayDate}-${currentHour}`;
-      if (!cellSet.has(currentCellId)) break;
-      block.add(currentCellId);
-      currentHour++;
-    }
-    
-    return block;
-  };
 
   const timeSlots = [...Array(14)].map((_, i) => i + 8);
 
@@ -508,44 +346,29 @@ const ScheduleForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-  
     const weekAheadDate = new Date();
     weekAheadDate.setDate(weekAheadDate.getDate() + 7);
+  
+    const daysNeedingReasons = [];
     
-    // Convert toDelete changes to entries and consolidate them
-    const deletions = consolidateTimeBlocks(
-      Array.from(scheduleChanges.toDelete).map(cellId => {
-        const [dayDate, hour] = cellId.split('-');
-        const date = new Date(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth(),
-          parseInt(dayDate.match(/\d+/)[0]),
-          parseInt(hour)
-        );
-        return {
-          startTime: date.toISOString(),
-          endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString()
-        };
-      })
-    );
+    for (const [dayId, changes] of dayChanges) {
+      const dayDate = new Date(dayId);
+      if (dayDate <= weekAheadDate && changes.original.size !== changes.new.size) {
+        daysNeedingReasons.push({
+          dayId,
+          original: changes.original,
+          new: changes.new
+        });
+      }
+    }
   
-    // Check if any deletions are within the week ahead
-    const weekAheadDeletions = deletions.filter(block => {
-      const blockStart = new Date(block.startTime);
-      return blockStart <= weekAheadDate;
-    });
-  
-    if (weekAheadDeletions.length > 0) {
-      setremovedBlocks(weekAheadDeletions);
+    if (daysNeedingReasons.length > 0) {
+      setDaysNeedingReasons(daysNeedingReasons);
       setShowReasonForm(true);
-      setLoading(false);
       return;
     }
   
-    // If no week-ahead deletions, proceed with normal submission
-    await submitScheduleWithReasons();
-    setLoading(false);
+    await submitChanges();
   };
 
 
@@ -603,7 +426,7 @@ const ScheduleForm = () => {
 
         {showReasonForm ? (
         <ReasonForm
-          removedBlocks={removedBlocks}
+          daysNeedingReasons={daysNeedingReasons}
           reasons={reasons}
           setReasons={setReasons}
           onSubmit={handleReasonSubmit}
