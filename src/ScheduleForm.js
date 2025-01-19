@@ -145,10 +145,19 @@ const ScheduleForm = () => {
         const newSelected = new Set();
         data.forEach(entry => {
           const startDate = new Date(entry.startTime);
-          const day = startDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
-          const date = startDate.getDate();
-          const hour = startDate.getHours();
-          newSelected.add(`${day}${date}-${hour}`);
+          const endDate = new Date(entry.endTime);
+          
+          // Add all hours between start and end time
+          let currentDate = new Date(startDate);
+          while (currentDate < endDate) {
+            const day = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+            const date = currentDate.getDate();
+            const hour = currentDate.getHours();
+            newSelected.add(`${day}${date}-${hour}`);
+            
+            // Move to next hour
+            currentDate = new Date(currentDate.getTime() + (60 * 60 * 1000));
+          }
         });
         setSelectedCells(newSelected);
       } catch (error) {
