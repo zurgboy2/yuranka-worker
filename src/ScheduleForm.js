@@ -118,13 +118,20 @@ const ScheduleForm = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedCells, setSelectedCells] = useState(new Set());
   const [isDragging, setIsDragging] = useState(false);
-  const [previousSchedule, setPreviousSchedule] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isSelecting, setIsSelecting] = useState(true);
   const { userData } = useUserData();
   const [removedShifts, setRemovedShifts] = useState([]);
   const [reasons, setReasons] = useState({});
   const [showReasonForm, setShowReasonForm] = useState(false);
+
+
+  const [scheduleChanges, setScheduleChanges] = useState({
+    toDelete: new Set(),  
+    toAdd: new Set()      
+  });
+
+  const [originalCells, setOriginalCells] = useState(new Set());
 
   const disabledDate = new Date();
   disabledDate.setDate(disabledDate.getDate() + 7);
@@ -140,26 +147,29 @@ const ScheduleForm = () => {
           year: currentMonth.getFullYear()
         });
         
-        setPreviousSchedule(data); // Store the original schedule
-    
         const newSelected = new Set();
+        const originalCellsSet = new Set();
+        
         data.forEach(entry => {
           const startDate = new Date(entry.startTime);
           const endDate = new Date(entry.endTime);
           
-          // Add all hours between start and end time
           let currentDate = new Date(startDate);
           while (currentDate < endDate) {
             const day = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
             const date = currentDate.getDate();
             const hour = currentDate.getHours();
-            newSelected.add(`${day}${date}-${hour}`);
+            const cellId = `${day}${date}-${hour}`;
+            newSelected.add(cellId);
+            originalCellsSet.add(cellId);
             
-            // Move to next hour
             currentDate = new Date(currentDate.getTime() + (60 * 60 * 1000));
           }
         });
+        
         setSelectedCells(newSelected);
+        setOriginalCells(originalCellsSet);
+        
       } catch (error) {
         console.error('Error fetching schedule:', error);
       } finally {
@@ -170,36 +180,6 @@ const ScheduleForm = () => {
     fetchSchedule();
   }, [currentMonth, userData]);
 
-  const compareChanges = (newEntries) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
-    
-    console.log('Previous schedule:', previousSchedule);
-    console.log('New entries:', newEntries);
-    
-    const removed = Array.from(previousSchedule).filter(oldEntry => {
-      const oldDate = new Date(oldEntry.startTime);
-      const isAfterToday = oldDate >= today;
-      const stillExists = newEntries.some(newEntry => 
-        new Date(newEntry.startTime).getTime() === oldDate.getTime()
-      );
-      
-      console.log('Checking entry:', oldEntry);
-      console.log('Is after today:', isAfterToday);
-      console.log('Still exists:', stillExists);
-      
-      return isAfterToday && !stillExists;
-    });
-  
-    console.log('Removed shifts:', removed);
-  
-    if (removed.length > 0) {
-      setRemovedShifts(removed);
-      setShowReasonForm(true);
-      return true;
-    }
-    return false;
-  };
 
 
   const changeMonth = (increment) => {
@@ -225,46 +205,55 @@ const ScheduleForm = () => {
   const submitScheduleWithReasons = async () => {
     setLoading(true);
     try {
-      // Generate entries from selectedCells
-      const entries = Array.from(selectedCells).map(cellId => {
-        const [dayDate, hour] = cellId.split('-');
-        const date = new Date(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth(),
-          parseInt(dayDate.match(/\d+/)[0]),
-          parseInt(hour)
-        );
-    
-        const startTime = date.toISOString();
-        const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString();
-    
-        return {
-          startTime,
-          endTime,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
-      });
-  
-      // Consolidate consecutive time blocks
-      const consolidatedEntries = consolidateTimeBlocks(entries);
-  
-      // For removed entries, also consolidate them
-      const consolidatedRemovedEntries = consolidateTimeBlocks(
-        removedShifts.map(shift => ({
-          startTime: shift.startTime,
-          endTime: new Date(new Date(shift.startTime).getTime() + 60 * 60 * 1000).toISOString(),
-          reason: reasons[shift.startTime]
-        }))
-      );
-  
-      await apiCall('worker_script', 'addScheduleEntries', {
-        entries: consolidatedEntries,
-        removedEntries: consolidatedRemovedEntries,
+      const payload = {
+        toDelete: consolidateTimeBlocks([
+          ...Array.from(scheduleChanges.toDelete).map(cellId => {
+            const [dayDate, hour] = cellId.split('-');
+            const date = new Date(
+              currentMonth.getFullYear(),
+              currentMonth.getMonth(),
+              parseInt(dayDate.match(/\d+/)[0]),
+              parseInt(hour)
+            );
+            return {
+              startTime: date.toISOString(),
+              endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
+              reason: reasons[date.toISOString()] // Include reason if exists
+            };
+          })
+        ]),
+        
+        toAdd: consolidateTimeBlocks([
+          ...Array.from(scheduleChanges.toAdd).map(cellId => {
+            const [dayDate, hour] = cellId.split('-');
+            const date = new Date(
+              currentMonth.getFullYear(),
+              currentMonth.getMonth(),
+              parseInt(dayDate.match(/\d+/)[0]),
+              parseInt(hour)
+            );
+            return {
+              startTime: date.toISOString(),
+              endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+          })
+        ]),
+        
         username: userData.username,
         googleToken: userData.googleToken
-      });
+      };
+  
+      // Rename the API endpoint to reflect the new structure
+      await apiCall('worker_script', 'updateSchedule', payload);
       
-      // Fetch updated schedule
+      // Reset state after successful submission
+      setScheduleChanges({ toDelete: new Set(), toAdd: new Set() });
+      setShowReasonForm(false);
+      setReasons({});
+      setRemovedShifts([]);
+      
+      // Refresh the schedule display
       const updatedSchedule = await apiCall('worker_script', 'getSchedule', {
         username: userData.username,
         googleToken: userData.googleToken,
@@ -272,7 +261,7 @@ const ScheduleForm = () => {
         year: currentMonth.getFullYear()
       });
       
-      setPreviousSchedule(updatedSchedule);
+      // Update the UI with the new schedule
       const newSelected = new Set();
       updatedSchedule.forEach(entry => {
         const startDate = new Date(entry.startTime);
@@ -282,19 +271,17 @@ const ScheduleForm = () => {
         newSelected.add(`${day}${date}-${hour}`);
       });
       setSelectedCells(newSelected);
+      setOriginalCells(new Set(newSelected));
       
-      alert("Schedule submitted successfully");
-      setShowReasonForm(false);
-      setReasons({});
-      setRemovedShifts([]);
+      alert("Schedule updated successfully");
     } catch (error) {
-      alert("Failed to submit schedule");
+      alert("Failed to update schedule");
       console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleMouseDown = (cellId) => {
     setIsDragging(true);
     setIsSelecting(!selectedCells.has(cellId));
@@ -367,17 +354,35 @@ const ScheduleForm = () => {
   };
 
   const toggleCell = (cellId) => {
-    const [dayDate] = cellId.split('-');  // Only destructure what we need
+    const [dayDate] = cellId.split('-');
     const date = parseInt(dayDate.match(/\d+/)[0]);
     if (isDisabled(date)) return;
     
     const newSelected = new Set(selectedCells);
+    const newChanges = { ...scheduleChanges };
+    
     if (newSelected.has(cellId)) {
+      // User is deselecting a cell
       newSelected.delete(cellId);
+      if (originalCells.has(cellId)) {
+        // If it was in original schedule, mark it for deletion
+        newChanges.toDelete.add(cellId);
+      }
+      newChanges.toAdd.delete(cellId); // Remove from additions if it was there
     } else {
+      // User is selecting a cell
       newSelected.add(cellId);
+      if (!originalCells.has(cellId)) {
+        // If it's a new cell, mark it for addition
+        newChanges.toAdd.add(cellId);
+      } else {
+        // If it was in original schedule, remove it from deletions if it was there
+        newChanges.toDelete.delete(cellId);
+      }
     }
+    
     setSelectedCells(newSelected);
+    setScheduleChanges(newChanges);
   };
 
 
@@ -404,31 +409,59 @@ const ScheduleForm = () => {
     event.preventDefault();
     setLoading(true);
   
-    const entries = Array.from(selectedCells).map(cellId => {
-      const [dayDate, hour] = cellId.split('-');
-      const date = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        parseInt(dayDate.match(/\d+/)[0]),
-        parseInt(hour)
-      );
+    const weekAheadDate = new Date();
+    weekAheadDate.setDate(weekAheadDate.getDate() + 7);
+    
+    // Convert changes to entries
+    const payload = {
+      toDelete: Array.from(scheduleChanges.toDelete).map(cellId => {
+        const [dayDate, hour] = cellId.split('-');
+        const date = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          parseInt(dayDate.match(/\d+/)[0]),
+          parseInt(hour)
+        );
+        return {
+          startTime: date.toISOString(),
+          endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString()
+        };
+      }),
+      
+      toAdd: Array.from(scheduleChanges.toAdd).map(cellId => {
+        const [dayDate, hour] = cellId.split('-');
+        const date = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          parseInt(dayDate.match(/\d+/)[0]),
+          parseInt(hour)
+        );
+        return {
+          startTime: date.toISOString(),
+          endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+      })
+    };
   
-      const startTime = date.toISOString();
-      const endTime = new Date(date.getTime() + 60 * 60 * 1000).toISOString();
-  
-      return {
-        startTime,
-        endTime,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      };
+    // Check if any deletions are within the week ahead
+    const hasWeekAheadDeletions = payload.toDelete.some(entry => {
+      const entryDate = new Date(entry.startTime);
+      return entryDate <= weekAheadDate;
     });
   
-    if (compareChanges(entries)) {
+    if (hasWeekAheadDeletions) {
+      const weekAheadDeletions = payload.toDelete.filter(entry => {
+        const entryDate = new Date(entry.startTime);
+        return entryDate <= weekAheadDate;
+      });
+      setRemovedShifts(weekAheadDeletions);
+      setShowReasonForm(true);
       setLoading(false);
-      return; // Will show reason form instead
+      return;
     }
   
-    // If no removed shifts within week, proceed with normal submission
+    // If no week-ahead deletions, proceed with normal submission
     await submitScheduleWithReasons();
     setLoading(false);
   };
