@@ -226,7 +226,7 @@ const ScheduleForm = () => {
   
     // Get or create day changes
     const currentDayChanges = dayChanges.get(dayId) || {
-      original: new Set(getDaySchedule(dayId)), // Get existing schedule for the day
+      original: new Set(getDaySchedule(dayId)),
       new: new Set(getDaySchedule(dayId))
     };
   
@@ -234,8 +234,18 @@ const ScheduleForm = () => {
     const cellKey = `${dayDate}-${hour}`;
     if (currentDayChanges.new.has(cellKey)) {
       currentDayChanges.new.delete(cellKey);
+      setSelectedCells(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cellKey);
+        return newSet;
+      });
     } else {
       currentDayChanges.new.add(cellKey);
+      setSelectedCells(prev => {
+        const newSet = new Set(prev);
+        newSet.add(cellKey);
+        return newSet;
+      });
     }
   
     // Update state
@@ -256,7 +266,7 @@ const ScheduleForm = () => {
         googleToken: userData.googleToken
       };
   
-      await apiCall('worker_script', 'updateSchedule', payload);
+      await apiCall('worker_script', 'addScheduleEntries', payload);
       
       // Reset states
       setDayChanges(new Map());
