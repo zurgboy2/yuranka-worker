@@ -244,8 +244,7 @@ const ScheduleForm = () => {
         googleToken: userData.googleToken
       };
   
-      // Rename the API endpoint to reflect the new structure
-      await apiCall('worker_script', 'updateSchedule', payload);
+      await apiCall('worker_script', 'addScheduleEntries', payload);
       
       // Reset state after successful submission
       setScheduleChanges({ toDelete: new Set(), toAdd: new Set() });
@@ -281,7 +280,7 @@ const ScheduleForm = () => {
       setLoading(false);
     }
   };
-  
+
   const handleMouseDown = (cellId) => {
     setIsDragging(true);
     setIsSelecting(!selectedCells.has(cellId));
@@ -362,27 +361,59 @@ const ScheduleForm = () => {
     const newChanges = { ...scheduleChanges };
     
     if (newSelected.has(cellId)) {
-      // User is deselecting a cell
+      // Deselecting a cell
       newSelected.delete(cellId);
       if (originalCells.has(cellId)) {
-        // If it was in original schedule, mark it for deletion
-        newChanges.toDelete.add(cellId);
-      }
-      newChanges.toAdd.delete(cellId); // Remove from additions if it was there
-    } else {
-      // User is selecting a cell
-      newSelected.add(cellId);
-      if (!originalCells.has(cellId)) {
-        // If it's a new cell, mark it for addition
-        newChanges.toAdd.add(cellId);
+        // Find the original continuous block this cell belongs to
+        const originalBlock = findContinuousBlock(cellId, originalCells);
+        // Mark the entire original block for deletion
+        originalBlock.forEach(cell => newChanges.toDelete.add(cell));
+        
+        // Add back the remaining selected cells as new blocks
+        originalBlock.forEach(cell => {
+          if (newSelected.has(cell)) {
+            newChanges.toAdd.add(cell);
+          }
+        });
       } else {
-        // If it was in original schedule, remove it from deletions if it was there
-        newChanges.toDelete.delete(cellId);
+        // If it was a new addition, just remove it
+        newChanges.toAdd.delete(cellId);
       }
+    } else {
+      // Selecting a cell
+      newSelected.add(cellId);
+      newChanges.toAdd.add(cellId);
     }
     
     setSelectedCells(newSelected);
     setScheduleChanges(newChanges);
+  };
+  
+  // Helper function to find continuous block of cells
+  const findContinuousBlock = (cellId, cellSet) => {
+    const [dayDate, hour] = cellId.split('-');
+    const block = new Set();
+    const baseHour = parseInt(hour);
+    
+    // Check backwards
+    let currentHour = baseHour;
+    while (currentHour >= 8) {
+      const currentCellId = `${dayDate}-${currentHour}`;
+      if (!cellSet.has(currentCellId)) break;
+      block.add(currentCellId);
+      currentHour--;
+    }
+    
+    // Check forwards
+    currentHour = baseHour + 1;
+    while (currentHour <= 21) {
+      const currentCellId = `${dayDate}-${currentHour}`;
+      if (!cellSet.has(currentCellId)) break;
+      block.add(currentCellId);
+      currentHour++;
+    }
+    
+    return block;
   };
 
 
