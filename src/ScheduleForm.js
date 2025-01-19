@@ -369,9 +369,10 @@ const ScheduleForm = () => {
         // Mark the entire original block for deletion
         originalBlock.forEach(cell => newChanges.toDelete.add(cell));
         
-        // Add back the remaining selected cells as new blocks
+        // Only add cells that were in the original block AND are still selected
+        // BUT exclude the cell that was just deselected
         originalBlock.forEach(cell => {
-          if (newSelected.has(cell)) {
+          if (cell !== cellId && newSelected.has(cell)) {
             newChanges.toAdd.add(cell);
           }
         });
@@ -382,7 +383,9 @@ const ScheduleForm = () => {
     } else {
       // Selecting a cell
       newSelected.add(cellId);
-      newChanges.toAdd.add(cellId);
+      if (!originalCells.has(cellId)) {
+        newChanges.toAdd.add(cellId);
+      }
     }
     
     setSelectedCells(newSelected);
