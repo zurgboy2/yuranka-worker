@@ -63,27 +63,31 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const ReasonForm = ({ removedShifts, reasons, setReasons, onSubmit }) => {
+const ReasonForm = ({ removedBlocks, reasons, setReasons, onSubmit }) => {
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6">Please provide reasons for removed shifts:</Typography>
-      {removedShifts.map(shift => (
-        <Box key={shift.startTime} sx={{ mb: 2 }}>
-          <Typography>
-            {new Date(shift.startTime).toLocaleString()}
-          </Typography>
-          <TextField
-            fullWidth
-            required
-            label="Reason"
-            value={reasons[shift.startTime] || ''}
-            onChange={(e) => setReasons(prev => ({
-              ...prev,
-              [shift.startTime]: e.target.value
-            }))}
-          />
-        </Box>
-      ))}
+      {removedBlocks.map(block => {
+        const startTime = new Date(block.startTime);
+        const endTime = new Date(block.endTime);
+        return (
+          <Box key={block.startTime} sx={{ mb: 2 }}>
+            <Typography>
+              {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()} - {endTime.toLocaleTimeString()}
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              label="Reason"
+              value={reasons[block.startTime] || ''}
+              onChange={(e) => setReasons(prev => ({
+                ...prev,
+                [block.startTime]: e.target.value
+              }))}
+            />
+          </Box>
+        )
+      })}
       <Button 
         variant="contained" 
         onClick={onSubmit}
@@ -319,13 +323,13 @@ const ScheduleForm = () => {
     return cellDate < tomorrow;
   };
 
-  const consolidateTimeBlocks = (entries) => {
+  const consolidateTimeBlocks = (entries, reasons = {}) => {
     // Sort entries by start time
     entries.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     
     const consolidated = [];
     let currentBlock = null;
-
+  
     entries.forEach(entry => {
       if (!currentBlock) {
         currentBlock = {...entry};
@@ -338,7 +342,10 @@ const ScheduleForm = () => {
           // Extend current block
           currentBlock.endTime = entry.endTime;
         } else {
-          // Start new block
+          // If we have a reason for this block, add it
+          if (reasons[currentBlock.startTime]) {
+            currentBlock.reason = reasons[currentBlock.startTime];
+          }
           consolidated.push(currentBlock);
           currentBlock = {...entry};
         }
@@ -346,9 +353,12 @@ const ScheduleForm = () => {
     });
     
     if (currentBlock) {
+      if (reasons[currentBlock.startTime]) {
+        currentBlock.reason = reasons[currentBlock.startTime];
+      }
       consolidated.push(currentBlock);
     }
-
+  
     return consolidated;
   };
 
@@ -446,9 +456,9 @@ const ScheduleForm = () => {
     const weekAheadDate = new Date();
     weekAheadDate.setDate(weekAheadDate.getDate() + 7);
     
-    // Convert changes to entries
-    const payload = {
-      toDelete: Array.from(scheduleChanges.toDelete).map(cellId => {
+    // Convert toDelete changes to entries and consolidate them
+    const deletions = consolidateTimeBlocks(
+      Array.from(scheduleChanges.toDelete).map(cellId => {
         const [dayDate, hour] = cellId.split('-');
         const date = new Date(
           currentMonth.getFullYear(),
@@ -460,35 +470,16 @@ const ScheduleForm = () => {
           startTime: date.toISOString(),
           endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString()
         };
-      }),
-      
-      toAdd: Array.from(scheduleChanges.toAdd).map(cellId => {
-        const [dayDate, hour] = cellId.split('-');
-        const date = new Date(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth(),
-          parseInt(dayDate.match(/\d+/)[0]),
-          parseInt(hour)
-        );
-        return {
-          startTime: date.toISOString(),
-          endTime: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
       })
-    };
+    );
   
     // Check if any deletions are within the week ahead
-    const hasWeekAheadDeletions = payload.toDelete.some(entry => {
-      const entryDate = new Date(entry.startTime);
-      return entryDate <= weekAheadDate;
+    const weekAheadDeletions = deletions.filter(block => {
+      const blockStart = new Date(block.startTime);
+      return blockStart <= weekAheadDate;
     });
   
-    if (hasWeekAheadDeletions) {
-      const weekAheadDeletions = payload.toDelete.filter(entry => {
-        const entryDate = new Date(entry.startTime);
-        return entryDate <= weekAheadDate;
-      });
+    if (weekAheadDeletions.length > 0) {
       setRemovedShifts(weekAheadDeletions);
       setShowReasonForm(true);
       setLoading(false);
