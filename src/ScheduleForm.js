@@ -129,12 +129,15 @@ const ScheduleForm = () => {
 
   const getDaySchedule = (dayId) => {
     const selectedHours = new Set();
+    const baseDate = new Date(dayId);
+    
     for (let hour = 8; hour <= 21; hour++) {
-      const date = new Date(dayId);
+      const date = new Date(baseDate);
+      date.setHours(hour);
       const day = date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
       const cellId = `${day}${date.getDate()}-${hour}`;
       if (selectedCells.has(cellId)) {
-        selectedHours.add(cellId);
+        selectedHours.add(date.toISOString());
       }
     }
     return selectedHours;
@@ -220,7 +223,8 @@ const ScheduleForm = () => {
     const date = new Date(
       currentMonth.getFullYear(),
       currentMonth.getMonth(),
-      parseInt(dayDate.match(/\d+/)[0])
+      parseInt(dayDate.match(/\d+/)[0]),
+      parseInt(hour)  // Add the hour
     );
     const dayId = getDayId(date);
   
@@ -230,25 +234,23 @@ const ScheduleForm = () => {
       new: new Set(getDaySchedule(dayId))
     };
   
-    // Update the new schedule
-    const cellKey = `${dayDate}-${hour}`;
-    if (currentDayChanges.new.has(cellKey)) {
-      currentDayChanges.new.delete(cellKey);
+    // Update using datetime instead of string
+    if (currentDayChanges.new.has(date.toISOString())) {
+      currentDayChanges.new.delete(date.toISOString());
       setSelectedCells(prev => {
         const newSet = new Set(prev);
-        newSet.delete(cellKey);
+        newSet.delete(cellId);  // Keep using cellId for UI
         return newSet;
       });
     } else {
-      currentDayChanges.new.add(cellKey);
+      currentDayChanges.new.add(date.toISOString());
       setSelectedCells(prev => {
         const newSet = new Set(prev);
-        newSet.add(cellKey);
+        newSet.add(cellId);  // Keep using cellId for UI
         return newSet;
       });
     }
   
-    // Update state
     setDayChanges(new Map(dayChanges.set(dayId, currentDayChanges)));
   };
 
@@ -258,8 +260,8 @@ const ScheduleForm = () => {
       const payload = {
         changes: Array.from(dayChanges.entries()).map(([dayId, change]) => ({
           dayId,
-          original: Array.from(change.original),
-          new: Array.from(change.new),
+          original: Array.from(change.original), 
+          new: Array.from(change.new), 
           reason: reasons[dayId]
         })),
         username: userData.username,
