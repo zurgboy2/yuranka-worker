@@ -285,10 +285,18 @@ const ScheduleForm = () => {
       const newSelected = new Set();
       updatedSchedule.forEach(entry => {
         const startDate = new Date(entry.startTime);
-        const day = startDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
-        const date = startDate.getDate();
-        const hour = startDate.getHours();
-        newSelected.add(`${day}${date}-${hour}`);
+        const endDate = new Date(entry.endTime);
+        
+        const currentDate = new Date(startDate);
+        while (currentDate < endDate) {
+          const day = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+          const date = currentDate.getDate();
+          const hour = currentDate.getHours();
+          const cellId = `${day}${date}-${hour}`;
+          newSelected.add(cellId);
+          
+          currentDate.setHours(currentDate.getHours() + 1);
+        }
       });
       setSelectedCells(newSelected);
       
