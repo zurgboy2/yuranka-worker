@@ -125,7 +125,7 @@ const ScheduleForm = () => {
   const [loading, setLoading] = useState(false);
   const [isSelecting, setIsSelecting] = useState(true);
   const { userData } = useUserData();
-  const [removedShifts, setRemovedShifts] = useState([]);
+  const [removedBlocks, setremovedBlocks] = useState([]);
   const [reasons, setReasons] = useState({});
   const [showReasonForm, setShowReasonForm] = useState(false);
 
@@ -197,7 +197,7 @@ const ScheduleForm = () => {
   const handleReasonSubmit = async (event) => {
     event.preventDefault();
     // Validate all reasons are filled
-    if (removedShifts.some(shift => !reasons[shift.startTime])) {
+    if (removedBlocks.some(shift => !reasons[shift.startTime])) {
       alert("Please provide reasons for all removed shifts");
       return;
     }
@@ -254,7 +254,7 @@ const ScheduleForm = () => {
       setScheduleChanges({ toDelete: new Set(), toAdd: new Set() });
       setShowReasonForm(false);
       setReasons({});
-      setRemovedShifts([]);
+      setremovedBlocks([]);
       
       // Refresh the schedule display
       const updatedSchedule = await apiCall('worker_script', 'getSchedule', {
@@ -290,43 +290,103 @@ const ScheduleForm = () => {
     setIsSelecting(!selectedCells.has(cellId));
     toggleCell(cellId);
   };
-
-  const handleMouseEnter = (cellId) => {
-    if (isDragging) {
-      const [dayDate] = cellId.split('-');
-      const date = parseInt(dayDate.match(/\d+/)[0]);
-      if (isDisabled(date)) return;
   
-      const newSelected = new Set(selectedCells);
-      const newChanges = { ...scheduleChanges };
-  
-      if (isSelecting) {
-        newSelected.add(cellId);
-        if (!originalCells.has(cellId)) {
-          newChanges.toAdd.add(cellId);
-        }
-      } else {
-        newSelected.delete(cellId);
-        if (originalCells.has(cellId)) {
-          // Find the original continuous block this cell belongs to
-          const originalBlock = findContinuousBlock(cellId, originalCells);
-          // Mark the entire original block for deletion
-          originalBlock.forEach(cell => newChanges.toDelete.add(cell));
-          
-          // Only add cells that were in the original block AND are still selected
-          originalBlock.forEach(cell => {
-            if (cell !== cellId && newSelected.has(cell)) {
-              newChanges.toAdd.add(cell);
-            }
-          });
-        } else {
-          newChanges.toAdd.delete(cellId);
-        }
+  // Use a single set of helper functions
+  const getAllBlocksForDay = (dayDate, cellSet) => {
+    const blocks = [];
+    const processed = new Set();
+    
+    for (let hour = 8; hour <= 21; hour++) {
+      const cellId = `${dayDate}-${hour}`;
+      if (cellSet.has(cellId) && !processed.has(cellId)) {
+        const block = findContinuousBlock(cellId, cellSet);
+        blocks.push(block);
+        block.forEach(cell => processed.add(cell));
       }
-  
-      setSelectedCells(newSelected);
-      setScheduleChanges(newChanges);
     }
+    return blocks;
+  };
+
+  const areBlocksConnectedByCell = (cellId, blocks) => {
+    const [dayDate, hour] = cellId.split('-');
+    const cellHour = parseInt(hour);
+    
+    // Sort blocks by their start time
+    const sortedBlocks = blocks.sort((a, b) => {
+      const aHours = Array.from(a).map(cell => parseInt(cell.split('-')[1]));
+      const bHours = Array.from(b).map(cell => parseInt(cell.split('-')[1]));
+      return Math.min(...aHours) - Math.min(...bHours);
+    });
+
+    // Check if this cell connects any consecutive blocks
+    for (let i = 0; i < sortedBlocks.length - 1; i++) {
+      const currentBlock = sortedBlocks[i];
+      const nextBlock = sortedBlocks[i + 1];
+      
+      const currentHours = Array.from(currentBlock).map(cell => parseInt(cell.split('-')[1]));
+      const nextHours = Array.from(nextBlock).map(cell => parseInt(cell.split('-')[1]));
+      
+      const maxCurrentHour = Math.max(...currentHours);
+      const minNextHour = Math.min(...nextHours);
+      
+      if (cellHour > maxCurrentHour && cellHour < minNextHour) {
+        return [currentBlock, nextBlock];
+      }
+    }
+    
+    return [];
+  };
+
+  const handleCellToggle = (cellId, isMouseEnter = false) => {
+    const [dayDate] = cellId.split('-');
+    const date = parseInt(dayDate.match(/\d+/)[0]);
+    if (isDisabled(date)) return;
+  
+    const newSelected = new Set(selectedCells);
+    const newChanges = { ...scheduleChanges };
+  
+    const toggleAction = isMouseEnter ? isSelecting : !newSelected.has(cellId);
+  
+    if (toggleAction) {
+      // Selecting cell
+      newSelected.add(cellId);
+      if (!originalCells.has(cellId)) {
+        const dayBlocks = getAllBlocksForDay(dayDate, originalCells);
+        const connectedBlocks = areBlocksConnectedByCell(cellId, dayBlocks);
+        
+        if (connectedBlocks.length > 0) {
+          // Delete connected blocks and add back selected cells
+          connectedBlocks.forEach(block => {
+            block.forEach(cell => newChanges.toDelete.add(cell));
+          });
+          connectedBlocks.forEach(block => {
+            block.forEach(cell => {
+              if (newSelected.has(cell)) {
+                newChanges.toAdd.add(cell);
+              }
+            });
+          });
+        }
+        newChanges.toAdd.add(cellId);
+      }
+    } else {
+      // Deselecting cell
+      newSelected.delete(cellId);
+      if (originalCells.has(cellId)) {
+        const block = findContinuousBlock(cellId, originalCells);
+        block.forEach(cell => newChanges.toDelete.add(cell));
+        block.forEach(cell => {
+          if (newSelected.has(cell)) {
+            newChanges.toAdd.add(cell);
+          }
+        });
+      } else {
+        newChanges.toAdd.delete(cellId);
+      }
+    }
+  
+    setSelectedCells(newSelected);
+    setScheduleChanges(newChanges);
   };
 
   const handleMouseUp = () => {
@@ -389,46 +449,17 @@ const ScheduleForm = () => {
     return consolidated;
   };
 
-  const toggleCell = (cellId) => {
-    const [dayDate] = cellId.split('-');
-    const date = parseInt(dayDate.match(/\d+/)[0]);
-    if (isDisabled(date)) return;
-    
-    const newSelected = new Set(selectedCells);
-    const newChanges = { ...scheduleChanges };
-    
-    if (newSelected.has(cellId)) {
-      // Deselecting a cell
-      newSelected.delete(cellId);
-      if (originalCells.has(cellId)) {
-        // Find the original continuous block this cell belongs to
-        const originalBlock = findContinuousBlock(cellId, originalCells);
-        // Mark the entire original block for deletion
-        originalBlock.forEach(cell => newChanges.toDelete.add(cell));
-        
-        // Only add cells that were in the original block AND are still selected
-        // BUT exclude the cell that was just deselected
-        originalBlock.forEach(cell => {
-          if (cell !== cellId && newSelected.has(cell)) {
-            newChanges.toAdd.add(cell);
-          }
-        });
-      } else {
-        // If it was a new addition, just remove it
-        newChanges.toAdd.delete(cellId);
-      }
-    } else {
-      // Selecting a cell
-      newSelected.add(cellId);
-      if (!originalCells.has(cellId)) {
-        newChanges.toAdd.add(cellId);
-      }
+  const handleMouseEnter = (cellId) => {
+    if (isDragging) {
+      handleCellToggle(cellId, true);
     }
-    
-    setSelectedCells(newSelected);
-    setScheduleChanges(newChanges);
   };
   
+  const toggleCell = (cellId) => {
+    handleCellToggle(cellId, false);
+  };
+  
+
   // Helper function to find continuous block of cells
   const findContinuousBlock = (cellId, cellSet) => {
     const [dayDate, hour] = cellId.split('-');
@@ -455,7 +486,6 @@ const ScheduleForm = () => {
     
     return block;
   };
-
 
   const timeSlots = [...Array(14)].map((_, i) => i + 8);
 
@@ -507,7 +537,7 @@ const ScheduleForm = () => {
     });
   
     if (weekAheadDeletions.length > 0) {
-      setRemovedShifts(weekAheadDeletions);
+      setremovedBlocks(weekAheadDeletions);
       setShowReasonForm(true);
       setLoading(false);
       return;
@@ -573,7 +603,7 @@ const ScheduleForm = () => {
 
         {showReasonForm ? (
         <ReasonForm
-          removedShifts={removedShifts}
+          removedBlocks={removedBlocks}
           reasons={reasons}
           setReasons={setReasons}
           onSubmit={handleReasonSubmit}
