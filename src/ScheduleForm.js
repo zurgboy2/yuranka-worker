@@ -155,22 +155,22 @@ const ScheduleForm = () => {
         });
         
         const newSelected = new Set();
-        const originalCellsSet = new Set();
         
         data.forEach(entry => {
           const startDate = new Date(entry.startTime);
           const endDate = new Date(entry.endTime);
           
-          let currentDate = new Date(startDate);
+          // Get all hours between start and end
+          const currentDate = new Date(startDate);
           while (currentDate < endDate) {
             const day = currentDate.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
             const date = currentDate.getDate();
             const hour = currentDate.getHours();
             const cellId = `${day}${date}-${hour}`;
             newSelected.add(cellId);
-            originalCellsSet.add(cellId);
             
-            currentDate = new Date(currentDate.getTime() + (60 * 60 * 1000));
+            // Increment by one hour
+            currentDate.setHours(currentDate.getHours() + 1);
           }
         });
         
