@@ -11,9 +11,7 @@ import apiCall from '../api';
 import { useUserData } from '../UserContext';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-
-
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const EventManager = ({ onClose }) => {
   const { userData } = useUserData();
