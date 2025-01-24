@@ -9,6 +9,9 @@ import {
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from '../api';
 import { useUserData } from '../UserContext';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 
 const EventManager = ({ onClose }) => {
@@ -429,34 +432,32 @@ const EventManager = ({ onClose }) => {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Start Date and Time"
-            name="startDateTime"
-            type="datetime-local"
-            value={newEvent.startDateTime}
-            onChange={handleInputChange}
-            InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
-            InputProps={{
-              style: { color: '#ffffff' },
-            }}
-            required
-          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DateTimePicker
+              label="Start Date and Time"
+              value={newEvent.startDateTime}
+              onChange={(newValue) => handleInputChange({ target: { name: 'startDateTime', value: newValue }})}
+              renderInput={(params) => <TextField {...params} fullWidth required />}
+              InputLabelProps={{ style: { color: '#ffffff' } }}
+              InputProps={{
+                style: { color: '#ffffff' },
+              }}
+            />
+          </LocalizationProvider>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="End Date and Time"
-            name="endDateTime"
-            type="datetime-local"
-            value={newEvent.endDateTime}
-            onChange={handleInputChange}
-            InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
-            InputProps={{
-              style: { color: '#ffffff' },
-            }}
-            required
-          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DateTimePicker
+              label="End Date and Time"
+              value={newEvent.endDateTime}
+              onChange={(newValue) => handleInputChange({ target: { name: 'endDateTime', value: newValue }})}
+              renderInput={(params) => <TextField {...params} fullWidth required />}
+              InputLabelProps={{ style: { color: '#ffffff' } }}
+              InputProps={{
+                style: { color: '#ffffff' },
+              }}
+            />
+          </LocalizationProvider>
         </Grid>
         <Grid item xs={12}>
           <TextField
@@ -681,35 +682,35 @@ const EventManager = ({ onClose }) => {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Start Date and Time"
-                      name="startDateTime"
-                      type="datetime-local"
-                      value={editingEvent.startDateTime}
-                      onChange={handleEditChange}
-                      InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
-                      InputProps={{ 
-                        style: { color: '#ffffff' },
-                        sx: { backgroundColor: 'rgba(74, 74, 74, 0.8)' }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="End Date and Time"
-                      name="endDateTime"
-                      type="datetime-local"
-                      value={editingEvent.endDateTime}
-                      onChange={handleEditChange}
-                      InputLabelProps={{ shrink: true, style: { color: '#ffffff' } }}
-                      InputProps={{ 
-                        style: { color: '#ffffff' },
-                        sx: { backgroundColor: 'rgba(74, 74, 74, 0.8)' }
-                      }}
-                    />
-                  </Grid>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <DateTimePicker
+                        label="Start Date and Time"
+                        value={editingEvent.startDateTime}
+                        onChange={(newValue) => handleEditChange({ target: { name: 'startDateTime', value: newValue }})}
+                        renderInput={(params) => <TextField {...params} fullWidth />}
+                        InputLabelProps={{ style: { color: '#ffffff' } }}
+                        InputProps={{ 
+                          style: { color: '#ffffff' },
+                          sx: { backgroundColor: 'rgba(74, 74, 74, 0.8)' }
+                        }}
+                      />
+                    </LocalizationProvider>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker
+                          label="End Date and Time"
+                          value={editingEvent.endDateTime}
+                          onChange={(newValue) => handleEditChange({ target: { name: 'endDateTime', value: newValue }})}
+                          renderInput={(params) => <TextField {...params} fullWidth />}
+                          InputLabelProps={{ style: { color: '#ffffff' } }}
+                          InputProps={{ 
+                            style: { color: '#ffffff' },
+                            sx: { backgroundColor: 'rgba(74, 74, 74, 0.8)' }
+                          }}
+                        />
+                      </LocalizationProvider>
+                    </Grid>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
