@@ -14,6 +14,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 
+
 const EventManager = ({ onClose }) => {
   const { userData } = useUserData();
   const [events, setEvents] = useState([]);
