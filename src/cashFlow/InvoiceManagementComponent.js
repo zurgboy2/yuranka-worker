@@ -14,7 +14,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { format, parse, isValid } from 'date-fns';
 import apiCall from '../api';
 import { useUserData } from '../UserContext';
 
@@ -123,12 +122,12 @@ const InvoiceManagementComponent = () => {
   
   const parseDate = (dateString) => {
     if (!dateString) return null;
-    const parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
-    return isValid(parsedDate) ? parsedDate : null;
+    const parsedDate = dayjs(dateString);
+    return parsedDate.isValid() ? parsedDate.toDate() : null;
   };
   
   const formatDate = (date) => {
-    return date ? format(date, 'yyyy-MM-dd') : '';
+    return date ? dayjs(date).format('YYYY-MM-DD') : '';
   };
   
   const applyFilters = useCallback(() => {
