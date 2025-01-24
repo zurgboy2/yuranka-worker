@@ -12,6 +12,8 @@ import { useUserData } from '../UserContext';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 const EventManager = ({ onClose }) => {
   const { userData } = useUserData();
@@ -430,34 +432,43 @@ const EventManager = ({ onClose }) => {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="Start Date and Time"
-              value={newEvent.startDateTime}
-              onChange={(newValue) => handleInputChange({ target: { name: 'startDateTime', value: newValue }})}
-              renderInput={(params) => <TextField {...params} fullWidth required />}
-              InputLabelProps={{ style: { color: '#ffffff' } }}
-              InputProps={{
-                style: { color: '#ffffff' },
-              }}
+          <Grid item xs={12} sm={6}>
+            <DatePicker
+              selected={newEvent.startDateTime}
+              onChange={(date) => handleInputChange({ 
+                target: { 
+                  name: 'startDateTime', 
+                  value: date 
+                }
+              })}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15}
+              dateFormat="MMMM d, yyyy h:mm aa"
+              placeholderText="Select start date and time"
+              className="custom-datepicker"
+              required
             />
-          </LocalizationProvider>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="End Date and Time"
-              value={newEvent.endDateTime}
-              onChange={(newValue) => handleInputChange({ target: { name: 'endDateTime', value: newValue }})}
-              renderInput={(params) => <TextField {...params} fullWidth required />}
-              InputLabelProps={{ style: { color: '#ffffff' } }}
-              InputProps={{
-                style: { color: '#ffffff' },
-              }}
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <DatePicker
+              selected={newEvent.endDateTime}
+              onChange={(date) => handleInputChange({ 
+                target: { 
+                  name: 'endDateTime', 
+                  value: date 
+                }
+              })}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15}
+              dateFormat="MMMM d, yyyy h:mm aa"
+              placeholderText="Select end date and time"
+              className="custom-datepicker"
+              required
             />
-          </LocalizationProvider>
-        </Grid>
+          </Grid>
         <Grid item xs={12}>
           <TextField
             fullWidth
