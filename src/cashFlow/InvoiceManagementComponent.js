@@ -10,8 +10,10 @@ import {
   DialogContent, DialogActions, Snackbar, Alert,
   List, ListItem, ListItemText, Divider, IconButton
 } from '@mui/material';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import { format, parse, isValid } from 'date-fns';
 import apiCall from '../api';
 import { useUserData } from '../UserContext';
@@ -77,12 +79,6 @@ const darkTheme = createTheme({
     },
   },
 });
-
-const datePickerStyles = `
-  .react-datepicker-popper {
-    z-index: 9999 !important;
-  }
-`;
 
 const InvoiceManagementComponent = () => {
   const { userData } = useUserData();
@@ -275,12 +271,34 @@ const InvoiceManagementComponent = () => {
           />
           <Typography><strong>Amount Remaining:</strong> €{selectedInvoice?.amount - selectedInvoice?.amountPaid}</Typography>
           <Box sx={{ mt: 2 }}>
-            <DatePicker
-              selected={parseDate(selectedInvoice?.date)}
-              onChange={handleSelectedInvoiceDateChange}
-              dateFormat="yyyy-MM-dd"
-              customInput={<TextField fullWidth label="Date" />}
-            />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                value={selectedInvoice?.date ? dayjs(selectedInvoice.date) : null}
+                onChange={(date) => handleSelectedInvoiceDateChange(date ? date.toDate() : null)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    label: "Date",
+                    InputLabelProps: { style: { color: '#ffffff' } },
+                    InputProps: {
+                      style: { color: '#ffffff' },
+                      sx: { 
+                        bgcolor: 'rgba(74, 74, 74, 0.8)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4a4a4a'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#8b0000'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#8b0000'
+                        }
+                      }
+                    }
+                  }
+                }}
+              />
+            </LocalizationProvider>
           </Box>
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Payment Status</InputLabel>
@@ -384,7 +402,6 @@ const InvoiceManagementComponent = () => {
       return (
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
-          <style>{datePickerStyles}</style>
           <style>{materialSymbolsFont}</style>
           <Container maxWidth="lg">
             <Box sx={{ my: 4 }}>            
@@ -435,30 +452,64 @@ const InvoiceManagementComponent = () => {
                   <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: isMobile ? 'column' : 'row' }}>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle1" gutterBottom>Start Date</Typography>
-                      <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                        dateFormat="yyyy-MM-dd"
-                        customInput={<TextField fullWidth />}
-                        popperProps={{ strategy: "fixed" }}
-                      />
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          value={startDate ? dayjs(startDate) : null}
+                          onChange={(date) => setStartDate(date ? date.toDate() : null)}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              InputLabelProps: { style: { color: '#ffffff' } },
+                              InputProps: {
+                                style: { color: '#ffffff' },
+                                sx: { 
+                                  bgcolor: 'rgba(74, 74, 74, 0.8)',
+                                  '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#4a4a4a'
+                                  },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#8b0000'
+                                  },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#8b0000'
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </LocalizationProvider>
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle1" gutterBottom>End Date</Typography>
-                      <DatePicker
-                        selected={endDate}
-                        onChange={(date) => setEndDate(date)}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                        dateFormat="yyyy-MM-dd"
-                        customInput={<TextField fullWidth />}
-                        popperProps={{ strategy: "fixed" }}
-                      />
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          value={endDate ? dayjs(endDate) : null}
+                          onChange={(date) => setEndDate(date ? date.toDate() : null)}
+                          minDate={startDate ? dayjs(startDate) : null}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              InputLabelProps: { style: { color: '#ffffff' } },
+                              InputProps: {
+                                style: { color: '#ffffff' },
+                                sx: { 
+                                  bgcolor: 'rgba(74, 74, 74, 0.8)',
+                                  '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#4a4a4a'
+                                  },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#8b0000'
+                                  },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#8b0000'
+                                  }
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </LocalizationProvider>
                     </Box>
                   </Box>
                   {isLoading ? (
@@ -523,12 +574,34 @@ const InvoiceManagementComponent = () => {
                 }}
               />
               <Box sx={{ mt: 2 }}>
-                <DatePicker
-                  selected={newInvoice.date}
-                  onChange={handleNewInvoiceDateChange}
-                  dateFormat="yyyy-MM-dd"
-                  customInput={<TextField fullWidth label="Date" />}
-                />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    value={newInvoice.date ? dayjs(newInvoice.date) : null}
+                    onChange={(date) => handleNewInvoiceDateChange(date ? date.toDate() : null)}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        label: "Date",
+                        InputLabelProps: { style: { color: '#ffffff' } },
+                        InputProps: {
+                          style: { color: '#ffffff' },
+                          sx: { 
+                            bgcolor: 'rgba(74, 74, 74, 0.8)',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#4a4a4a'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#8b0000'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#8b0000'
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </LocalizationProvider>
               </Box>
               <FormControl fullWidth sx={{ mt: 2 }}>
                 <InputLabel id="invoice-status-label">Status</InputLabel>
