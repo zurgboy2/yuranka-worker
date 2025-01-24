@@ -10,13 +10,15 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import apiCall from '../api'; // Adjust the import path as necessary
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import apiCall from '../api';
 import { useUserData } from '../UserContext';
 
 const PurchaseAdderComponent = () => {
-  const { userData } = useUserData(); // Use the userData context
+  const { userData } = useUserData();
   const [purchase, setPurchase] = useState({
     invoiceValue: '',
     nameofpurchase: '',
@@ -52,8 +54,8 @@ const PurchaseAdderComponent = () => {
           mimeType: purchase.invoiceFile.type,
           invoiceValue: purchase.invoiceValue,
           nameofpurchase: purchase.nameofpurchase,
-          dateofpayment: purchase.dateofpayment.toISOString().split('T')[0],
-          dateofrelease: purchase.dateofrelease ? purchase.dateofrelease.toISOString().split('T')[0] : ''
+          dateofpayment: dayjs(purchase.dateofpayment).format('YYYY-MM-DD'),
+          dateofrelease: purchase.dateofrelease ? dayjs(purchase.dateofrelease).format('YYYY-MM-DD') : ''
         };
   
         try {
@@ -97,65 +99,66 @@ const PurchaseAdderComponent = () => {
   };
 
   return (
-    <Card>
-      <CardHeader title="Track Purchase" />
-      <CardContent>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            name="nameofpurchase"
-            label="Name of Purchase"
-            value={purchase.nameofpurchase}
-            onChange={handleInputChange}
-            required
-            fullWidth
-          />
-          <TextField
-            name="invoiceValue"
-            label="Invoice Value"
-            type="number"
-            value={purchase.invoiceValue}
-            onChange={handleInputChange}
-            required
-            fullWidth
-          />
-          <Typography variant="subtitle1">Date of Payment</Typography>
-          <DatePicker
-            selected={purchase.dateofpayment}
-            onChange={(date) => handleDateChange(date, 'dateofpayment')}
-            dateFormat="yyyy-MM-dd"
-            customInput={<TextField fullWidth />}
-            required
-          />
-          <Typography variant="subtitle1">Date of Release (Optional)</Typography>
-          <DatePicker
-            selected={purchase.dateofrelease}
-            onChange={(date) => handleDateChange(date, 'dateofrelease')}
-            dateFormat="yyyy-MM-dd"
-            customInput={<TextField fullWidth />}
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".pdf,.docx"
-            required
-          />
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            fullWidth
-          >
-            Track Purchase
-          </Button>
-        </Box>
-      </CardContent>
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Card>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Card>
+        <CardHeader title="Track Purchase" />
+        <CardContent>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              name="nameofpurchase"
+              label="Name of Purchase"
+              value={purchase.nameofpurchase}
+              onChange={handleInputChange}
+              required
+              fullWidth
+            />
+            <TextField
+              name="invoiceValue"
+              label="Invoice Value"
+              type="number"
+              value={purchase.invoiceValue}
+              onChange={handleInputChange}
+              required
+              fullWidth
+            />
+            <DatePicker
+              label="Date of Payment"
+              value={purchase.dateofpayment}
+              onChange={(date) => handleDateChange(date, 'dateofpayment')}
+              format="YYYY-MM-DD"
+              slotProps={{ textField: { fullWidth: true, required: true } }}
+            />
+            <DatePicker
+              label="Date of Release (Optional)"
+              value={purchase.dateofrelease}
+              onChange={(date) => handleDateChange(date, 'dateofrelease')}
+              format="YYYY-MM-DD"
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".pdf,.docx"
+              required
+            />
+            <Button 
+              type="submit" 
+              variant="contained" 
+              color="primary" 
+              fullWidth
+            >
+              Track Purchase
+            </Button>
+          </Box>
+        </CardContent>
+        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Card>
+    </LocalizationProvider>
   );
 };
 
