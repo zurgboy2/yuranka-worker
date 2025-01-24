@@ -431,7 +431,7 @@ const EventManager = ({ onClose }) => {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="Start Date and Time"
               value={newEvent.startDateTime}
@@ -445,7 +445,7 @@ const EventManager = ({ onClose }) => {
           </LocalizationProvider>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="End Date and Time"
               value={newEvent.endDateTime}
@@ -681,7 +681,7 @@ const EventManager = ({ onClose }) => {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DateTimePicker
                         label="Start Date and Time"
                         value={editingEvent.startDateTime}
@@ -696,7 +696,7 @@ const EventManager = ({ onClose }) => {
                     </LocalizationProvider>
                     </Grid>
                     <Grid item xs={12}>
-                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DateTimePicker
                           label="End Date and Time"
                           value={editingEvent.endDateTime}
