@@ -168,14 +168,15 @@ const EventManager = ({ onClose }) => {
         throw new Error(response.error);
       }
   
-      // If we reach here, it means the call was successful
+      // Success case
       handleSuccessfulSubmission();
     } catch (error) {
       console.error('Error during event creation:', error);
-      if (error.message.includes('Request to script time out')) {
-        // Treat timeout as success
-        console.log('Timeout occurred, but treating as success');
+      if (error.message.includes('Request to script time out') || error.message.includes('504')) {
+        // Treat timeout as success but with a different message
         handleSuccessfulSubmission();
+        // Show a specific message for timeout case
+        setError('Event creation initiated! Please check the calendar in a few minutes to see your event.');
       } else {
         setError(error.message || 'Failed to create event. Please try again.');
       }
