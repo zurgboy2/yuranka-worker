@@ -39,8 +39,8 @@ const StoreSearch = ({ onClose }) => {
   });
 
 
-  const handleSearch = useCallback(async () => {
-    if (!searchText.trim()) return;
+  const handleSearch = useCallback(async (uniqueId = null) => {
+    if (!searchText.trim() && !uniqueId) return;
     
     setLoading(true);
     setError(null);
@@ -48,7 +48,8 @@ const StoreSearch = ({ onClose }) => {
       const result = await apiCall('stocker_script', 'searchStoreProduct', {
         googleToken: userData.googleToken,
         username: userData.username,
-        searchText
+        searchText,
+        uniqueId  // This will be the numerical ID from the data
       });
       setSearchResults(result);
     } catch (err) {
@@ -57,6 +58,7 @@ const StoreSearch = ({ onClose }) => {
       setLoading(false);
     }
   }, [searchText, userData]);
+  
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -340,7 +342,7 @@ const StoreSearch = ({ onClose }) => {
               onChange={(event, newValue) => { 
                 if (newValue) { 
                   setSearchText(newValue.title);
-                  handleSearch(); 
+                  handleSearch(newValue.uniqueId); // Using the correct property name uniqueId
                 } else {
                   setSearchText('');
                 }
