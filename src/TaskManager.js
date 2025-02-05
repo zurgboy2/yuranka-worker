@@ -135,9 +135,9 @@ const TaskManager = () => {
       const completedCount = task.subtasks.filter(st => st.status === 'Completed').length;
       const totalCount = task.subtasks.length;
       const proportion = totalCount > 0 ? completedCount / totalCount : 0;
-      if (proportion < 0.33) return '#ff8080';  // Darker red
-      if (proportion < 0.67) return '#ffd700';  // Darker yellow (gold)
-      return '#32cd32';  // Darker green (limegreen)
+      if (proportion < 0.33) return '#cc0000';    // Dark red
+      if (proportion < 0.67) return '#ffa500';    // Dark orange/amber
+      return '#228b22';                           // Forest green
     };
 
     const handleDelete = async () => {
