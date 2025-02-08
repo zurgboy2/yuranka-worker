@@ -13,6 +13,7 @@ const InvoiceGeneratorComponent = () => {
     customerName: '',
     customerDetails: '',
     items: [],
+    dueData: '',
     tax: 0,
     discount: 0
   });
@@ -61,6 +62,7 @@ const InvoiceGeneratorComponent = () => {
       const formData = {
         customerName: invoiceData.customerName,
         customerDetails: invoiceData.customerDetails,
+        dueDate: invoiceData.dueDate,
         productItems: invoiceData.items,
         tax: invoiceData.tax,
         discount: invoiceData.discount
@@ -124,6 +126,19 @@ const InvoiceGeneratorComponent = () => {
             onChange={handleInputChange}
             multiline
             rows={4}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Due Date"
+            name="dueDate"
+            value={invoiceData.dueDate}
+            onChange={handleInputChange}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
         </Grid>
       </Grid>
