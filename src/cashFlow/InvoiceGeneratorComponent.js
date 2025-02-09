@@ -73,17 +73,17 @@ const InvoiceGeneratorComponent = () => {
         googleToken: userData.googleToken, 
         username: userData.username 
       });
-
-      // Check if the response is a string (URL)
-      if (typeof response === 'string' && response.startsWith('https://')) {
-        setGeneratedInvoiceUrl(response);
+      
+      // Check if the response has the expected structure
+      if (response && response.pdfUrl && response.message) {
+        setGeneratedInvoiceUrl(response.pdfUrl);
         setSnackbar({
           open: true,
-          message: 'Invoice generated successfully!',
+          message: response.message,
           severity: 'success'
         });
       } else {
-        throw new Error('Unexpected response format');
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error("Failed to generate invoice", error);
