@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import tcgConfig from "../../../oldCode/tcgConfig";
+import tcgConfig from "./tcgConfig";
 
 const getColorForRarity = (() => {
   // Primary base colors

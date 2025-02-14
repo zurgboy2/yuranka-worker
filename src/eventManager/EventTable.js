@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@/components/ui/table';
 
 const EventTable = ({ events }) => {
   return (
