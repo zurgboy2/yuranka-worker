@@ -29,7 +29,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import apiCall from './api';
+import apiCall from '../api';
 
 const OrdersModal = ({ open, onClose }) => {
   const [value, setValue] = useState(0);
