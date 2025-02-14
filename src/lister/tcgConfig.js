@@ -14,6 +14,11 @@ const tcgConfig = {
         type: 'selection', 
         options: ['MT', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO']
       },
+      {
+        name: 'language',
+        type: 'selection',
+        options:['EN','DE','ES','PT','RU','FR']
+      },
       { name: 'quantity', type: 'number' },
       { name: 'price', type: 'number' },
       { name: 'location', type: 'text' }
@@ -28,10 +33,6 @@ const tcgConfig = {
   games: {
     mtg: {
       name: 'Magic: The Gathering',
-      collectionNames: {
-        stock: 'mtg',
-        existing: 'mtg_existing_stock'
-      },
       display: {
         imageUrl: 'https://ik.imagekit.io/mcgszbooe/M1.jpg?updatedAt=1723031170168',
         background: {
@@ -52,10 +53,6 @@ const tcgConfig = {
 
     pokemon: {
       name: 'Pokemon',
-      collectionNames: {
-        stock: 'pokemon',
-        existing: 'pokemon_existing_stock'
-      },
       display: {
         imageUrl: 'https://ik.imagekit.io/mcgszbooe/Pokemon_fb_1.jpg?updatedAt=1708283575415',
         background: {
@@ -77,10 +74,6 @@ const tcgConfig = {
 
     'yu-gi-oh': {
       name: 'Yu-Gi-Oh!',
-      collectionNames: {
-        stock: 'yu-gi-oh',
-        existing: 'yu-gi-oh_existing_stock'
-      },
       display: {
         imageUrl: 'https://ik.imagekit.io/mcgszbooe/Y2.jpg?updatedAt=1709207356017',
         background: {
@@ -106,10 +99,6 @@ const tcgConfig = {
 
     'one-piece': {
       name: 'One Piece',
-      collectionNames: {
-        stock: 'one-piece',
-        existing: 'one-piece_existing_stock'
-      },
       display: {
         imageUrl: 'https://ik.imagekit.io/mcgszbooe/O2.png?updatedAt=1709212376860',
         background: {
@@ -128,10 +117,6 @@ const tcgConfig = {
 
     fab: {
       name: 'Flesh and Blood',
-      collectionNames: {
-        stock: 'fab',
-        existing: 'fab_existing_stock'
-      },
       display: {
         imageUrl: 'https://ik.imagekit.io/mcgszbooe/FAB.jpg?updatedAt=1730565998814',
         background: {
@@ -150,10 +135,6 @@ const tcgConfig = {
 
     lorcana: {
       name: 'Disney Lorcana',
-      collectionNames: {
-        stock: 'lorcana',
-        existing: 'lorcana_existing_stock'
-      },
       display: {
         imageUrl: 'https://example.com/lorcana.png',
         background: {
@@ -174,10 +155,6 @@ const tcgConfig = {
 
     swu: {
       name: 'Star Wars Unlimited',
-      collectionNames: {
-        stock: 'swu',
-        existing: 'swu_existing_stock'
-      },
       display: {
         imageUrl: 'https://example.com/swu.png',
         background: {
@@ -198,10 +175,6 @@ const tcgConfig = {
 
     'battle-spirits-saga': {
       name: 'Battle Spirits Saga',
-      collectionNames: {
-        stock: 'battle-spirits-saga',
-        existing: 'battle-spirits-saga_existing_stock'
-      },
       display: {
         imageUrl: 'https://example.com/bss.png',
         background: {
@@ -222,10 +195,6 @@ const tcgConfig = {
 
     'dragon-ball-super': {
       name: 'Dragon Ball Super Card Game',
-      collectionNames: {
-        stock: 'dragon-ball-super',
-        existing: 'dragon-ball-super_existing_stock'
-      },
       display: {
         imageUrl: 'https://example.com/dbs.png',
         background: {
@@ -246,10 +215,6 @@ const tcgConfig = {
 
     digimon: {
       name: 'Digimon Card Game',
-      collectionNames: {
-        stock: 'digimon',
-        existing: 'digimon_existing_stock'
-      },
       display: {
         imageUrl: 'https://example.com/digimon.png',
         background: {
