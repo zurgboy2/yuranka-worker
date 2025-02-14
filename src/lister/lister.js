@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import apiCall from './api';
 import CardDisplay from './CardDisplay';
 import { useUserData } from './userContext'; 
 import { 
@@ -10,6 +9,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import HighPricePanel from './HighPricePanel';
 import OrdersModal from './OrdersModal';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import apiCall from '../api';
 
 const TrackerPanel = ({ 
   modifiedCards, 
