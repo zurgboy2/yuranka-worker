@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CardDisplay from './CardDisplay';
-import { useUserData } from '../userContext'; 
+import { useUserData } from '../UserContext'; 
 import { 
   TextField, Box, 
   CircularProgress, Typography, Button, Modal, Paper, Stack
