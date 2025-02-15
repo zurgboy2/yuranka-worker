@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/yuranka-worker/static/css/main.dc5ab940.css",
-    "main.js": "/yuranka-worker/static/js/main.fb1da9e1.js",
+    "main.js": "/yuranka-worker/static/js/main.9418cc7d.js",
     "static/js/453.a12cfbd9.chunk.js": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js",
     "static/media/material-icons-two-tone.woff": "/yuranka-worker/static/media/material-icons-two-tone.3baa5b8f3469222b822d.woff",
     "static/media/material-icons-two-tone.woff2": "/yuranka-worker/static/media/material-icons-two-tone.4ef4218c522f1eb6b5b1.woff2",
@@ -15,11 +15,11 @@
     "static/media/material-icons.woff2": "/yuranka-worker/static/media/material-icons.0c35d18bf06992036b69.woff2",
     "index.html": "/yuranka-worker/index.html",
     "main.dc5ab940.css.map": "/yuranka-worker/static/css/main.dc5ab940.css.map",
-    "main.fb1da9e1.js.map": "/yuranka-worker/static/js/main.fb1da9e1.js.map",
+    "main.9418cc7d.js.map": "/yuranka-worker/static/js/main.9418cc7d.js.map",
     "453.a12cfbd9.chunk.js.map": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.dc5ab940.css",
-    "static/js/main.fb1da9e1.js"
+    "static/js/main.9418cc7d.js"
   ]
 }
