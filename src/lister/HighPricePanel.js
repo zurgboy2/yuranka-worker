@@ -8,7 +8,7 @@ import {
   CircularProgress 
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import apiCall from './api';
+import apiCall from '../api';
 
 const HighPricePanel = ({ onCardSelect, isLoading, selectedGame }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
