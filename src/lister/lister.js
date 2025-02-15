@@ -369,7 +369,7 @@ const SearchPanel = ({ onSearch, searchTerm, setSearchTerm, searchMode, onClear,
 };
 
 
-const Lister = ({ selectedGame }) => {
+const ListerApp = ({ selectedGame }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -831,4 +831,4 @@ const Lister = ({ selectedGame }) => {
   );
 };
 
-export default Lister;
+export default ListerApp;
