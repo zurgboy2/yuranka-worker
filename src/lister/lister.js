@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import CardDisplay from './CardDisplay';
-import { useUserData } from '../UserContext'; 
+import { useUserData } from '../UserContext';
 import { 
   TextField, Box, 
-  CircularProgress, Typography, Button, Modal, Paper, Stack
+  CircularProgress, Typography, Button, Modal, Paper, Stack,
+  Avatar, Chip
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HighPricePanel from './HighPricePanel';
 import OrdersModal from './OrdersModal';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import apiCall from '../api';
+import tcgConfig from './tcgConfig';
 
 const TrackerPanel = ({ 
   modifiedCards, 
@@ -369,7 +371,8 @@ const SearchPanel = ({ onSearch, searchTerm, setSearchTerm, searchMode, onClear,
 };
 
 
-const ListerApp = ({ selectedGame }) => {
+const ListerApp = () => {
+  const [selectedGame, setSelectedGame] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -398,7 +401,13 @@ const ListerApp = ({ selectedGame }) => {
     setOrdersModalOpen(false);
   };
   
-
+  const handleGameSelect = (gameKey) => {
+    setSelectedGame(gameKey === selectedGame ? null : gameKey);
+    // Clear results when changing games
+    setResults([]);
+    setSearchTerm('');
+    setModifiedCards({ items: [], activeCount: 0, hasChanges: false });
+  };
 
 
   const handleHighPriceCardSelect = (card) => {
@@ -729,102 +738,142 @@ const ListerApp = ({ selectedGame }) => {
 
   return (
     <Box sx={{ width: '100%', height: '100vh', p: 2 }}>
-      <SearchPanel 
-        onSearch={handleSearch}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchMode={searchMode}
-        onClear={handleClearAll}
-        onOpenOrders={handleOpenOrders}
-      />
-
-      <OrdersModal 
-        open={ordersModalOpen}
-        onClose={handleCloseOrders}
-      />
-  
-      {loading && <CircularProgress />}
-      {error && <Typography color="error">{error}</Typography>}
-  
-      {/* Main content area */}
-      <Box sx={{ display: 'flex', gap: 2, position: 'relative' }}>
-        {/* Left side - Cards display */}
-        <Box sx={{ flex: 1 }}>
-          {results.length > 0 && (
-            <CardDisplay 
-              items={results} 
-              selectedGame={selectedGame}
-              onCardModification={handleCardModification}
-              onDuplicate={handleDuplicate}
-              onDelete={handleDelete}
-              canEditPrices={canEditPrices}
-              modifiedItems={modifiedItems}
-              setModifiedItems={setModifiedItems}
-            />
-          )}
-        </Box>
-  
-        {/* Right side - Panels */}
-        <Box>
-          <TrackerPanel 
-            modifiedCards={modifiedCards}
-            onRefresh={handleRefreshTracker}
-            setResponseData={setResponseData}
-            setOpenModal={setOpenModal}
-            batches={trackerBatches}
-            isLoading={loading}
+      {/* Game Selection UI */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          mb: 2,
+          p: 2,
+          overflowX: 'auto',
+          backgroundColor: 'rgba(0,0,0,0.03)',
+          borderBottom: '1px solid rgba(0,0,0,0.1)'
+        }}
+      >
+        {Object.entries(tcgConfig.games).map(([gameKey, game]) => (
+          <Chip
+            key={gameKey}
+            avatar={<Avatar src={game.display.imageUrl} />}
+            label={game.name}
+            onClick={() => handleGameSelect(gameKey)}
+            color={selectedGame === gameKey ? "primary" : "default"}
+            sx={{
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: 1
+              }
+            }}
           />
-  
-          {canViewHighPrices && (
-            <HighPricePanel
-              onCardSelect={handleHighPriceCardSelect}
-              isLoading={loading}
-              selectedGame={selectedGame}
-            />
-          )}
-        </Box>
+        ))}
       </Box>
-  
-      {/* Bottom submit button */}
-      {results.length > 0 && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: 2,
-            backgroundColor: 'background.paper',
-            borderTop: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}
-        >
-          <ResultModal 
-            open={openModal}
-            onClose={handleCloseModal}
-            onClearAndClose={handleClearAndClose}
-            data={responseData}
+
+      {selectedGame ? (
+        <>
+          <SearchPanel 
+            onSearch={handleSearch}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            searchMode={searchMode}
+            onClear={handleClearAll}
+            onOpenOrders={handleOpenOrders}
           />
-          <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmitChanges}
-              disabled={loading || (
+
+          <OrdersModal 
+            open={ordersModalOpen}
+            onClose={handleCloseOrders}
+          />
+
+          {loading && <CircularProgress />}
+          {error && <Typography color="error">{error}</Typography>}
+
+          {/* Main content area */}
+          <Box sx={{ display: 'flex', gap: 2, position: 'relative' }}>
+            {/* Left side - Cards display */}
+            <Box sx={{ flex: 1 }}>
+              {results.length > 0 && (
+                <CardDisplay 
+                  items={results} 
+                  selectedGame={selectedGame}
+                  onCardModification={handleCardModification}
+                  onDuplicate={handleDuplicate}
+                  onDelete={handleDelete}
+                  canEditPrices={canEditPrices}
+                  modifiedItems={modifiedItems}
+                  setModifiedItems={setModifiedItems}
+                />
+              )}
+            </Box>
+
+            {/* Right side - Panels */}
+            <Box>
+              <TrackerPanel 
+                modifiedCards={modifiedCards}
+                onRefresh={handleRefreshTracker}
+                setResponseData={setResponseData}
+                setOpenModal={setOpenModal}
+                batches={trackerBatches}
+                isLoading={loading}
+              />
+
+              {canViewHighPrices && (
+                <HighPricePanel
+                  onCardSelect={handleHighPriceCardSelect}
+                  isLoading={loading}
+                  selectedGame={selectedGame}
+                />
+              )}
+            </Box>
+          </Box>
+
+          {/* Bottom submit button */}
+          {results.length > 0 && (
+            <Box
+              sx={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                padding: 2,
+                backgroundColor: 'background.paper',
+                borderTop: 1,
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'center',
+                zIndex: 1000
+              }}
+            >
+              <ResultModal 
+                open={openModal}
+                onClose={handleCloseModal}
+                onClearAndClose={handleClearAndClose}
+                data={responseData}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmitChanges}
+                disabled={loading || (
                   !modifiedCards.hasChanges && 
                   !results.some(item => 
-                      !item._deleted && 
-                      (item.quantity > 0 || modifiedItems[item.cardId]?.quantity > 0)
+                    !item._deleted && 
+                    (item.quantity > 0 || modifiedItems[item.cardId]?.quantity > 0)
                   )
-              )}
-          >
-              {loading ? 'Submitting...' : `Submit Changes (${results.filter(item => 
+                )}
+              >
+                {loading ? 'Submitting...' : `Submit Changes (${results.filter(item => 
                   !item._deleted && 
                   (item.quantity > 0 || modifiedItems[item.cardId]?.quantity > 0)
-              ).length})`}
-          </Button>
+                ).length})`}
+              </Button>
+            </Box>
+          )}
+        </>
+      ) : (
+        <Box sx={{ textAlign: 'center', mt: 8 }}>
+          <Typography variant="h5" color="text.secondary">
+            Select a TCG to begin
+          </Typography>
         </Box>
       )}
     </Box>
