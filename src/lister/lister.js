@@ -530,7 +530,9 @@ const ListerApp = () => {
   const searchByExpansionCode = async (expansionCode) => {
     const response = await apiCall('cardmanager_script', 'searchByExpansionCode', {
       expansionCode,
-      game: selectedGame
+      game: selectedGame,
+      googleToken: userData.googleToken,
+      username: userData.username,
     });
     return preprocessItems(response.data);
   };
@@ -538,7 +540,9 @@ const ListerApp = () => {
   const searchByCardCode = async (cardCode) => {
     const response = await apiCall('cardmanager_script', 'searchByCardCode', {
       cardCode,
-      game: selectedGame
+      game: selectedGame,
+      googleToken: userData.googleToken,
+      username: userData.username,
     });
     return preprocessItems(response.data);
   };
@@ -548,7 +552,8 @@ const ListerApp = () => {
     const response = await apiCall('cardmanager_script', 'initiateSearchByLocation', {
       location: location.toUpperCase(),
       game: selectedGame,
-      username: userData.username
+      googleToken: userData.googleToken,
+      username: userData.username,
     });
     
     return {
@@ -569,7 +574,8 @@ const ListerApp = () => {
       await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between checks
       response = await apiCall('cardmanager_script', 'getLocationSearchResults', {
         location: location.toUpperCase(),
-        username: userData.username
+        googleToken: userData.googleToken,
+        username: userData.username,
       });
     } while (response.data.status === 'processing');
   
@@ -579,6 +585,7 @@ const ListerApp = () => {
     while (response.data.hasMore) {
       response = await apiCall('cardmanager_script', 'getLocationSearchResults', {
         location: location.toUpperCase(),
+        googleToken: userData.googleToken,
         username: userData.username,
         fileId: response.data.fileId,
         startIndex: allResults.length
@@ -621,6 +628,7 @@ const ListerApp = () => {
   
       const response = await apiCall('cardmanager_script', 'updateCards', {
         cards: cardsToSubmit,
+        googleToken: userData.googleToken,
         username: userData.username,
         email: userData.email,
         game: selectedGame,

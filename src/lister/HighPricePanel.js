@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import apiCall from '../api';
+import { useUserData } from '../UserContext';
 
 const HighPricePanel = ({ onCardSelect, isLoading, selectedGame }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -16,6 +17,7 @@ const HighPricePanel = ({ onCardSelect, isLoading, selectedGame }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selectedCards, setSelectedCards] = useState(new Set());
+      const { userData } = useUserData();
 
     const handleCardClick = (card) => {
         onCardSelect(card);
@@ -46,7 +48,9 @@ const HighPricePanel = ({ onCardSelect, isLoading, selectedGame }) => {
     
             await apiCall('cardmanager_script', 'markHighPriceCardsProcessed', {
                 cards: selectedCardObjects,
-                game: selectedGame
+                game: selectedGame,
+                googleToken: userData.googleToken,
+                username: userData.username,
             });
             
             // Refresh the list after submission
