@@ -387,8 +387,8 @@ const ListerApp = () => {
   const { userData } = useUserData();
   const [searchMode, setSearchMode] = useState(null);
   const [trackerBatches, setTrackerBatches] = useState([]);
-  const canViewHighPrices = userData?.role === 'admin' || userData?.role === 'cashier';
-  const canEditPrices = userData?.role === 'admin' || userData?.role === 'cashier';
+  const canViewHighPrices = userData?.role === 'Admin' || userData?.role === 'Cashier';
+  const canEditPrices = userData?.role === 'Admin' || userData?.role === 'Cashier';
   const [ordersModalOpen, setOrdersModalOpen] = useState(false);
   const [modifiedItems, setModifiedItems] = useState({});
   
@@ -493,12 +493,10 @@ const ListerApp = () => {
   };
 
   const handleRefreshTracker = async () => {
-    if (!userData?.username) return;
-    
     setLoading(true);
     try {
       const response = await apiCall('cardmanager_script', 'refreshCards', {
-        username: userData.username
+        // Removed username check - backend will handle filtering
       });
       
       if (response.data) {
@@ -516,6 +514,7 @@ const ListerApp = () => {
       setLoading(false);
     }
   };
+  
   const handleClearAndClose = () => {
     setOpenModal(false);
     setResults([]);
