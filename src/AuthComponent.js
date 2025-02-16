@@ -36,7 +36,8 @@ const AuthComponent = ({ onAuthenticated }) => {
           googleToken: response.token,
           status: response.additionalData.status,
           additionalData: response.additionalData,
-          jobDescription: response.jobDescription // Add this line
+          jobDescription: response.jobDescription, // Add this line
+          email:response.email,
         };
         console.log('Setting user data:', newUserData); // Debug log
         setUserData(newUserData);
