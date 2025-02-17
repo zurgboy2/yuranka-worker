@@ -10,6 +10,7 @@ import { CheckInProvider } from './CheckInContext';
 import AuthComponent from './AuthComponent';
 import TaskManager from './TaskManager';
 import Approvals from './Approvals';
+import { guidesConfig } from './guidesConfig';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const [loadedComponents, setLoadedComponents] = useState([]);
   const [jobDescription, setJobDescription] = useState(null);
   const [showJobDescription, setShowJobDescription] = useState(false);
+  const [openGuide, setOpenGuide] = useState(null);
 
   const memoizedRoleConfig = useMemo(() => 
     Object.fromEntries(
@@ -129,17 +131,28 @@ const Dashboard = () => {
             <Grid item key={index} {...gridProps}>
               {cardComponents.includes(name) ? (
                 <Card>
-                  <CardActionArea onClick={() => handleOpenComponent(name)}>
-                    <CardContent>
-                      {name === 'TaskManager' || name === 'Approvals' ? (
-                        <Component onOpenFullApp={() => handleOpenComponent(name)} />
-                      ) : (
-                        <Typography variant="h5" component="div">
-                          {name}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </CardActionArea>
+                  <CardContent>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <CardActionArea onClick={() => handleOpenComponent(name)}>
+                        {name === 'TaskManager' || name === 'Approvals' ? (
+                          <Component onOpenFullApp={() => handleOpenComponent(name)} />
+                        ) : (
+                          <Typography variant="h5" component="div">
+                            {name}
+                          </Typography>
+                        )}
+                      </CardActionArea>
+                      <Button
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenGuide(name);
+                        }}
+                      >
+                        Guide
+                      </Button>
+                    </Box>
+                  </CardContent>
                 </Card>
               ) : (
                 <Component />
@@ -167,6 +180,59 @@ const Dashboard = () => {
     const Component = componentConfig.component;
     return <Component onClose={handleCloseComponent} />;
   }, [openComponent, userData, handleCloseComponent, memoizedRoleConfig]);
+
+  const renderGuideContent = (guide) => {
+    if (!guide) return null;
+  
+    return (
+      <Box sx={{ padding: 2 }}>
+        <Typography variant="h4" gutterBottom>
+          {guide.title}
+        </Typography>
+        
+        {guide.content && (
+          <Typography variant="body1" paragraph>
+            {guide.content}
+          </Typography>
+        )}
+  
+        {guide.sections?.map((section, sectionIndex) => (
+          <Box key={sectionIndex} sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom>
+              {section.title}
+            </Typography>
+            
+            {section.content && (
+              <Typography variant="body1" paragraph>
+                {section.content}
+              </Typography>
+            )}
+  
+            {section.subsections?.map((subsection, subsectionIndex) => (
+              <Box key={subsectionIndex} sx={{ ml: 2, mb: 2 }}>
+                {subsection.title && (
+                  <Typography variant="h6" gutterBottom>
+                    {subsection.title}
+                  </Typography>
+                )}
+                
+                <List>
+                  {subsection.items?.map((item, itemIndex) => (
+                    <ListItem key={itemIndex}>
+                      <ListItemText 
+                        primary={item.title}
+                        secondary={item.description}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            ))}
+          </Box>
+        ))}
+      </Box>
+    );
+  };
 
   if (loading) {
     return (
@@ -217,6 +283,27 @@ const Dashboard = () => {
           <DialogContent>
             {dialogContent}
           </DialogContent>
+        </Dialog>
+
+        <Dialog 
+          open={openGuide !== null} 
+          onClose={() => setOpenGuide(null)} 
+          maxWidth="md" 
+          fullWidth
+        >
+          <DialogTitle>
+            {openGuide && guidesConfig[openGuide]?.title}
+          </DialogTitle>
+          <DialogContent>
+            {openGuide && guidesConfig[openGuide] ? (
+              renderGuideContent(guidesConfig[openGuide])
+            ) : (
+              <Typography>No guide available for this module.</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenGuide(null)}>Close</Button>
+          </DialogActions>
         </Dialog>
 
       <Dialog open={showJobDescription} onClose={() => setShowJobDescription(false)} maxWidth="md" fullWidth>
