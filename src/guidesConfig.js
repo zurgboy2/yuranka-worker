@@ -88,6 +88,10 @@ export const guidesConfig = {
                 ]
             }
             ]
+        },
+        {
+            title: "Note:",
+            content: "By using this app, you agree that you have read and understood the guide. Please do not use the app unless you have understood how to use it.",
         }
         ]
     },
@@ -186,6 +190,10 @@ export const guidesConfig = {
                 ]
             }
             ]
+        },
+        {
+            title: "Note:",
+            content: "By using this app, you agree that you have read and understood the guide. Please do not use the app unless you have understood how to use it. By continuing, you agree that any mistake would result in a discussion your work ethic, and any ramifications decided from that.",
         }
         ]
     },
@@ -284,7 +292,224 @@ export const guidesConfig = {
                 ]
             }
             ]
+        },
+        {
+            title: "Note:",
+            content: "By using this app, you agree that you have read and understood the guide. Please do not use the app unless you have understood how to use it. By continuing, you agree that any mistake would result in a discussion your work ethic, and any ramifications decided from that.",
         }
+        ]
+    },
+    Register: {
+        title: "Register Guide",
+        content: "The Register is a point-of-sale system that allows you to process transactions, manage store credit, handle memberships, and calculate delivery costs for items.",
+        sections: [
+            {
+                title: "Item Management",
+                content: "Search, add, and manage items in the current transaction.",
+                subsections: [
+                    {
+                        title: "Item Operations",
+                        items: [
+                            {
+                                title: "Search and Add Items",
+                                description: "Use the search bar to find items by title and price, then select to add to the transaction"
+                            },
+                            {
+                                title: "Quantity Management",
+                                description: "Adjust item quantities using number inputs, with a minimum of 1 item"
+                            },
+                            {
+                                title: "Item Removal",
+                                description: "Remove items from the transaction using the delete button"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Membership Processing",
+                content: "Handle customer memberships and store credit allocation.",
+                subsections: [
+                    {
+                        title: "Membership Features",
+                        items: [
+                            {
+                                title: "Membership Lookup",
+                                description: "Enter and submit membership ID to retrieve customer information and available store credit"
+                            },
+                            {
+                                title: "Store Credit Management",
+                                description: "View and allocate available store credit using the slider, up to the transaction total"
+                            },
+                            {
+                                title: "Customer Information",
+                                description: "Enter or confirm customer name and email details for the transaction"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Delivery Processing",
+                content: "Calculate and manage delivery options for transactions.",
+                subsections: [
+                    {
+                        title: "Delivery Features",
+                        items: [
+                            {
+                                title: "Address Entry",
+                                description: "Input delivery country and postal code for shipping calculations"
+                            },
+                            {
+                                title: "Delivery Options",
+                                description: "View available delivery services with prices, weight limits, and estimated delivery dates"
+                            },
+                            {
+                                title: "Cost Calculation",
+                                description: "Calculate delivery costs based on location and item details"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Transaction Management",
+                content: "Process and track transaction status and history.",
+                subsections: [
+                    {
+                        title: "Transaction Features",
+                        items: [
+                            {
+                                title: "Invoice Generation",
+                                description: "Send invoices to customers with complete transaction details"
+                            },
+                            {
+                                title: "Transaction History",
+                                description: "View pending and completed transactions in the side panel"
+                            },
+                            {
+                                title: "Transaction Retry",
+                                description: "Retry failed transactions with preserved transaction details"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Note:",
+                content: "By using this app, you agree that you have read and understood the guide. Please do not use the app unless you have understood how to use it. By continuing, you agree that any mistake would result in a discussion your work ethic, and any ramifications decided from that.",
+            }
+        ]
+    },
+    StoreSearch: {
+        title: "Store Search Guide",
+        content: "The Store Search interface allows you to search, add, edit, and manage products across your store and Shopify platforms. It provides comprehensive product management capabilities including inventory tracking, pricing, and image management.",
+        sections: [
+            {
+                title: "Product Search",
+                content: "Search and locate products in your inventory system.",
+                subsections: [
+                    {
+                        title: "Search Features",
+                        items: [
+                            {
+                                title: "AutoComplete Search",
+                                description: "Use the search bar to find products by name and price, with real-time suggestions as you type"
+                            },
+                            {
+                                title: "Direct Selection",
+                                description: "Click on suggested products to view and edit their complete details"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Product Management",
+                content: "Add and edit product information in the system.",
+                subsections: [
+                    {
+                        title: "Basic Information",
+                        items: [
+                            {
+                                title: "Product Details",
+                                description: "Manage core product information including name, type, price, quantity, and barcode"
+                            },
+                            {
+                                title: "Physical Properties",
+                                description: "Track product dimensions (height, width, length) and weight in grams"
+                            },
+                            {
+                                title: "Description Management",
+                                description: "Add and edit detailed product descriptions and specifications"
+                            }
+                        ]
+                    },
+                    {
+                        title: "Advanced Features",
+                        items: [
+                            {
+                                title: "Tag Management",
+                                description: "Add, edit, and remove product tags with auto-complete suggestions from existing tags"
+                            },
+                            {
+                                title: "Platform Integration",
+                                description: "Toggle product availability between Store and Shopify platforms"
+                            },
+                            {
+                                title: "Cost Tracking",
+                                description: "Record original cost, supplier information, and acquisition date"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Image Management",
+                content: "Handle product images and visual content.",
+                subsections: [
+                    {
+                        title: "Image Features",
+                        items: [
+                            {
+                                title: "Image Upload",
+                                description: "Add or update product images through the file upload system"
+                            },
+                            {
+                                title: "Image Preview",
+                                description: "View current product images directly in the interface"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Product Operations",
+                content: "Perform key actions on product entries.",
+                subsections: [
+                    {
+                        title: "Available Actions",
+                        items: [
+                            {
+                                title: "Update Products",
+                                description: "Save changes to existing products with immediate system update"
+                            },
+                            {
+                                title: "Delete Products",
+                                description: "Remove products from the system with confirmation prompt"
+                            },
+                            {
+                                title: "Add New Products",
+                                description: "Create new product entries with a comprehensive data entry form"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Note:",
+                content: "By using this app, you agree that you have read and understood the guide. Please do not use the app unless you have understood how to use it. By continuing, you agree that any mistake would result in a discussion your work ethic, and any ramifications decided from that.",
+            }
         ]
     }
   };
