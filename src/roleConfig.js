@@ -15,7 +15,8 @@ import LoyaltyDashboard from './LoyaltyDashboard';
 import ScheduleForm from './ScheduleForm';
 import NoticeBoardDisplay from './NoticeBoardDisplay';
 import CardSearch from './testAdmin';
-import testUser from './testUser'
+import testUser from './testUser';
+import WorkerActivityDisplay from './workerActivity';
 
 const roleConfig = {
   Worker: [
@@ -23,7 +24,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
@@ -35,7 +37,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
@@ -55,7 +58,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
@@ -70,7 +74,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
@@ -86,7 +91,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
@@ -102,7 +108,8 @@ const roleConfig = {
     { component: HistoryComponent, gridProps: { xs: 12, md: 6 }, name: 'WorkHistory' },
     { component: GoogleCalendar, gridProps: { xs: 12, md: 6 }, name: 'GoogleCalendar' },
     { component: RSSFeedDisplay, gridProps: { xs: 12, md: 6 }, name: 'RSSFeedDisplay' },
-    { component: NoticeBoardDisplay, gridProps: { xs: 24, md: 12 }, name: 'NoticeBoardDisplay' },
+    { component: NoticeBoardDisplay, gridProps: { xs: 12, md: 6 }, name: 'NoticeBoardDisplay' },
+    { component: WorkerActivityDisplay, gridProps: { xs: 12, md: 6}, name: 'WorkerActivity' },
     { component: PasswordDisplay, gridProps: { xs: 12, sm: 6 }, name: 'PasswordDisplay' },
     { component: MiniTaskManager, gridProps: { xs: 12, sm: 6 }, name: 'TaskManager' },
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
