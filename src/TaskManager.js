@@ -314,7 +314,7 @@ const TaskManager = () => {
     const [details, setDetails] = useState(subtask.details);
     const [status, setStatus] = useState(subtask.status);
     const [personResponsible, setPersonResponsible] = useState(subtask.personResponsible);
-    const [dueDate, setDueDate] = useState(subtask.dueDate);
+    const [dueDate, setDueDate] = useState(subtask.dueDate ? new Date(subtask.dueDate).toISOString().split('T')[0] : '');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -450,6 +450,9 @@ const TaskManager = () => {
               onChange={(e) => setDueDate(e.target.value)}
               size="small"
               disabled={!isEditing}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           </Box>
           
