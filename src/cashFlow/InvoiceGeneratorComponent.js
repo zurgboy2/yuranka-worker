@@ -13,10 +13,11 @@ const InvoiceGeneratorComponent = () => {
     customerName: '',
     customerDetails: '',
     items: [],
-    dueData: '',
+    dueDate: '',
     tax: 0,
     discount: 0,
-    invoiceNumber: ''
+    invoiceNumber: '',
+    dateOfInvoice: ''
   });
   const [newItem, setNewItem] = useState({ productService: '', quantity: 0, price: 0 });
   const [loading, setLoading] = useState(false);
@@ -71,6 +72,10 @@ const InvoiceGeneratorComponent = () => {
 
       if (invoiceData.invoiceNumber) {
         formData.invoiceNumber = invoiceData.invoiceNumber;
+      }
+
+      if (invoiceData.dateOfInvoice) {
+        formData.dateOfInvoice = invoiceData.dateOfInvoice;
       }
 
       const response = await apiCall('accounting_script', 'generateInvoice', {
@@ -245,6 +250,19 @@ const InvoiceGeneratorComponent = () => {
             type="number"
             value={invoiceData.invoiceNumber}
             onChange={handleInputChange}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Date of Invoice"
+            name="dateOfInvoice"
+            value={invoiceData.dateOfInvoice}
+            onChange={handleInputChange}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
         </Grid>
       </Grid>
