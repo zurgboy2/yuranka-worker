@@ -15,7 +15,8 @@ const InvoiceGeneratorComponent = () => {
     items: [],
     dueData: '',
     tax: 0,
-    discount: 0
+    discount: 0,
+    invoiceNumber: ''
   });
   const [newItem, setNewItem] = useState({ productService: '', quantity: 0, price: 0 });
   const [loading, setLoading] = useState(false);
@@ -67,6 +68,10 @@ const InvoiceGeneratorComponent = () => {
         tax: invoiceData.tax,
         discount: invoiceData.discount
       };
+
+      if (invoiceData.invoiceNumber) {
+        formData.invoiceNumber = invoiceData.invoiceNumber;
+      }
 
       const response = await apiCall('accounting_script', 'generateInvoice', {
         data: formData,
@@ -229,6 +234,16 @@ const InvoiceGeneratorComponent = () => {
             name="discount"
             type="number"
             value={invoiceData.discount}
+            onChange={handleInputChange}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Invoice Number"
+            name="invoiceNumber"
+            type="number"
+            value={invoiceData.invoiceNumber}
             onChange={handleInputChange}
           />
         </Grid>
