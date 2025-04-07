@@ -101,7 +101,7 @@ const EventManager = ({ onClose }) => {
 
   const handleInputChange = (e, panelIndex = 0) => {
     const { name, value } = e.target;
-
+ 
     setEventPanels(prev => {
       const updated = [...prev];
       updated[panelIndex] = { ...updated[panelIndex], [name]: value };
@@ -111,6 +111,7 @@ const EventManager = ({ onClose }) => {
         if (updated[panelIndex].startDateTime && updated[panelIndex].endDateTime) {
           const start = new Date(updated[panelIndex].startDateTime);
           const end = new Date(updated[panelIndex].endDateTime);
+          
 
         }
       }
@@ -184,9 +185,10 @@ const EventManager = ({ onClose }) => {
           console.error('Invalid webhook request or error in response:', response);
           throw new Error('One of the event submissions failed.');
       }
+      
+      await delay(20000);
 
-      // Optional delay before the next request
-      await delay(100);
+
       }
       
     } catch (error) {
@@ -202,6 +204,7 @@ const EventManager = ({ onClose }) => {
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
   const handleSuccessfulSubmission = async () => {
     await fetchEvents();
     setEventPanels(prev => prev.map((panel) => ({
@@ -240,7 +243,8 @@ const EventManager = ({ onClose }) => {
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);
-    
+
+
     setEditingEvent({
       ...event,
     });
@@ -450,66 +454,6 @@ const EventManager = ({ onClose }) => {
       {currentTab === 0 && (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            {/* Top section with name, type and image */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Event Name"
-                name="name"
-                value={eventPanels[0].name}
-                onChange={(e) => handleInputChange(e, 0)}
-                required
-                InputLabelProps={{
-                  style: { color: '#ffffff' },
-                }}
-                InputProps={{
-                  style: { color: '#ffffff' },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>TCG Type</InputLabel>
-                <Select
-                  name="tcgType"
-                  value={eventPanels[0].tcgType}
-                  onChange={(e) => handleInputChange(e, 0)}
-                  required
-                >
-                  {tcgTypes.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      {type.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <input
-                accept="image/*"
-                style={{ display: 'none' }}
-                id="image-upload"
-                type="file"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-              />
-              <label htmlFor="image-upload">
-                <Button
-                  variant="contained"
-                  component="span"
-                  style={{ backgroundColor: '#4a4a4a', color: '#ffffff', marginRight: '10px' }}
-                >
-                  Upload image
-                </Button>
-              </label>
-              {eventPanels[0].image && (
-                <Typography variant="body2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                  {eventPanels[0].image.name}
-                </Typography>
-              )}
-            </Grid>
-
-            {/* Event panels */}
             {eventPanels.map((panel, index) => (
               <Grid item xs={12} key={index}>
                 <Paper sx={{ p: 2, bgcolor: 'rgba(74, 74, 74, 0.8)', mb: 2 }}>
@@ -517,6 +461,67 @@ const EventManager = ({ onClose }) => {
                     Event Details {index + 1}
                   </Typography>
                   <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Event Name"
+                        name="name"
+                        value={panel.name}
+                        onChange={(e) => handleInputChange(e, index)}
+                        required
+                        InputLabelProps={{ style: { color: '#ffffff' } }}
+                       
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel sx={{ color: '#ffffff' }}>TCG Type</InputLabel>
+                        <Select
+                          name="tcgType"
+                          value={panel.tcgType}
+                          onChange={(e) => handleInputChange(e, index)}
+                          required
+                          >
+                          {tcgTypes.map((type) => (
+                            <MenuItem key={type.value} value={type.value}>
+                              {type.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <input
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        id={`image-upload-${index}`}
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setEventPanels(prev => {
+                              const updated = [...prev];
+                              updated[index] = { ...updated[index], image: file };
+                              return updated;
+                            });
+                          }
+                        }}
+                      />
+                      <label htmlFor={`image-upload-${index}`}>
+                        <Button
+                          variant="contained"
+                          component="span"
+                          style={{ backgroundColor: '#8b0000', color: '#ffffff', marginRight: '10px',marginBottom:'10px' }}
+                        >
+                          Upload image
+                        </Button>
+                      </label>
+                      {panel.image && (
+                        <Typography variant="body2" style={{ display: 'inline-block', verticalAlign: 'middle', color: '#ffffff' }}>
+                          {panel.image.name}
+                        </Typography>
+                      )}
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DateTimePicker
@@ -690,9 +695,7 @@ const EventManager = ({ onClose }) => {
                         setEventPanels(prev => {
                           const newPanel = {
                             ...prev[index],                            
-                            // startDateTime: prev[index].startDateTime,
-                            // endDateTime: prev[index].endDateTime,
-                            isOneTime: false
+                            isOneTime: false,
                           };
                           const updatedPanels = [...prev, newPanel];
                           // Update isOneTime for all panels when there's more than one
