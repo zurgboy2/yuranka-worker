@@ -13,6 +13,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const EventManager = ({ onClose }) => {
   const { userData } = useUserData();
@@ -44,8 +45,8 @@ const EventManager = ({ onClose }) => {
   const [newPoster, setNewPoster] = useState(null);
   const [editingAttendee, setEditingAttendee] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
-
-
+  const [pendingOrFailed, setPendingOrFailed] = useState([]);
+  const [submissionStatuses, setSubmissionStatuses] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -58,8 +59,9 @@ const EventManager = ({ onClose }) => {
         username: userData.username
       });
       
-      if (Array.isArray(response)) {
-        setEvents(response);
+      if (response && response.events) {
+        setEvents(response.events);
+        setPendingOrFailed(response.pendingOrFailed || []);
       } else {
         throw new Error('Unexpected response format');
       }
@@ -101,7 +103,6 @@ const EventManager = ({ onClose }) => {
 
   const handleInputChange = (e, panelIndex = 0) => {
     const { name, value } = e.target;
- 
     setEventPanels(prev => {
       const updated = [...prev];
       updated[panelIndex] = { ...updated[panelIndex], [name]: value };
@@ -112,7 +113,7 @@ const EventManager = ({ onClose }) => {
           const start = new Date(updated[panelIndex].startDateTime);
           const end = new Date(updated[panelIndex].endDateTime);
           
-
+ 
         }
       }
       
@@ -141,13 +142,13 @@ const EventManager = ({ onClose }) => {
     });
   };
 
-
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    
+    setSubmissionStatuses([]);
+
     try {
       const scriptId = 'admin_tournament_script';
       const action = 'createEvent';
@@ -168,7 +169,8 @@ const EventManager = ({ onClose }) => {
           isOneTime: eventPanels.length === 1,
           inventoryQuantity: panel.inventoryQuantity || null
         };
-                
+        
+        
         if (panel.image) {
           const base64Image = await blobToBase64(panel.image);
           eventData.image = base64Image;
@@ -178,19 +180,25 @@ const EventManager = ({ onClose }) => {
           googleToken: userData.googleToken,
           username: userData.username,
           formData: eventData
-      });
+        });
 
+       
 
-      if (!response || response.error) {
-          console.error('Invalid webhook request or error in response:', response);
+        if (!response || response.error || response.status !== 'success') {
+          setSubmissionStatuses(prev => [...prev, {
+            type: 'error',
+            message: `Event "${panel.name}" failed to create. Please try again.`,
+            eventName: panel.name
+          }]);
           throw new Error('One of the event submissions failed.');
+        } else {
+          setSubmissionStatuses(prev => [...prev, {
+            type: 'success',
+            message: `Event "${panel.name}" successfully logged. Batch ID: ${response.batchId}`,
+            eventName: panel.name
+          }]);
+        }
       }
-      
-      await delay(20000);
-
-
-      }
-      
     } catch (error) {
       console.error('Error during event creation:', error);
       setError(error.message || 'Failed to create event. Please try again.');
@@ -243,7 +251,6 @@ const EventManager = ({ onClose }) => {
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);
-
 
     setEditingEvent({
       ...event,
@@ -403,8 +410,6 @@ const EventManager = ({ onClose }) => {
     }
   };
 
-
-
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
@@ -446,6 +451,7 @@ const EventManager = ({ onClose }) => {
         sx={{ borderBottom: 1, borderColor: 'divider' }}
       >
         <Tab label="Create Event" />
+        <Tab label="Pending Events" />
         <Tab label="Upcoming Events" />
         <Tab label="Past Events" />
       </Tabs>
@@ -695,6 +701,8 @@ const EventManager = ({ onClose }) => {
                         setEventPanels(prev => {
                           const newPanel = {
                             ...prev[index],                            
+                            // startDateTime: prev[index].startDateTime,
+                            // endDateTime: prev[index].endDateTime,
                             isOneTime: false,
                           };
                           const updatedPanels = [...prev, newPanel];
@@ -713,7 +721,35 @@ const EventManager = ({ onClose }) => {
               </Grid>
             ))}
 
-            {/* Buttons at the bottom */}
+            {/* Add status message display */}
+            {submissionStatuses.length > 0 && (
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
+                  {submissionStatuses.map((status, index) => (
+                    <Paper 
+                      key={index}
+                      sx={{ 
+                        p: 2,
+                        bgcolor: status.type === 'success' ? 'rgba(0, 128, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
+                        border: `1px solid ${status.type === 'success' ? '#008000' : '#ff0000'}`
+                      }}
+                    >
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          color: status.type === 'success' ? '#008000' : '#ff0000',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {status.message}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              </Grid>
+            )}
+            
+            {/* Submit button */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button 
@@ -731,6 +767,78 @@ const EventManager = ({ onClose }) => {
         </form>
       )}
       {currentTab === 1 && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5">Pending Events</Typography>
+            <Button
+              variant="contained"
+              onClick={fetchEvents}
+              startIcon={<RefreshIcon />}
+              style={{ backgroundColor: '#8b0000', color: '#ffffff' }}
+            >
+              Refresh Pending Events
+            </Button>
+          </Box>
+          <TableContainer component={Paper} sx={{ bgcolor: '#2a2a2a', color: '#ffffff' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ color: '#ffffff' }}>Event Name</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Date & Time</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>TCG Type</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Status</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Error Message</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {pendingOrFailed.map((event) => {
+                  const formData = JSON.parse(event['Form Data']);
+                  return (
+                    <TableRow key={event['Batch ID']}>
+                      <TableCell style={{ color: '#ffffff' }}>{formData.name}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>
+                        {new Date(event['Start Date']).toLocaleString()}
+                      </TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>{formData.tcgType}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>{event.Status}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>{event['Error Message'] || '-'}</TableCell>
+                      <TableCell>
+                        {event.Status === 'FAILED' && (
+                          <Button
+                            variant="contained"
+                            onClick={() => {
+                              setCurrentTab(0);
+                              setEventPanels([{
+                                name: formData.name,
+                                tcgType: formData.tcgType,
+                                image: null,
+                                prizes: formData.prizes,
+                                rules: formData.rules,
+                                preReleaseBundle: formData.preReleaseBundle,
+                                description: formData.description,
+                                messageToBuyer: formData.messageToBuyer,
+                                price: formData.price,
+                                reader_info: formData.reader_info,
+                                isOneTime: true,
+                                inventoryQuantity: formData.inventoryQuantity || ''
+                              }]);
+                            }}
+                            style={{ backgroundColor: '#8b0000', color: '#ffffff' }}
+                          >
+                            Retry
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
+      {currentTab === 2 && (
         <>
           <Typography variant="h5" gutterBottom>Upcoming Events</Typography>
           <TableContainer component={Paper} sx={{ bgcolor: '#2a2a2a', color: '#ffffff' }}>
@@ -773,46 +881,46 @@ const EventManager = ({ onClose }) => {
           </TableContainer>
         </>
       )}
-        {currentTab === 2 && (
-          <>
-            <Typography variant="h5" gutterBottom>Past Events</Typography>
-            <TableContainer component={Paper} sx={{ bgcolor: '#2a2a2a', color: '#ffffff' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ color: '#ffffff' }}>Name</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>Date & Time</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>TCG Type</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>Price</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>Attendees</TableCell>
-                    <TableCell sx={{ color: '#ffffff' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {events
-                    .filter(event => new Date(event['Start Date']) < new Date())
-                    .map((event) => (
-                      <TableRow key={event['Event ID']}>
-                        <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
-                        <TableCell style={{ color: '#ffffff' }}>
+      {currentTab === 3 && (
+        <>
+          <Typography variant="h5" gutterBottom>Past Events</Typography>
+          <TableContainer component={Paper} sx={{ bgcolor: '#2a2a2a', color: '#ffffff' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ color: '#ffffff' }}>Name</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Date & Time</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>TCG Type</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Price</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Attendees</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {events
+                  .filter(event => new Date(event['Start Date']) < new Date())
+                  .map((event) => (
+                    <TableRow key={event['Event ID']}>
+                      <TableCell style={{ color: '#ffffff' }}>{event.Name}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>
                         {new Date(event['Start Date']).toLocaleString()} - 
                         {new Date(event['End Date']).toLocaleString()}
-                        </TableCell>
-                        <TableCell style={{ color: '#ffffff' }}>{event['Type of event']}</TableCell>
-                        <TableCell style={{ color: '#ffffff' }}>€{event.Price}</TableCell>
-                        <TableCell style={{ color: '#ffffff' }}>{event.Attendees ? event.Attendees.length : 0}</TableCell>
-                        <TableCell>
-                          <Button onClick={() => handleEventClick(event)}>
-                            <span className="material-icons" style={{ color: '#ffffff' }}>info</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+                      </TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>{event['Type of event']}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>€{event.Price}</TableCell>
+                      <TableCell style={{ color: '#ffffff' }}>{event.Attendees ? event.Attendees.length : 0}</TableCell>
+                      <TableCell>
+                        <Button onClick={() => handleEventClick(event)}>
+                          <span className="material-icons" style={{ color: '#ffffff' }}>info</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
       </Box>
 
       <Dialog 
