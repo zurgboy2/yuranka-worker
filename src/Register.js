@@ -8,6 +8,7 @@ import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
 import { useUserData } from './UserContext';
 import TransactionPanel from './TransactionPanel';
+import { debounce } from 'lodash';
 
 const Register = ({ onOpenFullApp }) => {
   const { userData } = useUserData();
@@ -25,6 +26,7 @@ const Register = ({ onOpenFullApp }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [transactions, setTransactions] = useState([]);
+   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchItems = useCallback(async () => {
     try {
@@ -55,10 +57,26 @@ const Register = ({ onOpenFullApp }) => {
     fetchItems();
   }, [fetchItems]);
 
+  const debouncedSearch = useCallback(
+    debounce((inputValue) => {
+      // This function will only run after the user stops typing for 300ms
+      console.log('Performing search with:', inputValue);
+      // Any heavy filtering logic would go here if needed
+    }, 300),
+    []
+  );
+
+  // Update the handleSearch function
+  const handleInputChange = (event, newInputValue) => {
+    setSearchTerm(newInputValue);
+    debouncedSearch(newInputValue);
+  };
+
   const handleSearch = (event, newValue) => {
     setSelectedItem(newValue);
     if (newValue) {
       addItem(newValue);
+      setSearchTerm(''); // Clear search after selection
     }
   };
 
@@ -263,12 +281,14 @@ const Register = ({ onOpenFullApp }) => {
       boxSizing: 'border-box'
     }}>
       <div style={{ flex: '1 1 auto', overflowY: 'auto' }}>
-          <Autocomplete
+            <Autocomplete
             fullWidth
             options={allItems}
             getOptionLabel={(option) => `${option.title} - €${option.price}`}
             value={selectedItem}
             onChange={handleSearch}
+            inputValue={searchTerm}
+            onInputChange={handleInputChange}
             isOptionEqualToValue={(option, value) => option.uniqueId === value.uniqueId}
             getOptionKey={(option) => option.uniqueId}
             renderInput={(params) => (
