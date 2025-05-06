@@ -380,11 +380,8 @@ const StoreSearch = ({ onClose }) => {
           <Grid item xs={12} sm={9}>
             <Autocomplete 
               fullWidth 
-              options={allItems} 
-              getOptionLabel={(option) => {
-                const label = option.title ? `${option.title} - €${option.price || 0}` : '';
-                return label;
-              }}
+              options={allItems}
+              getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
               onChange={(event, newValue) => { 
                 console.log("Autocomplete selection changed to:", newValue);
                 if (newValue) { 
@@ -403,14 +400,16 @@ const StoreSearch = ({ onClose }) => {
                 console.log("Input changed to:", newValue);
                 setSearchText(newValue || '');
                 setSelectedUniqueId(null); // Clear ID when text changes
+
+                if (newValue && newValue.trim()) {
+                  const timeoutId = setTimeout(() => {
+                    handleSearch();
+                  }, 300); // 300ms debounce
+                  return () => clearTimeout(timeoutId);
+                }
               }}
-              isOptionEqualToValue={(option, value) => {
-                const isEqual = String(option.uniqueId) === String(value.uniqueId) || option.title === value.title;
-                console.log(`Comparing option ${option.title} to value ${value.title}: ${isEqual}`);
-                return isEqual;
-              }}
+              // Important: Tell Autocomplete to use our custom filter only
               filterOptions={(options, state) => {
-                // Custom filter to match partial text inputs
                 const inputValue = state.inputValue.toLowerCase().trim();
                 console.log("=== AUTOCOMPLETE FILTERING ===");
                 console.log("Input value for filtering:", inputValue);
@@ -433,6 +432,10 @@ const StoreSearch = ({ onClose }) => {
                 console.log("Filtered titles:", filtered.map(f => f.title));
                 return filtered;
               }}
+              // Force the dropdown to close when there's no input
+              open={searchText.trim() !== ''}
+              // Disable the built-in filtering
+              disablePortal
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -455,18 +458,6 @@ const StoreSearch = ({ onClose }) => {
                     }
                   }}
                 />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <Grid container alignItems="center">
-                    <Grid item xs>
-                      {option.title || 'Untitled Product'}
-                    </Grid>
-                    <Grid item>
-                      €{option.price || '0'}
-                    </Grid>
-                  </Grid>
-                </li>
               )}
             />
           </Grid>
