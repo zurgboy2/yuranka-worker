@@ -52,23 +52,29 @@ const StoreSearch = ({ onClose }) => {
       // If we have a unique ID selected, filter by that
       if (selectedUniqueId) {
         const filteredResults = allItems.filter(item => 
-          item.uniqueId === selectedUniqueId
+          String(item.uniqueId) === String(selectedUniqueId)
         );
         setSearchResults(filteredResults);
       } 
       // Otherwise filter by text
       else {
         const query = searchText.toLowerCase().trim();
-        const filteredResults = allItems.filter(item => 
-          // Search in multiple fields
-          item.title?.toLowerCase().includes(query) || 
-          item.description?.toLowerCase().includes(query) ||
-          item.type?.toLowerCase().includes(query) ||
-          item.tags?.toLowerCase().includes(query)
-        );
+        console.log("Search query:", query);
+        
+        const filteredResults = allItems.filter(item => {
+          // Check against the fields that we know exist in the data
+          const titleMatch = item.title && item.title.toLowerCase().includes(query);
+          const supplierMatch = item.supplier && item.supplier.toLowerCase().includes(query);
+          // Include any other fields that might be in your data
+          
+          return titleMatch || supplierMatch;
+        });
+        
+        console.log("Filtered results count:", filteredResults.length);
         setSearchResults(filteredResults);
       }
     } catch (err) {
+      console.error("Search error:", err);
       setError('Failed to filter results. Please try again.');
       setSearchResults([]);
     } finally {
@@ -373,7 +379,7 @@ const StoreSearch = ({ onClose }) => {
               setSelectedUniqueId(null); // Clear ID when text changes
             }}
             isOptionEqualToValue={(option, value) => 
-              option.uniqueId === value.uniqueId || option.title === value.title
+              String(option.uniqueId) === String(value.uniqueId) || option.title === value.title
             }
             filterOptions={(options, state) => {
               // Custom filter to match partial text inputs
@@ -543,9 +549,9 @@ const StoreSearch = ({ onClose }) => {
             </Grid>
             <Grid item xs={12}>
               <TagInput
-                tags={product.Tags.split(',').filter(Boolean)}
+                tags={(product.Tags || '').split(',').filter(Boolean)}
                 onAddTag={(newTag) => handleUpdateField(product.Unique_ID, 'Tags', product.Tags ? `${product.Tags},${newTag}` : newTag)}
-                onRemoveTag={(tagToRemove) => handleUpdateField(product.Unique_ID, 'Tags', product.Tags.split(',').filter(tag => tag !== tagToRemove).join(','))}
+                onRemoveTag={(tagToRemove) => handleUpdateField(product.Unique_ID, 'Tags', (product.Tags || '').split(',').filter(tag => tag !== tagToRemove).join(','))}
               />
             </Grid>
             <Grid item xs={12}>
@@ -691,7 +697,7 @@ const StoreSearch = ({ onClose }) => {
           </Grid>
           <Grid item xs={12}>
             <TagInput
-              tags={productData.Tags.split(',').filter(Boolean)}
+              tags={(productData.Tags || '').split(',').filter(Boolean)}
               onAddTag={(newTag) => {
                 setProductData(prev => ({
                   ...prev,
@@ -701,7 +707,7 @@ const StoreSearch = ({ onClose }) => {
               onRemoveTag={(tagToRemove) => {
                 setProductData(prev => ({
                   ...prev,
-                  Tags: prev.Tags.split(',').filter(tag => tag !== tagToRemove).join(',')
+                  Tags: (prev.Tags || '').split(',').filter(tag => tag !== tagToRemove).join(',')
                 }));
               }}
             />
