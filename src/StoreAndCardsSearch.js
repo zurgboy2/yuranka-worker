@@ -378,88 +378,85 @@ const StoreSearch = ({ onClose }) => {
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={9}>
-            <Autocomplete 
-              fullWidth 
-              options={allItems}
-              getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
-              onChange={(event, newValue) => { 
-                console.log("Autocomplete selection changed to:", newValue);
-                if (newValue) { 
-                  setSearchText(newValue.title || '');
-                  setSelectedUniqueId(newValue.uniqueId);
-                  console.log("Setting uniqueId:", newValue.uniqueId);
-                  handleSearch(); // This will now filter client-side
-                } else {
-                  setSearchText('');
-                  setSelectedUniqueId(null);
-                  setSearchResults([]); // Clear results when selection is cleared
+          <Autocomplete 
+            fullWidth 
+            options={allItems}
+            getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
+            onChange={(event, newValue) => { 
+              console.log("Autocomplete selection changed to:", newValue);
+              if (newValue) { 
+                setSearchText(newValue.title || '');
+                setSelectedUniqueId(newValue.uniqueId);
+                console.log("Setting uniqueId:", newValue.uniqueId);
+                handleSearch();
+              } else {
+                setSearchText('');
+                setSelectedUniqueId(null);
+                setSearchResults([]);
+              }
+            }}
+            inputValue={searchText}
+            onInputChange={(event, newValue) => {
+              console.log("Input changed to:", newValue);
+              setSearchText(newValue || '');
+              setSelectedUniqueId(null);
+            }}
+            // IMPORTANT FIXES:
+            // 1. Disable MUI's built-in filtering
+            filterOptions={(options, state) => {
+              const inputValue = state.inputValue.toLowerCase().trim();
+              console.log("=== AUTOCOMPLETE FILTERING ===");
+              console.log("Input value for filtering:", inputValue);
+              console.log("Options count before filtering:", options.length);
+              
+              if (!inputValue) {
+                console.log("Empty input, returning all options");
+                return options;
+              }
+              
+              const filtered = options.filter(option => {
+                const titleMatches = option.title && option.title.toLowerCase().includes(inputValue);
+                if (titleMatches) {
+                  console.log(`Option matches: ${option.title}`);
                 }
-              }} 
-              inputValue={searchText}
-              onInputChange={(event, newValue) => {
-                console.log("Input changed to:", newValue);
-                setSearchText(newValue || '');
-                setSelectedUniqueId(null); // Clear ID when text changes
-
-                if (newValue && newValue.trim()) {
-                  const timeoutId = setTimeout(() => {
+                return titleMatches;
+              });
+              
+              console.log("Filtered options count:", filtered.length);
+              console.log("Filtered titles:", filtered.map(f => f.title));
+              return filtered;
+            }}
+            // 2. These properties ensure our filter is properly applied
+            disablePortal
+            freeSolo={false}
+            // 3. Completely disable MUI's built-in filtering
+            autoComplete={false}
+            // 4. Force re-render when options change
+            key={allItems.length}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Search Store Products..."
+                InputProps={{
+                  ...params.InputProps,
+                  style: { color: '#ffffff' },
+                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                  startAdornment: (
+                    <>
+                      <span className="material-icons">search</span>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    console.log("Enter key pressed, triggering search");
                     handleSearch();
-                  }, 300); // 300ms debounce
-                  return () => clearTimeout(timeoutId);
-                }
-              }}
-              // Important: Tell Autocomplete to use our custom filter only
-              filterOptions={(options, state) => {
-                const inputValue = state.inputValue.toLowerCase().trim();
-                console.log("=== AUTOCOMPLETE FILTERING ===");
-                console.log("Input value for filtering:", inputValue);
-                console.log("Options count before filtering:", options.length);
-                
-                if (!inputValue) {
-                  console.log("Empty input, returning all options");
-                  return options;
-                }
-                
-                const filtered = options.filter(option => {
-                  const titleMatches = option.title && option.title.toLowerCase().includes(inputValue);
-                  if (titleMatches) {
-                    console.log(`Option matches: ${option.title}`);
                   }
-                  return titleMatches;
-                });
-                
-                console.log("Filtered options count:", filtered.length);
-                console.log("Filtered titles:", filtered.map(f => f.title));
-                return filtered;
-              }}
-              // Force the dropdown to close when there's no input
-              open={searchText.trim() !== ''}
-              // Disable the built-in filtering
-              disablePortal
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Search Store Products..."
-                  InputProps={{
-                    ...params.InputProps,
-                    style: { color: '#ffffff' },
-                    sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                    startAdornment: (
-                      <>
-                        <span className="material-icons">search</span>
-                        {params.InputProps.startAdornment}
-                      </>
-                    ),
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      console.log("Enter key pressed, triggering search");
-                      handleSearch();
-                    }
-                  }}
-                />
-              )}
-            />
+                }}
+              />
+            )}
+          />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
