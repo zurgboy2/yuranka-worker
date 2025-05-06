@@ -40,7 +40,11 @@ const StoreSearch = ({ onClose }) => {
 
 
   const handleSearch = useCallback(async (uniqueId = null) => {
-    if (!searchText.trim() && !uniqueId) return;
+    // Only proceed if we have search text or a unique ID
+    if (!searchText.trim() && !uniqueId) {
+      setSearchResults([]); // Clear results if no search criteria
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -48,12 +52,19 @@ const StoreSearch = ({ onClose }) => {
       const result = await apiCall('stocker_script', 'searchStoreProduct', {
         googleToken: userData.googleToken,
         username: userData.username,
-        searchText,
+        searchText: searchText.trim(), // Ensure we trim the search text
         uniqueId  // This will be the numerical ID from the data
       });
-      setSearchResults(result);
+      
+      // If no results returned, set empty array
+      if (!result || result.length === 0) {
+        setSearchResults([]);
+      } else {
+        setSearchResults(result);
+      }
     } catch (err) {
       setError('Failed to fetch results. Please try again.');
+      setSearchResults([]); // Clear results on error
     } finally {
       setLoading(false);
     }
@@ -335,58 +346,74 @@ const StoreSearch = ({ onClose }) => {
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={9}>
-            <Autocomplete 
-              fullWidth 
-              options={allItems} 
-              getOptionLabel={(option) => `${option.title} - €${option.price}`}
-              onChange={(event, newValue) => { 
-                if (newValue) { 
-                  setSearchText(newValue.title);
-                  handleSearch(newValue.uniqueId); // Using the correct property name uniqueId
-                } else {
-                  setSearchText('');
+          <Autocomplete 
+            fullWidth 
+            options={allItems} 
+            getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
+            onChange={(event, newValue) => { 
+              if (newValue) { 
+                setSearchText(newValue.title || '');
+                // Only search by uniqueId if it exists
+                if (newValue.uniqueId) {
+                  handleSearch(newValue.uniqueId);
                 }
-              }} 
-              inputValue={searchText}
-              onInputChange={(event, newValue) => {
-                setSearchText(newValue || '');
-              }}
-              isOptionEqualToValue={(option, value) => option.title === value}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Search Store Products..."
-                  InputProps={{
-                    ...params.InputProps,
-                    style: { color: '#ffffff' },
-                    sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                    startAdornment: (
-                      <>
-                        <span className="material-icons">search</span>
-                        {params.InputProps.startAdornment}
-                      </>
-                    ),
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch();
-                    }
-                  }}
-                />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <Grid container alignItems="center">
-                    <Grid item xs>
-                      {option.title}
-                    </Grid>
-                    <Grid item>
-                      €{option.price}
-                    </Grid>
-                  </Grid>
-                </li>
-              )}
+              } else {
+                setSearchText('');
+                setSearchResults([]); // Clear results when selection is cleared
+              }
+            }} 
+            inputValue={searchText}
+            onInputChange={(event, newValue) => {
+              setSearchText(newValue || '');
+              // Don't auto-search on input change, let the user press Enter
+            }}
+            isOptionEqualToValue={(option, value) => 
+              option.uniqueId === value.uniqueId || option.title === value.title
+            }
+            filterOptions={(options, state) => {
+              // Custom filter to match partial text inputs
+              const inputValue = state.inputValue.toLowerCase().trim();
+              if (!inputValue) return options;
+              
+              return options.filter(option => 
+                option.title && option.title.toLowerCase().includes(inputValue)
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Search Store Products..."
+                InputProps={{
+                  ...params.InputProps,
+                  style: { color: '#ffffff' },
+                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                  startAdornment: (
+                    <>
+                      <span className="material-icons">search</span>
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
               />
+            )}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <Grid container alignItems="center">
+                  <Grid item xs>
+                    {option.title || 'Untitled Product'}
+                  </Grid>
+                  <Grid item>
+                    €{option.price || '0'}
+                  </Grid>
+                </Grid>
+              </li>
+            )}
+          />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
