@@ -7,7 +7,7 @@ import {
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
 import { useUserData } from './UserContext';
-import { Autocomplete } from '@mui/material';
+import { List, ListItem, ListItemText } from '@mui/material';
 
 const StoreSearch = ({ onClose }) => {
   const { userData } = useUserData();
@@ -378,85 +378,92 @@ const StoreSearch = ({ onClose }) => {
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={9}>
-          <Autocomplete 
-            fullWidth 
-            options={allItems}
-            getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
-            onChange={(event, newValue) => { 
-              console.log("Autocomplete selection changed to:", newValue);
-              if (newValue) { 
-                setSearchText(newValue.title || '');
-                setSelectedUniqueId(newValue.uniqueId);
-                console.log("Setting uniqueId:", newValue.uniqueId);
-                handleSearch();
-              } else {
-                setSearchText('');
+            <TextField
+              fullWidth
+              placeholder="Search Store Products..."
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
                 setSelectedUniqueId(null);
-                setSearchResults([]);
-              }
-            }}
-            inputValue={searchText}
-            onInputChange={(event, newValue) => {
-              console.log("Input changed to:", newValue);
-              setSearchText(newValue || '');
-              setSelectedUniqueId(null);
-            }}
-            // IMPORTANT FIXES:
-            // 1. Disable MUI's built-in filtering
-            filterOptions={(options, state) => {
-              const inputValue = state.inputValue.toLowerCase().trim();
-              console.log("=== AUTOCOMPLETE FILTERING ===");
-              console.log("Input value for filtering:", inputValue);
-              console.log("Options count before filtering:", options.length);
-              
-              if (!inputValue) {
-                console.log("Empty input, returning all options");
-                return options;
-              }
-              
-              const filtered = options.filter(option => {
-                const titleMatches = option.title && option.title.toLowerCase().includes(inputValue);
-                if (titleMatches) {
-                  console.log(`Option matches: ${option.title}`);
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
                 }
-                return titleMatches;
-              });
-              
-              console.log("Filtered options count:", filtered.length);
-              console.log("Filtered titles:", filtered.map(f => f.title));
-              return filtered;
-            }}
-            // 2. These properties ensure our filter is properly applied
-            disablePortal
-            freeSolo={false}
-            // 3. Completely disable MUI's built-in filtering
-            autoComplete={false}
-            // 4. Force re-render when options change
-            key={allItems.length}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Search Store Products..."
-                InputProps={{
-                  ...params.InputProps,
-                  style: { color: '#ffffff' },
-                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                  startAdornment: (
-                    <>
-                      <span className="material-icons">search</span>
-                      {params.InputProps.startAdornment}
-                    </>
-                  ),
+              }}
+              InputProps={{
+                style: { color: '#ffffff' },
+                sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                startAdornment: (
+                  <span className="material-icons" style={{ marginRight: '8px' }}>search</span>
+                ),
+                endAdornment: searchText ? (
+                  <span 
+                    className="material-icons" 
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setSearchText('');
+                      setSelectedUniqueId(null);
+                      setSearchResults([]);
+                    }}
+                  >
+                    clear
+                  </span>
+                ) : null
+              }}
+            />
+            {searchText && (
+              <Paper 
+                sx={{ 
+                  maxHeight: '300px',
+                  overflow: 'auto',
+                  mt: 1,
+                  bgcolor: '#2a2a2a',
                 }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    console.log("Enter key pressed, triggering search");
-                    handleSearch();
-                  }
-                }}
-              />
+              >
+                <List dense>
+                  {allItems.filter(item => {
+                    const query = searchText.toLowerCase().trim();
+                    return (
+                      (item.title && item.title.toLowerCase().includes(query)) ||
+                      (item.supplier && item.supplier.toLowerCase().includes(query)) ||
+                      (item.type && item.type.toLowerCase().includes(query))
+                    );
+                  }).slice(0, 10).map((item, index) => (
+                    <ListItem 
+                      button 
+                      key={item.uniqueId || index}
+                      onClick={() => {
+                        setSearchText(item.title || '');
+                        setSelectedUniqueId(item.uniqueId);
+                        handleSearch();
+                      }}
+                      sx={{ 
+                        '&:hover': { 
+                          bgcolor: 'rgba(255, 255, 255, 0.1)' 
+                        },
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    >
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ color: '#ffffff' }}>
+                            {item.title || 'Untitled'} 
+                            {item.price && ` - €${item.price}`}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            {item.type || 'No type'} 
+                            {item.supplier && ` - ${item.supplier}`}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
             )}
-          />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
