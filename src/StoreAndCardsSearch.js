@@ -37,38 +37,44 @@ const StoreSearch = ({ onClose }) => {
     Width: '',
     Length: ''
   });
+  const [selectedUniqueId, setSelectedUniqueId] = useState(null);
 
 
-  const handleSearch = useCallback(async (uniqueId = null) => {
-    // Only proceed if we have search text or a unique ID
-    if (!searchText.trim() && !uniqueId) {
+  const handleSearch = useCallback(() => {
+    if (!searchText.trim() && !selectedUniqueId) {
       setSearchResults([]); // Clear results if no search criteria
       return;
     }
     
     setLoading(true);
-    setError(null);
+    
     try {
-      const result = await apiCall('stocker_script', 'searchStoreProduct', {
-        googleToken: userData.googleToken,
-        username: userData.username,
-        searchText: searchText.trim(), // Ensure we trim the search text
-        uniqueId  // This will be the numerical ID from the data
-      });
-      
-      // If no results returned, set empty array
-      if (!result || result.length === 0) {
-        setSearchResults([]);
-      } else {
-        setSearchResults(result);
+      // If we have a unique ID selected, filter by that
+      if (selectedUniqueId) {
+        const filteredResults = allItems.filter(item => 
+          item.uniqueId === selectedUniqueId
+        );
+        setSearchResults(filteredResults);
+      } 
+      // Otherwise filter by text
+      else {
+        const query = searchText.toLowerCase().trim();
+        const filteredResults = allItems.filter(item => 
+          // Search in multiple fields
+          item.title?.toLowerCase().includes(query) || 
+          item.description?.toLowerCase().includes(query) ||
+          item.type?.toLowerCase().includes(query) ||
+          item.tags?.toLowerCase().includes(query)
+        );
+        setSearchResults(filteredResults);
       }
     } catch (err) {
-      setError('Failed to fetch results. Please try again.');
-      setSearchResults([]); // Clear results on error
+      setError('Failed to filter results. Please try again.');
+      setSearchResults([]);
     } finally {
       setLoading(false);
     }
-  }, [searchText, userData]);
+  }, [searchText, selectedUniqueId, allItems]);
   
 
   const handleInputChange = (e) => {
@@ -353,19 +359,18 @@ const StoreSearch = ({ onClose }) => {
             onChange={(event, newValue) => { 
               if (newValue) { 
                 setSearchText(newValue.title || '');
-                // Only search by uniqueId if it exists
-                if (newValue.uniqueId) {
-                  handleSearch(newValue.uniqueId);
-                }
+                setSelectedUniqueId(newValue.uniqueId);
+                handleSearch(); // This will now filter client-side
               } else {
                 setSearchText('');
+                setSelectedUniqueId(null);
                 setSearchResults([]); // Clear results when selection is cleared
               }
             }} 
             inputValue={searchText}
             onInputChange={(event, newValue) => {
               setSearchText(newValue || '');
-              // Don't auto-search on input change, let the user press Enter
+              setSelectedUniqueId(null); // Clear ID when text changes
             }}
             isOptionEqualToValue={(option, value) => 
               option.uniqueId === value.uniqueId || option.title === value.title
