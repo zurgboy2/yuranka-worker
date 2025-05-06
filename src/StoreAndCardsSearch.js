@@ -386,11 +386,6 @@ const StoreSearch = ({ onClose }) => {
                 setSearchText(e.target.value);
                 setSelectedUniqueId(null);
               }}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
               InputProps={{
                 style: { color: '#ffffff' },
                 sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
@@ -412,6 +407,81 @@ const StoreSearch = ({ onClose }) => {
                 ) : null
               }}
             />
+            {searchText && (
+              <Paper 
+                sx={{ 
+                  maxHeight: '300px',
+                  overflow: 'auto',
+                  mt: 1,
+                  bgcolor: '#2a2a2a',
+                }}
+              >
+                <List dense>
+                  {allItems.filter(item => {
+                    const query = searchText.toLowerCase().trim();
+                    return (
+                      (item.title && item.title.toLowerCase().includes(query)) ||
+                      (item.supplier && item.supplier.toLowerCase().includes(query)) ||
+                      (item.type && item.type.toLowerCase().includes(query))
+                    );
+                  }).slice(0, 10).map((item, index) => (
+                    <ListItem 
+                      button 
+                      key={item.uniqueId || index}
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          setError(null);
+                          
+                          // Call the backend searchStoreProduct function
+                          const response = await apiCall('stocker_script', 'searchStoreProduct', {
+                            googleToken: userData.googleToken,
+                            username: userData.username,
+                            searchText: item.title || '',
+                            uniqueId: item.uniqueId
+                          });
+                          
+                          if (response && Array.isArray(response)) {
+                            setSearchResults(response);
+                            setSearchText(item.title || '');
+                          } else {
+                            // Handle case when response is not as expected
+                            throw new Error('Invalid response from server');
+                          }
+                        } catch (err) {
+                          console.error("Search error:", err);
+                          setError('Failed to retrieve product. Please try again.');
+                          setSearchResults([]);
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      sx={{ 
+                        '&:hover': { 
+                          bgcolor: 'rgba(255, 255, 255, 0.1)' 
+                        },
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    >
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ color: '#ffffff' }}>
+                            {item.title || 'Untitled'} 
+                            {item.price && ` - €${item.price}`}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            {item.type || 'No type'} 
+                            {item.supplier && ` - ${item.supplier}`}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
             {searchText && (
               <Paper 
                 sx={{ 
