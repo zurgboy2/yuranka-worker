@@ -41,8 +41,14 @@ const StoreSearch = ({ onClose }) => {
 
 
   const handleSearch = useCallback(() => {
+    console.log("=== SEARCH INITIATED ===");
+    console.log("searchText:", searchText);
+    console.log("selectedUniqueId:", selectedUniqueId);
+    console.log("allItems count:", allItems.length);
+    
     if (!searchText.trim() && !selectedUniqueId) {
-      setSearchResults([]); // Clear results if no search criteria
+      console.log("No search criteria provided, clearing results");
+      setSearchResults([]);
       return;
     }
     
@@ -51,26 +57,40 @@ const StoreSearch = ({ onClose }) => {
     try {
       // If we have a unique ID selected, filter by that
       if (selectedUniqueId) {
-        const filteredResults = allItems.filter(item => 
-          String(item.uniqueId) === String(selectedUniqueId)
-        );
+        console.log("Filtering by uniqueId:", selectedUniqueId);
+        
+        const filteredResults = allItems.filter(item => {
+          const matches = String(item.uniqueId) === String(selectedUniqueId);
+          console.log(`Item ${item.uniqueId} (${item.title}) matches: ${matches}`);
+          return matches;
+        });
+        
+        console.log("Results count (by uniqueId):", filteredResults.length);
         setSearchResults(filteredResults);
       } 
       // Otherwise filter by text
       else {
         const query = searchText.toLowerCase().trim();
-        console.log("Search query:", query);
+        console.log("Filtering by text query:", query);
+        
+        // Log a sample of the allItems to verify structure
+        if (allItems.length > 0) {
+          console.log("Sample item structure:", JSON.stringify(allItems[0], null, 2));
+        }
         
         const filteredResults = allItems.filter(item => {
-          // Check against the fields that we know exist in the data
+          // Check each field individually and log the result
           const titleMatch = item.title && item.title.toLowerCase().includes(query);
           const supplierMatch = item.supplier && item.supplier.toLowerCase().includes(query);
-          // Include any other fields that might be in your data
+          const typeMatch = item.type && item.type.toLowerCase().includes(query);
           
-          return titleMatch || supplierMatch;
+          console.log(`Item ${item.uniqueId || 'unknown'} (${item.title || 'untitled'}): titleMatch=${titleMatch}, supplierMatch=${supplierMatch}, typeMatch=${typeMatch}`);
+          
+          return titleMatch || supplierMatch || typeMatch;
         });
         
-        console.log("Filtered results count:", filteredResults.length);
+        console.log("Results count (by text):", filteredResults.length);
+        console.log("Filtered results:", filteredResults.map(r => r.title));
         setSearchResults(filteredResults);
       }
     } catch (err) {
@@ -358,73 +378,97 @@ const StoreSearch = ({ onClose }) => {
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={9}>
-          <Autocomplete 
-            fullWidth 
-            options={allItems} 
-            getOptionLabel={(option) => option.title ? `${option.title} - €${option.price || 0}` : ''}
-            onChange={(event, newValue) => { 
-              if (newValue) { 
-                setSearchText(newValue.title || '');
-                setSelectedUniqueId(newValue.uniqueId);
-                handleSearch(); // This will now filter client-side
-              } else {
-                setSearchText('');
-                setSelectedUniqueId(null);
-                setSearchResults([]); // Clear results when selection is cleared
-              }
-            }} 
-            inputValue={searchText}
-            onInputChange={(event, newValue) => {
-              setSearchText(newValue || '');
-              setSelectedUniqueId(null); // Clear ID when text changes
-            }}
-            isOptionEqualToValue={(option, value) => 
-              String(option.uniqueId) === String(value.uniqueId) || option.title === value.title
-            }
-            filterOptions={(options, state) => {
-              // Custom filter to match partial text inputs
-              const inputValue = state.inputValue.toLowerCase().trim();
-              if (!inputValue) return options;
-              
-              return options.filter(option => 
-                option.title && option.title.toLowerCase().includes(inputValue)
-              );
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Search Store Products..."
-                InputProps={{
-                  ...params.InputProps,
-                  style: { color: '#ffffff' },
-                  sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-                  startAdornment: (
-                    <>
-                      <span className="material-icons">search</span>
-                      {params.InputProps.startAdornment}
-                    </>
-                  ),
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
+            <Autocomplete 
+              fullWidth 
+              options={allItems} 
+              getOptionLabel={(option) => {
+                const label = option.title ? `${option.title} - €${option.price || 0}` : '';
+                return label;
+              }}
+              onChange={(event, newValue) => { 
+                console.log("Autocomplete selection changed to:", newValue);
+                if (newValue) { 
+                  setSearchText(newValue.title || '');
+                  setSelectedUniqueId(newValue.uniqueId);
+                  console.log("Setting uniqueId:", newValue.uniqueId);
+                  handleSearch(); // This will now filter client-side
+                } else {
+                  setSearchText('');
+                  setSelectedUniqueId(null);
+                  setSearchResults([]); // Clear results when selection is cleared
+                }
+              }} 
+              inputValue={searchText}
+              onInputChange={(event, newValue) => {
+                console.log("Input changed to:", newValue);
+                setSearchText(newValue || '');
+                setSelectedUniqueId(null); // Clear ID when text changes
+              }}
+              isOptionEqualToValue={(option, value) => {
+                const isEqual = String(option.uniqueId) === String(value.uniqueId) || option.title === value.title;
+                console.log(`Comparing option ${option.title} to value ${value.title}: ${isEqual}`);
+                return isEqual;
+              }}
+              filterOptions={(options, state) => {
+                // Custom filter to match partial text inputs
+                const inputValue = state.inputValue.toLowerCase().trim();
+                console.log("=== AUTOCOMPLETE FILTERING ===");
+                console.log("Input value for filtering:", inputValue);
+                console.log("Options count before filtering:", options.length);
+                
+                if (!inputValue) {
+                  console.log("Empty input, returning all options");
+                  return options;
+                }
+                
+                const filtered = options.filter(option => {
+                  const titleMatches = option.title && option.title.toLowerCase().includes(inputValue);
+                  if (titleMatches) {
+                    console.log(`Option matches: ${option.title}`);
                   }
-                }}
-              />
-            )}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <Grid container alignItems="center">
-                  <Grid item xs>
-                    {option.title || 'Untitled Product'}
+                  return titleMatches;
+                });
+                
+                console.log("Filtered options count:", filtered.length);
+                console.log("Filtered titles:", filtered.map(f => f.title));
+                return filtered;
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search Store Products..."
+                  InputProps={{
+                    ...params.InputProps,
+                    style: { color: '#ffffff' },
+                    sx: { bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                    startAdornment: (
+                      <>
+                        <span className="material-icons">search</span>
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      console.log("Enter key pressed, triggering search");
+                      handleSearch();
+                    }
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <Grid container alignItems="center">
+                    <Grid item xs>
+                      {option.title || 'Untitled Product'}
+                    </Grid>
+                    <Grid item>
+                      €{option.price || '0'}
+                    </Grid>
                   </Grid>
-                  <Grid item>
-                    €{option.price || '0'}
-                  </Grid>
-                </Grid>
-              </li>
-            )}
-          />
+                </li>
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={3}>
             <Button 
