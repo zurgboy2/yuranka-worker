@@ -467,9 +467,19 @@ const StoreSearch = ({ onClose }) => {
               <TextField
                 fullWidth
                 label="Quantity"
-                type="number"
+                type="text" // Changed from "number" to "text" to prevent scrollable behavior
                 value={product['Variant Inventory Qty']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Variant Inventory Qty', e.target.value)}
+                onChange={(e) => {
+                  // Only allow whole numbers
+                  const value = e.target.value;
+                  if (value === '' || /^[0-9]+$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Variant Inventory Qty', value);
+                  }
+                }}
+                inputProps={{
+                  inputMode: 'numeric', // For mobile keyboards
+                  pattern: '[0-9]*',    // HTML5 validation
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -626,7 +636,35 @@ const StoreSearch = ({ onClose }) => {
             <TextField fullWidth margin="dense" name="Variant Price" label="Price" type="number" value={productData['Variant Price']} onChange={handleInputChange} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Variant Inventory Qty" label="Quantity" type="number" value={productData['Variant Inventory Qty']} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Variant Inventory Qty" 
+              label="Quantity" 
+              type="text" // Changed from "number" to "text"
+              value={productData['Variant Inventory Qty']} 
+              onChange={(e) => {
+                const { name, value } = e.target;
+                // Only allow whole numbers
+                if (name === "Variant Inventory Qty") {
+                  if (value === '' || /^[0-9]+$/.test(value)) {
+                    setProductData(prev => ({
+                      ...prev,
+                      [name]: value
+                    }));
+                  }
+                } else {
+                  setProductData(prev => ({
+                    ...prev,
+                    [name]: value
+                  }));
+                }
+              }}
+              inputProps={{
+                inputMode: 'numeric',
+                pattern: '[0-9]*',
+              }}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField fullWidth margin="dense" name="Variant Grams" label="Grams" type="number" value={productData['Variant Grams']} onChange={handleInputChange} />
