@@ -612,16 +612,28 @@ const ListerApp = () => {
       setError(null);
   
       // Combine original items with modifications
+      const variantFields = tcgConfig.games[selectedGame]?.variantFields || [];
+
       const cardsToSubmit = results
         .map(item => {
           const modifiedItem = modifiedItems[item.cardId];
-          if (modifiedItem) {
-            return {
-              ...item,
-              ...modifiedItem
-            };
-          }
-          return item;
+          const mergedItem = {
+          ...item,
+          ...(modifiedItem || {})
+          };
+
+          variantFields.forEach(field => {
+            if (!(field.name in mergedItem)) {
+              if (field.type === 'boolean') {
+                mergedItem[field.name] = false;
+              } else if (field.type === 'selection') {
+                mergedItem[field.name] = '';
+              }
+            }
+          });
+      
+          return mergedItem;
+          
         })
         .filter(item => !item._deleted && item.quantity > 0);
   
