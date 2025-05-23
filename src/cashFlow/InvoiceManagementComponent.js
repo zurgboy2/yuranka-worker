@@ -90,6 +90,7 @@ const InvoiceManagementComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAddInvoiceDialogOpen, setIsAddInvoiceDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [newInvoice, setNewInvoice] = useState({
     nameOfInvoice: '',
     amount: '',
@@ -149,6 +150,39 @@ const InvoiceManagementComponent = () => {
   
   const handleInvoiceClick = (invoice) => {
     setSelectedInvoice({...invoice});
+  };
+
+  const sortedInvoices = useMemo(() => {
+  if (!sortConfig.key) return filteredInvoices;
+  
+  return [...filteredInvoices].sort((a, b) => {
+    let aValue = a[sortConfig.key];
+    let bValue = b[sortConfig.key];
+    
+    // Handle date sorting
+    if (sortConfig.key === 'date') {
+      aValue = new Date(aValue);
+      bValue = new Date(bValue);
+    }
+    
+    // Handle numeric sorting
+    if (sortConfig.key === 'amount' || sortConfig.key === 'amountPaid' || sortConfig.key === 'invoicenumber') {
+      aValue = parseFloat(aValue) || 0;
+      bValue = parseFloat(bValue) || 0;
+    }
+    
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+  }, [filteredInvoices, sortConfig]);
+
+  // Add clickable headers
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
   
   const handleSelectedInvoiceChange = (event) => {
@@ -533,7 +567,7 @@ const InvoiceManagementComponent = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {filteredInvoices.map(renderInvoiceRow)}
+                              {sortedInvoices.map(renderInvoiceRow)}
                             </TableBody>
                           </Table>
                         </TableContainer>
