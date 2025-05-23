@@ -134,47 +134,64 @@ const InvoiceManagementComponent = () => {
   const applyFilters = useCallback(() => {
     const filtered = invoices.filter(invoice => {
       const statusMatch = statusFilter === 'All' || invoice.status === statusFilter;
-      const paymentStatusMatch = paymentStatusFilter === 'All' || invoice.paymentStatus === paymentStatusFilter;
+      
+      // Use normalization here
+      const normalizedPaymentStatus = normalizePaymentStatus(invoice.paymentStatus);
+      const paymentStatusMatch = paymentStatusFilter === 'All' || normalizedPaymentStatus === paymentStatusFilter;
+      
       const invoiceDate = parseDate(invoice.date);
       const dateMatch = (!startDate || (invoiceDate && invoiceDate >= startDate)) &&
                         (!endDate || (invoiceDate && invoiceDate <= endDate));
-  
+
       return statusMatch && paymentStatusMatch && dateMatch;
     });
     setFilteredInvoices(filtered);
   }, [invoices, statusFilter, paymentStatusFilter, startDate, endDate]);
   
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
-  
+    const invoiceNumbers = invoices.map(inv => inv.invoicenumber);
+    const duplicates = invoiceNumbers.filter((num, index) => invoiceNumbers.indexOf(num) !== index);
+    if (duplicates.length > 0) {
+      console.warn('Duplicate invoice numbers found:', [...new Set(duplicates)]);
+    }
+  }, [invoices]);
+
   const handleInvoiceClick = (invoice) => {
     setSelectedInvoice({...invoice});
   };
 
   const sortedInvoices = useMemo(() => {
-  if (!sortConfig.key) return filteredInvoices;
-  
-  return [...filteredInvoices].sort((a, b) => {
-    let aValue = a[sortConfig.key];
-    let bValue = b[sortConfig.key];
+    if (!sortConfig.key) return filteredInvoices;
     
-    // Handle date sorting
-    if (sortConfig.key === 'date') {
-      aValue = new Date(aValue);
-      bValue = new Date(bValue);
-    }
-    
-    // Handle numeric sorting
-    if (sortConfig.key === 'amount' || sortConfig.key === 'amountPaid' || sortConfig.key === 'invoicenumber') {
-      aValue = parseFloat(aValue) || 0;
-      bValue = parseFloat(bValue) || 0;
-    }
-    
-    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
+    return [...filteredInvoices].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      
+      // Handle date sorting
+      if (sortConfig.key === 'date' || sortConfig.key === 'dateofrelease') {
+        aValue = parseDate(aValue);
+        bValue = parseDate(bValue);
+        if (!aValue && !bValue) return 0;
+        if (!aValue) return 1;
+        if (!bValue) return -1;
+      }
+      
+      // Handle numeric sorting - fix the field name here
+      if (sortConfig.key === 'amount' || sortConfig.key === 'amountPaid' || sortConfig.key === 'invoicenumber') {
+        aValue = parseFloat(aValue) || 0;
+        bValue = parseFloat(bValue) || 0;
+      }
+      
+      // Handle string sorting
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
   }, [filteredInvoices, sortConfig]);
 
   // Add clickable headers
@@ -243,6 +260,25 @@ const InvoiceManagementComponent = () => {
       setSelectedInvoice(null);
     }
   };
+
+  const clearFilters = () => {
+    setStatusFilter('All');
+    setPaymentStatusFilter('All');
+    setStartDate(null);
+    setEndDate(null);
+  };
+
+
+  const normalizePaymentStatus = (status) => {
+    if (!status) return 'UnPaid';
+    // Convert to consistent format
+    const normalized = status.replace(/\s+/g, ' ').trim();
+    if (normalized.toLowerCase() === 'unpaid') return 'UnPaid';
+    if (normalized.toLowerCase() === 'partially paid') return 'Partially Paid';
+    if (normalized.toLowerCase() === 'paid') return 'Paid';
+    return normalized;
+  };
+
   
   const handleAddInvoiceOpen = () => {
       setIsAddInvoiceDialogOpen(true);
@@ -366,17 +402,22 @@ const InvoiceManagementComponent = () => {
     );
     
       const renderInvoiceRow = (invoice) => {
-        const amountRemaining = (parseFloat(invoice.amount) || 0) - (parseFloat(invoice.amountPaid) || 0);
+        const amount = parseFloat(invoice.amount) || 0;
+        const amountPaid = parseFloat(invoice.amountPaid) || 0;
+        const amountRemaining = invoice.amountRemaining !== undefined 
+          ? parseFloat(invoice.amountRemaining) 
+          : amount - amountPaid;
         
         return (
           <TableRow key={invoice.invoicenumber}>
+            <TableCell>{invoice.invoicenumber}</TableCell>
             <TableCell>{invoice.nameOfInvoice}</TableCell>
-            <TableCell>€{invoice.amount}</TableCell>
-            <TableCell>€{invoice.amountPaid}</TableCell>
+            <TableCell>€{amount.toFixed(2)}</TableCell>
+            <TableCell>€{amountPaid.toFixed(2)}</TableCell>
             <TableCell>€{amountRemaining.toFixed(2)}</TableCell>
             <TableCell>{invoice.date}</TableCell>
             <TableCell>{invoice.status}</TableCell>
-            <TableCell>{invoice.paymentStatus}</TableCell>
+            <TableCell>{normalizePaymentStatus(invoice.paymentStatus)}</TableCell>
             <TableCell>
               {invoice.docUrl ? (
                 <a href={invoice.docUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ff1744' }}>
@@ -394,6 +435,7 @@ const InvoiceManagementComponent = () => {
           </TableRow>
         );
       };
+
     
       const handleNewInvoiceChange = (event) => {
         const { name, value } = event.target;
@@ -435,6 +477,25 @@ const InvoiceManagementComponent = () => {
           return;
         }
         setSnackbar({ ...snackbar, open: false });
+      };
+
+      const FilterSummary = () => {
+        const totalAmount = sortedInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+        const totalPaid = sortedInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amountPaid) || 0), 0);
+        const totalRemaining = totalAmount - totalPaid;
+        
+        return (
+          <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+            <Typography variant="h6">
+              Showing {sortedInvoices.length} of {invoices.length} invoices
+            </Typography>
+            <Typography variant="body2">
+              Total Amount: €{totalAmount.toFixed(2)} | 
+              Total Paid: €{totalPaid.toFixed(2)} | 
+              Total Remaining: €{totalRemaining.toFixed(2)}
+            </Typography>
+          </Box>
+        );
       };
 
       return (
@@ -550,6 +611,13 @@ const InvoiceManagementComponent = () => {
                       </LocalizationProvider>
                     </Box>
                   </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                    <Button onClick={clearFilters} variant="outlined" sx={{ mt: 2 }}>
+                      Clear Filters
+                    </Button>
+                  </Box>
+
+                  {!isLoading && <FilterSummary />}
                   {isLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                       <CircularProgress />
@@ -561,6 +629,9 @@ const InvoiceManagementComponent = () => {
                           <Table stickyHeader>
                             <TableHead>
                               <TableRow>
+                                <TableCell onClick={() => handleSort('invoicenumber')} style={{ cursor: 'pointer' }}>
+                                  Invoice # {sortConfig.key === 'invoicenumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
                                 <TableCell onClick={() => handleSort('nameOfInvoice')} style={{ cursor: 'pointer' }}>
                                   Name of Invoice {sortConfig.key === 'nameOfInvoice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                                 </TableCell>
@@ -585,7 +656,11 @@ const InvoiceManagementComponent = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {sortedInvoices.map((invoice) => renderInvoiceRow(invoice))}
+                              {sortedInvoices.map((invoice, index) => (
+                                <React.Fragment key={`${invoice.invoicenumber}-${index}`}>
+                                  {renderInvoiceRow(invoice)}
+                                </React.Fragment>
+                              ))}
                             </TableBody>
                           </Table>
                         </TableContainer>
