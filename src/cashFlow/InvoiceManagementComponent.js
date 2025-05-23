@@ -260,12 +260,12 @@ const InvoiceManagementComponent = () => {
 
     const renderMobileInvoiceList = () => (
       <List>
-        {filteredInvoices.map((invoice) => (
+        {sortedInvoices.map((invoice) => (
           <React.Fragment key={invoice.invoicenumber}>
             <ListItem button onClick={() => handleInvoiceClick(invoice)}>
               <ListItemText 
                 primary={invoice.nameOfInvoice} 
-                secondary={`Amount: €${invoice.amount}`} 
+                secondary={`Amount: €${invoice.amount} | Date: ${invoice.date} | Status: ${invoice.status}`}
               />
             </ListItem>
             <Divider />
@@ -372,6 +372,7 @@ const InvoiceManagementComponent = () => {
         <TableCell>€{invoice.amountPaid}</TableCell>
         <TableCell>€{invoice.amountRemaining}</TableCell>
         <TableCell>{invoice.date}</TableCell>
+        <TableCell>{invoice.status}</TableCell>
         <TableCell>{invoice.paymentStatus}</TableCell>
         <TableCell>
           {invoice.docUrl ? (
@@ -556,12 +557,25 @@ const InvoiceManagementComponent = () => {
                           <Table stickyHeader>
                             <TableHead>
                               <TableRow>
-                                <TableCell>Name of Invoice</TableCell>
-                                <TableCell>Amount</TableCell>
-                                <TableCell>Amount Paid</TableCell>
+                                <TableCell onClick={() => handleSort('nameOfInvoice')} style={{ cursor: 'pointer' }}>
+                                  Name of Invoice {sortConfig.key === 'nameOfInvoice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
+                                <TableCell onClick={() => handleSort('amount')} style={{ cursor: 'pointer' }}>
+                                  Amount {sortConfig.key === 'amount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
+                                <TableCell onClick={() => handleSort('amountPaid')} style={{ cursor: 'pointer' }}>
+                                  Amount Paid {sortConfig.key === 'amountPaid' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
                                 <TableCell>Amount Remaining</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Payment Status</TableCell>
+                                <TableCell onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
+                                  Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
+                                <TableCell onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>
+                                  Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
+                                <TableCell onClick={() => handleSort('paymentStatus')} style={{ cursor: 'pointer' }}>
+                                  Payment Status {sortConfig.key === 'paymentStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                </TableCell>
                                 <TableCell>Document</TableCell>
                                 <TableCell>Actions</TableCell>
                               </TableRow>
