@@ -273,7 +273,7 @@ const InvoiceManagementComponent = () => {
         ))}
       </List>
     );
-    
+
     const renderInvoiceDetails = () => (
       <Dialog open={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} fullWidth maxWidth="sm">
         <DialogTitle>{selectedInvoice?.nameOfInvoice}</DialogTitle>
@@ -365,31 +365,35 @@ const InvoiceManagementComponent = () => {
       </Dialog>
     );
     
-    const renderInvoiceRow = (invoice) => (
-      <TableRow key={invoice.invoicenumber}>
-        <TableCell>{invoice.nameOfInvoice}</TableCell>
-        <TableCell>€{invoice.amount}</TableCell>
-        <TableCell>€{invoice.amountPaid}</TableCell>
-        <TableCell>€{invoice.amountRemaining}</TableCell>
-        <TableCell>{invoice.date}</TableCell>
-        <TableCell>{invoice.status}</TableCell>
-        <TableCell>{invoice.paymentStatus}</TableCell>
-        <TableCell>
-          {invoice.docUrl ? (
-            <a href={invoice.docUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ff1744' }}>
-              View
-            </a>
-          ) : (
-            'N/A'
-          )}
-        </TableCell>
-        <TableCell>
-          <IconButton onClick={() => handleInvoiceClick(invoice)} size="small">
-            <span className="material-symbols-outlined">edit</span>
-          </IconButton>
-        </TableCell>
-      </TableRow>
-    );
+      const renderInvoiceRow = (invoice) => {
+        const amountRemaining = (parseFloat(invoice.amount) || 0) - (parseFloat(invoice.amountPaid) || 0);
+        
+        return (
+          <TableRow key={invoice.invoicenumber}>
+            <TableCell>{invoice.nameOfInvoice}</TableCell>
+            <TableCell>€{invoice.amount}</TableCell>
+            <TableCell>€{invoice.amountPaid}</TableCell>
+            <TableCell>€{amountRemaining.toFixed(2)}</TableCell>
+            <TableCell>{invoice.date}</TableCell>
+            <TableCell>{invoice.status}</TableCell>
+            <TableCell>{invoice.paymentStatus}</TableCell>
+            <TableCell>
+              {invoice.docUrl ? (
+                <a href={invoice.docUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ff1744' }}>
+                  View
+                </a>
+              ) : (
+                'N/A'
+              )}
+            </TableCell>
+            <TableCell>
+              <IconButton onClick={() => handleInvoiceClick(invoice)} size="small">
+                <span className="material-symbols-outlined">edit</span>
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        );
+      };
     
       const handleNewInvoiceChange = (event) => {
         const { name, value } = event.target;
@@ -581,7 +585,7 @@ const InvoiceManagementComponent = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {sortedInvoices.map(renderInvoiceRow)}
+                              {sortedInvoices.map((invoice) => renderInvoiceRow(invoice))}
                             </TableBody>
                           </Table>
                         </TableContainer>
