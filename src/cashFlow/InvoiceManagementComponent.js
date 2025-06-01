@@ -149,6 +149,10 @@ const InvoiceManagementComponent = () => {
   }, [invoices, statusFilter, paymentStatusFilter, startDate, endDate]);
   
   useEffect(() => {
+      applyFilters();
+    }, [applyFilters]);
+
+  useEffect(() => {
     const invoiceNumbers = invoices.map(inv => inv.invoicenumber);
     const duplicates = invoiceNumbers.filter((num, index) => invoiceNumbers.indexOf(num) !== index);
     if (duplicates.length > 0) {
