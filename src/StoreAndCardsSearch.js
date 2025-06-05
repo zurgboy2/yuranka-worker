@@ -38,7 +38,7 @@ const StoreSearch = ({ onClose }) => {
     Length: ''
   });
   const [selectedUniqueId, setSelectedUniqueId] = useState(null);
-
+  const [shopifyPopup, setShopifyPopup] = useState({ open: false, url: '' });
 
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
@@ -66,6 +66,7 @@ const StoreSearch = ({ onClose }) => {
         });
         
         console.log("Results count (by uniqueId):", filteredResults.length);
+        console.log("Filtered results:", filteredResults);
         setSearchResults(filteredResults);
       } 
       // Otherwise filter by text
@@ -180,8 +181,15 @@ const StoreSearch = ({ onClose }) => {
         addToShopify: productData.Shopify,
         addToStore: productData.Store
       });
+      console.log("Add product response:", response);
       setOpenDialog(false);
       setSuccessMessage(response.message || 'Product added successfully');
+      if (response.handle) {
+        setShopifyPopup({ 
+          open: true, 
+          url: `https://store.yuranka.com/products/${response.handle}`
+        });
+      }
       // Reset the form
       setProductData({
         Title: '',
@@ -258,14 +266,20 @@ const StoreSearch = ({ onClose }) => {
     setLoading(true);
     setError(null);
     try {
-      const productToUpdate = searchResults.find(product => product.Unique_ID === productId);
-      await apiCall('stocker_script', 'updateProduct', {
+        const productToUpdate = searchResults.find(product => product.Unique_ID === productId);
+        const response = await apiCall('stocker_script', 'updateProduct', {
         googleToken: userData.googleToken,
         username: userData.username,
         productId,
         productData: productToUpdate
       });
-      // Optionally refresh the search results here
+       if (response.success) {
+        setShopifyPopup({ open: true, url: `https://store.yuranka.com/products/${productToUpdate.Handle}` });
+        setSuccessMessage(response.message || 'Product updated successfully');
+      } else {
+        setError(response.message || 'Failed to update product.');
+      }
+
     } catch (err) {
       setError('Failed to update product. Please try again.');
     } finally {
@@ -313,7 +327,6 @@ const StoreSearch = ({ onClose }) => {
         setFilteredSuggestions([]);
       }
     };
-  
     return (
       <Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
@@ -817,6 +830,46 @@ const StoreSearch = ({ onClose }) => {
           sx: { backgroundColor: 'green' }
         }}
       />
+    <Dialog
+  open={shopifyPopup.open}
+  onClose={() => setShopifyPopup({ open: false, url: '' })}
+  maxWidth="md"
+  fullWidth 
+  PaperProps={{
+    style: { minHeight: '300px', minWidth: '500px', padding: 32 } // further increases size
+  }}
+>
+  <DialogTitle style={{ fontSize: 28, fontWeight: 600 }}>Check The Shopify Product</DialogTitle>
+  <DialogContent>
+    <Typography style={{ fontSize: 20, marginBottom: 16 }}>
+      Please double check the Shopify product.
+    </Typography>
+  </DialogContent>
+  <DialogActions style={{ paddingBottom: 32 }}>
+    <Grid container spacing={2} justifyContent="center">
+      <Grid item>
+        <Button
+          variant="contained"
+          color="primary"
+          href={shopifyPopup.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: 18, padding: '12px 32px' }}
+        >
+          Go to Product
+        </Button>
+      </Grid>
+      <Grid item>
+        <Button
+          onClick={() => setShopifyPopup({ open: false, url: '' })}
+          style={{ fontSize: 18, padding: '12px 32px' }}
+        >
+          Close
+        </Button>
+        </Grid>
+      </Grid>
+    </DialogActions>
+  </Dialog>
     </Box>
   );
 };
