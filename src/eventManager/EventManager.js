@@ -4,7 +4,7 @@ import {
   FormControl, InputLabel, Grid, Paper, Table,
   TableBody, TableCell, TableContainer, TableHead, TableRow,
   CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
-  Box, Tabs, Tab, IconButton,FormControlLabel, Checkbox
+  Box, Tabs, Tab, IconButton,FormControlLabel,Radio, RadioGroup, FormLabel 
 } from '@mui/material';
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from '../api';
@@ -36,7 +36,7 @@ const EventManager = ({ onClose }) => {
     messageToBuyer: '',
     price: '',
     reader_info: '',
-    isOneTime: true,
+    eventType: '',
     inventoryQuantity: ''
   }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,8 +112,6 @@ const EventManager = ({ onClose }) => {
         if (updated[panelIndex].startDateTime && updated[panelIndex].endDateTime) {
           const start = new Date(updated[panelIndex].startDateTime);
           const end = new Date(updated[panelIndex].endDateTime);
-          
- 
         }
       }
       
@@ -166,10 +164,9 @@ const EventManager = ({ onClose }) => {
           prizes: panel.prizes,
           rules: panel.rules,
           preReleaseBundle: panel.preReleaseBundle,
-          isOneTime: eventPanels.length === 1,
+          eventType: panel.eventType,
           inventoryQuantity: panel.inventoryQuantity || null
         };
-        
         
         if (panel.image) {
           const base64Image = await blobToBase64(panel.image);
@@ -251,7 +248,6 @@ const EventManager = ({ onClose }) => {
 
   const handleEventClick = (event) => {
     setSelectedEvent(event);
-
     setEditingEvent({
       ...event,
     });
@@ -309,13 +305,17 @@ const EventManager = ({ onClose }) => {
         updatedEventData.Poster = base64Poster;
       }
       
-
-      const respone =await apiCall(scriptId, action, {
+      const response =await apiCall(scriptId, action, {
         googleToken: userData.googleToken,
         username: userData.username,
         eventData: updatedEventData
       });
 
+      if (response.success) {
+        alert(response.message);
+      } else {
+        alert(response.message || "An error occurred");
+      }
 
       setSelectedEvent(updatedEventData);
       //setEditingEvent(null);
@@ -601,6 +601,19 @@ const EventManager = ({ onClose }) => {
                       </LocalizationProvider>
                     </Grid>
                     <Grid item xs={12}>
+                    <FormLabel component="legend" sx={{ color: '#ffffff' }}>Event Type</FormLabel>
+                    <RadioGroup
+                      row
+                      name="eventType"
+                      value={panel.eventType||"weekly"}
+                      onChange={(e) => handleInputChange(e, index)}
+                    >
+                      <FormControlLabel value="oneTime" control={<Radio sx={{ color: '#ffffff' }} />} label="One Time" />
+                      <FormControlLabel value="monthly" control={<Radio sx={{ color: '#ffffff' }} />} label="Monthly" />
+                      <FormControlLabel value="weekly" control={<Radio sx={{ color: '#ffffff' }} />} label="Weekly" />
+                    </RadioGroup>
+                    </Grid>
+                    <Grid item xs={12}>
                       <TextField
                         fullWidth
                         label="Description"
@@ -703,13 +716,13 @@ const EventManager = ({ onClose }) => {
                             ...prev[index],                            
                             // startDateTime: prev[index].startDateTime,
                             // endDateTime: prev[index].endDateTime,
-                            isOneTime: false,
+                            //isOneTime: false,
                           };
                           const updatedPanels = [...prev, newPanel];
                           // Update isOneTime for all panels when there's more than one
-                          if (updatedPanels.length > 1) {
-                            return updatedPanels.map(panel => ({ ...panel, isOneTime: false }));
-                          }
+                          // if (updatedPanels.length > 1) {
+                          //   return updatedPanels.map(panel => ({ ...panel, isOneTime: false }));
+                          // }
                           return updatedPanels;
                         });
                       }}
@@ -820,7 +833,7 @@ const EventManager = ({ onClose }) => {
                                 messageToBuyer: formData.messageToBuyer,
                                 price: formData.price,
                                 reader_info: formData.reader_info,
-                                isOneTime: true,
+                                eventType: formData.eventType,
                                 inventoryQuantity: formData.inventoryQuantity || ''
                               }]);
                             }}
@@ -962,18 +975,18 @@ const EventManager = ({ onClose }) => {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={editingEvent.isOneTime}
-                          onChange={(e) => handleEditChange({ target: { name: 'isOneTime', value: e.target.checked }})}
-                          sx={{ color: '#ffffff' }}
-                        />
-                      }
-                      label="One Time Event"
-                      sx={{ color: '#ffffff' }}
-                    />
-                  </Grid>
+                  <FormLabel component="legend" sx={{ color: '#ffffff' }}>Event Type</FormLabel>
+                  <RadioGroup
+                    row
+                    name="Event Frequency Type"
+                    value={editingEvent['Event Frequency Type']||'weekly'}
+                    onChange={e => handleEditChange({ target: { name: 'Event Frequency Type', value: e.target.value } })}
+                  >
+                    <FormControlLabel value="oneTime" control={<Radio sx={{ color: '#ffffff' }} />} label="One Time" />
+                    <FormControlLabel value="monthly" control={<Radio sx={{ color: '#ffffff' }} />} label="Monthly" />
+                    <FormControlLabel value="weekly" control={<Radio sx={{ color: '#ffffff' }} />} label="Weekly" />
+                  </RadioGroup>
+                </Grid>
                   <Grid item xs={12}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DateTimePicker
