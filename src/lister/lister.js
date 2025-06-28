@@ -725,11 +725,19 @@ const ListerApp = () => {
     
     const newIndex = maxIndex + 1;
     const newCardId = `${item.cardId}_${newIndex}`;
+    const maxDuplicateNumber = relatedItems.reduce((max, i) => {
+        if (typeof i.duplicate_number === "number") {
+            return i.duplicate_number > max ? i.duplicate_number : max;
+        }
+        return max;
+    }, 0);
+
+   const newDuplicateNumber = maxDuplicateNumber + 1;
     
     const newItem = {
         ...item,
         cardId: newCardId,
-        duplicate_number: newIndex,
+        duplicate_number: newDuplicateNumber,
         quantity: 0,
         price: 0
     };
