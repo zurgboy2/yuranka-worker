@@ -84,11 +84,16 @@ const OrdersModal = ({ open, onClose }) => {
 
   const handleSubmitOrder = async (parsedOrder) => {
     setLoading(true);
+    parsedOrder.username = userData.username;
+    parsedOrder.googleToken = userData.googleToken;
+    parsedOrder.platform = 'cardmarket';
+
+    console.log('parsedOrder', parsedOrder);
     try {
       const response = await apiCall('cardmanager_script', 'processOrder', {
         orderData: parsedOrder,
         platform: 'cardmarket',
-        orderType: 'BULK'
+        orderType: 'BULK',   
       });
 
       if (response.status === 200) {
