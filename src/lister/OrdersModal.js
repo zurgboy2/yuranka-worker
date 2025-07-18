@@ -22,7 +22,8 @@ import {
   TableHead,
   TableRow,
   Collapse,
-  CircularProgress
+  CircularProgress,
+  Link
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -286,8 +287,8 @@ const OrdersModal = ({ open, onClose }) => {
       <Paper
         sx={{
           position: 'relative',
-          width: '80%',
-          maxWidth: 1200,
+          width: '100%',
+          maxWidth: 1400,
           maxHeight: '90vh',
           overflow: 'auto',
           p: 4
@@ -363,9 +364,9 @@ const OrdersModal = ({ open, onClose }) => {
                       sx={{ mr: 2 }}
                     />
                     <TextField 
-                      label="Platform"
-                      value={parsedOrder.platform}
-                      onChange={(e) => handleOrderDataChange('platform', e.target.value)}
+                      label="Customer Username"
+                      value={parsedOrder.customerUsername}
+                      onChange={(e) => handleOrderDataChange('customerUsername', e.target.value)}
                       sx={{ mr: 2 }}
                     />
                     <TextField 
@@ -460,8 +461,11 @@ const OrdersModal = ({ open, onClose }) => {
                             <TableCell>Name</TableCell>
                             <TableCell>Set</TableCell>
                             <TableCell>Card #</TableCell>
-                            <TableCell>Condition</TableCell>
                             <TableCell>Details</TableCell>
+                            <TableCell>Rarity</TableCell>
+                            <TableCell>Location</TableCell>
+                            <TableCell>Language</TableCell>
+                            <TableCell>Quality</TableCell>
                             <TableCell>Price (€)</TableCell>
                             <TableCell>Actions</TableCell>
                           </TableRow>
@@ -500,15 +504,36 @@ const OrdersModal = ({ open, onClose }) => {
                               </TableCell>
                               <TableCell>
                                 <TextField 
-                                  value={item.condition}
-                                  onChange={(e) => handleItemChange(index, 'condition', e.target.value)}
+                                  value={item.details}
+                                  onChange={(e) => handleItemChange(index, 'details', e.target.value)}
+                                  size="small"
+                                />
+                              </TableCell>
+                              <TableCell>
+                              <TextField 
+                                value={item.rarity}
+                                onChange={(e) => handleItemChange(index, 'rarity', e.target.value)}
+                                size="small"
+                              />
+                              </TableCell>
+                              <TableCell>
+                                <TextField 
+                                  value={item.location}
+                                  onChange={(e) => handleItemChange(index, 'location', e.target.value)}
                                   size="small"
                                 />
                               </TableCell>
                               <TableCell>
                                 <TextField 
-                                  value={item.details}
-                                  onChange={(e) => handleItemChange(index, 'details', e.target.value)}
+                                  value={item.language}
+                                  onChange={(e) => handleItemChange(index, 'language', e.target.value)}
+                                  size="small"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <TextField 
+                                  value={item.quality}
+                                  onChange={(e) => handleItemChange(index, 'quality', e.target.value)}
                                   size="small"
                                 />
                               </TableCell>
