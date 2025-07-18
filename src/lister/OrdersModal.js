@@ -30,6 +30,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import apiCall from '../api';
+import { decodeCardDetails, normalizeTcgName } from '../lister/detailsDecoder'; 
+import { useUserData } from '../UserContext';
 
 const OrdersModal = ({ open, onClose }) => {
   const [value, setValue] = useState(0);
@@ -39,6 +41,7 @@ const OrdersModal = ({ open, onClose }) => {
   const [validationError, setValidationError] = useState('');
   const [showCards, setShowCards] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { userData } = useUserData();
 
   const handleOrderDataChange = (field, value) => {
     setParsedOrder(prev => ({
@@ -139,6 +142,7 @@ const OrdersModal = ({ open, onClose }) => {
     const lines = cardmarketOrders.split('\n').map(line => line.trim());
     let orderData = {
       orderNumber: '',
+      customerUsername: '',
       platform: '',
       shippingAddress: {
         name: '',
@@ -164,7 +168,7 @@ const OrdersModal = ({ open, onClose }) => {
       orderData.orderNumber = saleMatch[1];
 
       // Get platform (second line)
-      orderData.platform = lines[1];
+      orderData.customerUsername = lines[1];
 
       // Find shipping address section
       const shippingAddressStart = lines.findIndex(line => line === 'Shipping address');
@@ -221,16 +225,30 @@ const OrdersModal = ({ open, onClose }) => {
             set: '',
             condition: '',
             details: '',
+            rarity: '',
+            location: '',
+            language: '',
+            quality: '',
             price: 0
           };
         } else if (line.startsWith('#')) {
           currentItem.cardNumber = line;
         } else if (/^[A-Z0-9]{3,4}$/.test(line)) {
           currentItem.set = line;
-        } else if (['NM', 'EX', 'GD', 'LP', 'MP', 'HP'].includes(line)) {
-          currentItem.condition = line;
-        } else if (line.includes('set:')) {
+        } 
+
+        else if (line.includes('set:') || /^(?:[A-Z]{2}:[A-Z0-9]+\/?)+$/.test(line)) 
+        {
           currentItem.details = line;
+          console.log('tcg', orderData.tcg);
+          const normalizedTcg = normalizeTcgName(orderData.tcg) || orderData.tcg;
+          orderData.tcg = normalizedTcg;
+          const decoded = decodeCardDetails(line, normalizedTcg);
+          currentItem.rarity = decoded.rarity || '';
+          currentItem.location = decoded.location || '';
+          currentItem.language = decoded.language || '';
+          currentItem.quality = decoded.quality || '';
+
         } else if (line.includes('€')) {
           currentItem.price = parseFloat(line.replace(',', '.').replace(' €', ''));
         }
