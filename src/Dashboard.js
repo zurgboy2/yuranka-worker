@@ -11,6 +11,7 @@ import AuthComponent from './AuthComponent';
 import TaskManager from './TaskManager';
 import Approvals from './Approvals';
 import { guidesConfig } from './guidesConfig';
+import ListerApp from './lister/lister';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const [jobDescription, setJobDescription] = useState(null);
   const [showJobDescription, setShowJobDescription] = useState(false);
   const [openGuide, setOpenGuide] = useState(null);
+  const [listerMaxWidth, setListerMaxWidth] = useState('md');
 
   const memoizedRoleConfig = useMemo(() => 
     Object.fromEntries(
@@ -174,6 +176,10 @@ const Dashboard = () => {
     if (openComponent === 'Approvals') {
       return <Approvals onClose={handleCloseComponent} />;
     }
+
+    if (openComponent === 'Lister') {
+      return <ListerApp onMaxWidthChange={setListerMaxWidth} />;
+    }
     
     const componentConfig = memoizedRoleConfig[userData.role].find(c => c.name === openComponent);
     if (!componentConfig || !componentConfig.component) return null;
@@ -279,7 +285,7 @@ const Dashboard = () => {
           {renderDashboardContent}
         </Container>
         
-        <Dialog open={openComponent !== null} onClose={handleCloseComponent} maxWidth="md" fullWidth>
+        <Dialog open={openComponent !== null} onClose={handleCloseComponent} maxWidth={listerMaxWidth} fullWidth>
           <DialogContent>
             {dialogContent}
           </DialogContent>
