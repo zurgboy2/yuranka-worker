@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CardDisplay from './CardDisplay';
 import { useUserData } from '../UserContext';
 import { 
   TextField, Box, 
   CircularProgress, Typography, Button, Modal, Paper, Stack,
-  Avatar, Chip
+  Avatar, Chip, Tabs, Tab 
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HighPricePanel from './HighPricePanel';
-import OrdersModal from './OrdersModal';
+import {OrdersModal, ShopifyOrdersPanel} from './OrdersModal';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import apiCall from '../api';
 import tcgConfig from './tcgConfig';
+import SheetTablePanel from './SheetTablePanel';
 
 const TrackerPanel = ({ 
   modifiedCards, 
@@ -371,7 +372,7 @@ const SearchPanel = ({ onSearch, searchTerm, setSearchTerm, searchMode, onClear,
 };
 
 
-const ListerApp = () => {
+const ListerApp = ({ onMaxWidthChange }) => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
@@ -391,7 +392,7 @@ const ListerApp = () => {
   const canEditPrices = userData?.role === 'Admin' || userData?.role === 'Cashier';
   const [ordersModalOpen, setOrdersModalOpen] = useState(false);
   const [modifiedItems, setModifiedItems] = useState({});
-  
+  const [tabIndex, setTabIndex] = useState(0);
 
   const handleOpenOrders = () => {
     setOrdersModalOpen(true);
@@ -742,6 +743,7 @@ const ListerApp = () => {
         price: 0
     };
 
+    console.log("new item", newItem);
     // Add to results array, preserving existing items' state
     setResults(prevResults => {
         const originalIndex = prevResults.findIndex(i => i.cardId === item.cardId);
@@ -763,9 +765,26 @@ const ListerApp = () => {
     });
   };
 
+    useEffect(() => {
+    if (onMaxWidthChange) {
+      if (tabIndex === 1 || tabIndex === 3 || tabIndex === 4 ) onMaxWidthChange('xl');
+      else if (tabIndex === 2 ) onMaxWidthChange('lg');
+      else onMaxWidthChange('md'); 
+    }
+  }, [tabIndex, onMaxWidthChange]);
+
   return (
-    <Box sx={{ width: '100%', height: '100vh', p: 2 }}>
-      {/* Game Selection UI */}
+    <Box sx={{ width: '100%', height: '100vh', p: 2 , backgroundColor:'#292929', borderRadius: 1 }}>
+     <Tabs value={tabIndex} onChange={(e, v) => setTabIndex(v)} sx={{ mb: 2 }}>
+        <Tab label="Lister" />
+        <Tab label="Cardmarket Orders" />
+        <Tab label="Shopify Orders" />
+        <Tab label="Listed Cards" />
+        <Tab label="Processed Orders" />
+      </Tabs>
+      
+      {tabIndex === 0 && (
+      <>
       <Box
         sx={{
           display: 'flex',
@@ -806,10 +825,10 @@ const ListerApp = () => {
             onOpenOrders={handleOpenOrders}
           />
 
-          <OrdersModal 
+          {/* <OrdersModal 
             open={ordersModalOpen}
             onClose={handleCloseOrders}
-          />
+          /> */}
 
           {loading && <CircularProgress />}
           {error && <Typography color="error">{error}</Typography>}
@@ -903,6 +922,24 @@ const ListerApp = () => {
           </Typography>
         </Box>
       )}
+    </>
+    )}
+
+    {tabIndex === 1 && (
+      <OrdersModal 
+          open={ordersModalOpen}
+          onClose={handleCloseOrders}
+      />
+    )}
+    {tabIndex === 2 && (
+      <ShopifyOrdersPanel />
+    )}
+    {tabIndex === 3 && (
+      <SheetTablePanel sheetName="OperationLogs" />
+    )}
+    {tabIndex === 4 && (
+      <SheetTablePanel sheetName="OrdersModalOperationLogs" />
+    )}
     </Box>
   );
 };
