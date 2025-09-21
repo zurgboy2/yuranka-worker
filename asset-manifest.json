@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/yuranka-worker/static/css/main.dc5ab940.css",
-    "main.js": "/yuranka-worker/static/js/main.b47476c5.js",
-    "static/js/453.a12cfbd9.chunk.js": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js",
-    "static/media/material-icons-two-tone.woff": "/yuranka-worker/static/media/material-icons-two-tone.3baa5b8f3469222b822d.woff",
-    "static/media/material-icons-two-tone.woff2": "/yuranka-worker/static/media/material-icons-two-tone.4ef4218c522f1eb6b5b1.woff2",
-    "static/media/material-icons-round.woff": "/yuranka-worker/static/media/material-icons-round.5d681e2edae8c60630db.woff",
-    "static/media/material-icons-outlined.woff": "/yuranka-worker/static/media/material-icons-outlined.f882956fd323fd322f31.woff",
-    "static/media/material-icons-round.woff2": "/yuranka-worker/static/media/material-icons-round.c380809fd3677d7d6903.woff2",
-    "static/media/material-icons.woff": "/yuranka-worker/static/media/material-icons.4d73cb90e394b34b7670.woff",
-    "static/media/material-icons-sharp.woff": "/yuranka-worker/static/media/material-icons-sharp.3a4004a46a653d4b2166.woff",
-    "static/media/material-icons-outlined.woff2": "/yuranka-worker/static/media/material-icons-outlined.6f420cf17cc0d7676fad.woff2",
-    "static/media/material-icons-sharp.woff2": "/yuranka-worker/static/media/material-icons-sharp.219aa9140e099e6c72ed.woff2",
-    "static/media/material-icons.woff2": "/yuranka-worker/static/media/material-icons.0c35d18bf06992036b69.woff2",
-    "index.html": "/yuranka-worker/index.html",
-    "main.dc5ab940.css.map": "/yuranka-worker/static/css/main.dc5ab940.css.map",
-    "main.b47476c5.js.map": "/yuranka-worker/static/js/main.b47476c5.js.map",
-    "453.a12cfbd9.chunk.js.map": "/yuranka-worker/static/js/453.a12cfbd9.chunk.js.map"
+    "main.css": "/static/css/main.5f7210df.css",
+    "main.js": "/static/js/main.ddec3aa9.js",
+    "static/js/453.a12cfbd9.chunk.js": "/static/js/453.a12cfbd9.chunk.js",
+    "static/media/material-icons-two-tone.woff": "/static/media/material-icons-two-tone.3baa5b8f3469222b822d.woff",
+    "static/media/material-icons-two-tone.woff2": "/static/media/material-icons-two-tone.4ef4218c522f1eb6b5b1.woff2",
+    "static/media/material-icons-round.woff": "/static/media/material-icons-round.5d681e2edae8c60630db.woff",
+    "static/media/material-icons-outlined.woff": "/static/media/material-icons-outlined.f882956fd323fd322f31.woff",
+    "static/media/material-icons-round.woff2": "/static/media/material-icons-round.c380809fd3677d7d6903.woff2",
+    "static/media/material-icons.woff": "/static/media/material-icons.4d73cb90e394b34b7670.woff",
+    "static/media/material-icons-sharp.woff": "/static/media/material-icons-sharp.3a4004a46a653d4b2166.woff",
+    "static/media/material-icons-outlined.woff2": "/static/media/material-icons-outlined.6f420cf17cc0d7676fad.woff2",
+    "static/media/material-icons-sharp.woff2": "/static/media/material-icons-sharp.219aa9140e099e6c72ed.woff2",
+    "static/media/material-icons.woff2": "/static/media/material-icons.0c35d18bf06992036b69.woff2",
+    "index.html": "/index.html",
+    "main.5f7210df.css.map": "/static/css/main.5f7210df.css.map",
+    "main.ddec3aa9.js.map": "/static/js/main.ddec3aa9.js.map",
+    "453.a12cfbd9.chunk.js.map": "/static/js/453.a12cfbd9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dc5ab940.css",
-    "static/js/main.b47476c5.js"
+    "static/css/main.5f7210df.css",
+    "static/js/main.ddec3aa9.js"
   ]
 }
