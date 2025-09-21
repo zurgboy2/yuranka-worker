@@ -653,4 +653,4 @@ const OrdersModal = ({ open, onClose }) => {
   );
 };
 
-export default OrdersModal;
+export { OrdersModal };

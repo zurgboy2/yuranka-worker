@@ -1,6 +1,6 @@
 {
   "name": "yuranka-worker",
-  "homepage": "https://zurgboy2.github.io/yuranka-worker",
+  "homepage": "https://worker.yuranka.com",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
@@ -32,7 +32,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "yarn build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
@@ -54,6 +54,6 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.1.1"
+    "gh-pages": "^6.3.0"
   }
 }
