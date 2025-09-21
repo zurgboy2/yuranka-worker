@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HighPricePanel from './HighPricePanel';
-import {OrdersModal, ShopifyOrdersPanel} from './OrdersModal';
+import {OrdersModal} from './OrdersModal';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import apiCall from '../api';
 import tcgConfig from './tcgConfig';
@@ -931,13 +931,13 @@ const ListerApp = ({ onMaxWidthChange }) => {
           onClose={handleCloseOrders}
       />
     )}
-    {tabIndex === 2 && (
+{/*     {tabIndex === 2 && (
       <ShopifyOrdersPanel />
-    )}
-    {tabIndex === 3 && (
+    )} */}
+    {tabIndex === 2 && (
       <SheetTablePanel sheetName="OperationLogs" />
     )}
-    {tabIndex === 4 && (
+    {tabIndex === 3 && (
       <SheetTablePanel sheetName="OrdersModalOperationLogs" />
     )}
     </Box>
