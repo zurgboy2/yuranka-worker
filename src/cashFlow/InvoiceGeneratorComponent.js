@@ -247,7 +247,7 @@ const InvoiceGeneratorComponent = () => {
             fullWidth
             label="Invoice Number"
             name="invoiceNumber"
-            type="number"
+            type="text"
             value={invoiceData.invoiceNumber}
             onChange={handleInputChange}
           />
