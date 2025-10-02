@@ -39,6 +39,7 @@ const StoreSearch = ({ onClose }) => {
   });
   const [selectedUniqueId, setSelectedUniqueId] = useState(null);
   const [shopifyPopup, setShopifyPopup] = useState({ open: false, url: '' });
+  const [addProductDisabled, setAddProductDisabled] = useState(false);
 
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
@@ -170,6 +171,7 @@ const StoreSearch = ({ onClose }) => {
   };
 
   const handleAddProduct = async () => {
+    setAddProductDisabled(true);
     setLoading(true);
     setError(null);
     setSuccessMessage('');
@@ -210,6 +212,7 @@ const StoreSearch = ({ onClose }) => {
         Length: ''
       });
       handleSearch(); // Refresh the search results
+      setAddProductDisabled(false);
     } catch (err) {
       setError('Failed to add product. Please try again.');
     } finally {
@@ -806,7 +809,7 @@ const StoreSearch = ({ onClose }) => {
       </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddProduct}>
+          <Button onClick={handleAddProduct} disabled={addProductDisabled}>
             {productData.Shopify && productData.Store ? 'Add to Shopify & Store' :
              productData.Shopify ? 'Add to Shopify' :
              productData.Store ? 'Add to Store' : 'Add Product'}
