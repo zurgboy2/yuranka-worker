@@ -697,9 +697,11 @@ const StoreSearch = ({ onClose }) => {
               <Button onClick={() => handleUpdateProduct(product.Unique_ID)} sx={{ mr: 1, bgcolor: '#4a4a4a' }}>
                 Update
               </Button>
-              <Button onClick={() => handleDeleteProduct(product.Unique_ID)} sx={{ bgcolor: '#4a4a4a' }}>
-                Delete
-              </Button>
+              {(userData.role === 'Admin' || userData.role === 'Store Manager') && (
+                <Button onClick={() => handleDeleteProduct(product.Unique_ID)} sx={{ bgcolor: '#4a4a4a' }}>
+                  Delete
+                </Button>
+              )}
             </Grid>
           </Grid>
         </Paper>
