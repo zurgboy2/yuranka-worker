@@ -18,7 +18,7 @@ const Register = ({ onOpenFullApp }) => {
   const [total, setTotal] = useState(0);
   const [membershipId, setMembershipId] = useState('');
   const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('yuranka.games@gmail.com');
   const [storeCredit, setStoreCredit] = useState(0);
   const [allocatedCredit, setAllocatedCredit] = useState(0);
   const [deliveryInfo, setDeliveryInfo] = useState({ country: '', postcode: '' });
@@ -190,7 +190,7 @@ const Register = ({ onOpenFullApp }) => {
     setAllocatedCredit(0);
     setStoreCredit(0);
     setCustomerName('');
-    setCustomerEmail('');
+    setCustomerEmail('yuranka.games@gmail.com');
     setMembershipId('');
 
     try {
@@ -212,7 +212,7 @@ const Register = ({ onOpenFullApp }) => {
         });
       }
       
-      await apiCall(scriptId, action, {
+      const response = await apiCall(scriptId, action, {
         role: userData.role,
         googleToken: userData.googleToken,
         username: userData.username,
@@ -220,14 +220,25 @@ const Register = ({ onOpenFullApp }) => {
         items: transformedItems
       });
       
-      setTransactions(prev => 
-        prev.map(t => 
-          t.id === transactionId 
-            ? { ...t, status: 'completed' }
-            : t
-        )
-      );
+      // Check if response has an error property
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      // If response has message property, it's successful
+      if (response.message) {
+        setTransactions(prev => 
+          prev.map(t => 
+            t.id === transactionId 
+              ? { ...t, status: 'completed' }
+              : t
+          )
+        );
+      } else {
+        throw new Error('Unexpected response format');
+      }
     } catch (err) {
+      console.error('Error sending invoice:', err);
       setTransactions(prev => 
         prev.map(t => 
           t.id === transactionId 
