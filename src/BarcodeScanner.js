@@ -8,7 +8,7 @@ import {
   Box,
   Typography
 } from '@mui/material';
-import { BrowserMultiFormatReader } from '@zxing/browser';
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import Webcam from 'react-webcam';
 
 const BarcodeScanner = ({ open, onClose, onScan }) => {
