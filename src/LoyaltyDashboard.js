@@ -361,6 +361,15 @@ const handleCloseSubscription = () => {
           >
             <CardContent>
               <Typography variant="h6">{person.Name}</Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: '#ccc',  // Slightly lighter color for the subheading
+                  marginTop: '4px' 
+                }}
+              >
+                {person.Username}
+              </Typography>
             </CardContent>
           </StyledCard>
         ))}
