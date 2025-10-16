@@ -81,7 +81,13 @@ const LoyaltyDashboard = () => {
         username: userData.username, 
         googleToken: userData.googleToken
       });
-      setLoyaltyData(response);
+      
+      // Sort the response data alphabetically by Name
+      const sortedData = response.sort((a, b) => {
+        return a.Name.localeCompare(b.Name);
+      });
+      
+      setLoyaltyData(sortedData);
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
       alert('Error loading data. Please try again.');
