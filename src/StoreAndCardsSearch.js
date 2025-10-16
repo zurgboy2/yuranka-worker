@@ -8,6 +8,7 @@ import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
 import { useUserData } from './UserContext';
 import { List, ListItem, ListItemText } from '@mui/material';
+import BarcodeScanner from './BarcodeScanner';
 
 const StoreSearch = ({ onClose }) => {
   const { userData } = useUserData();
@@ -40,6 +41,8 @@ const StoreSearch = ({ onClose }) => {
   const [selectedUniqueId, setSelectedUniqueId] = useState(null);
   const [shopifyPopup, setShopifyPopup] = useState({ open: false, url: '' });
   const [addProductDisabled, setAddProductDisabled] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanTargetField, setScanTargetField] = useState(null);
 
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
@@ -366,6 +369,19 @@ const StoreSearch = ({ onClose }) => {
     );
   };
 
+  const handleBarcodeScan = (barcode) => {
+    if (scanTargetField?.type === 'product') {
+      handleUpdateField(scanTargetField.id, 'Variant Barcode', barcode);
+    } else if (scanTargetField?.type === 'new') {
+      setProductData(prev => ({
+        ...prev,
+        'Variant Barcode': barcode
+      }));
+    }
+    setScannerOpen(false);
+    setScanTargetField(null);
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -576,12 +592,25 @@ const StoreSearch = ({ onClose }) => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Barcode"
-                value={product['Variant Barcode']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Variant Barcode', e.target.value)}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Barcode"
+                  value={product['Variant Barcode']}
+                  onChange={(e) => handleUpdateField(product.Unique_ID, 'Variant Barcode', e.target.value)}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    setScanTargetField({ type: 'product', id: product.Unique_ID });
+                    setScannerOpen(true);
+                  }}
+                  startIcon={<span className="material-icons">qr_code_scanner</span>}
+                >
+                  Scan
+                </Button>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
@@ -756,7 +785,27 @@ const StoreSearch = ({ onClose }) => {
             <TextField fullWidth margin="dense" name="Variant Grams" label="Grams" type="number" value={productData['Variant Grams']} onChange={handleInputChange} />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Variant Barcode" label="Barcode" value={productData['Variant Barcode']} onChange={handleInputChange} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TextField 
+                fullWidth 
+                margin="dense" 
+                name="Variant Barcode" 
+                label="Barcode" 
+                value={productData['Variant Barcode']} 
+                onChange={handleInputChange} 
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setScanTargetField({ type: 'new' });
+                  setScannerOpen(true);
+                }}
+                startIcon={<span className="material-icons">qr_code_scanner</span>}
+              >
+                Scan
+              </Button>
+            </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField fullWidth margin="dense" name="Height" label="Height" type="number" value={productData.Height} onChange={handleInputChange} />
@@ -875,8 +924,16 @@ const StoreSearch = ({ onClose }) => {
       </Grid>
     </DialogActions>
   </Dialog>
-    </Box>
-  );
+    <BarcodeScanner
+      open={scannerOpen}
+      onClose={() => {
+        setScannerOpen(false);
+        setScanTargetField(null);
+      }}
+      onScan={handleBarcodeScan}
+    />
+  </Box>
+);
 };
 
 export default StoreSearch;
