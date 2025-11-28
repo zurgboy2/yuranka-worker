@@ -166,19 +166,46 @@ const handleCloseSubscription = () => {
       alert('Please fill out both fields before submitting.');
       return;
     }
-  
+
+    const workerRole = userData.role;
+    const overLimit = Math.abs(Number(valueChange)) >= 50;
+    const isPrivileged = workerRole === "Admin" || workerRole === "Store Manager";
+
+    if (overLimit && !isPrivileged) {
+      setIsValueChangeLoading(true);
+      try {
+        const scriptId = 'loyalty_script';
+        const action = 'sendEmailForStoreCreditChange';
+        await apiCall(scriptId, action, {
+          username: userData.username,
+          googleToken: userData.googleToken,
+          change: valueChange,
+          reason: changeReason,
+          customerUsername: currentPerson.Username,
+        });
+        alert("You are not authorized to change store credit exceeding 50 euros. The Store manager and admin have been notified and will manually change it. Thank you.");
+        handleCloseChangeValue();
+      } catch (error) {
+        console.error('Error sending authorization request:', error);
+        alert('Error sending notification. Please try again.');
+      } finally {
+        setIsValueChangeLoading(false);
+      }
+      return;
+    }
+
     setIsValueChangeLoading(true);
     try {
       const scriptId = 'loyalty_script';
       const action = 'changeValue';
       await apiCall(scriptId, action, {
-        id: currentPerson.Username, 
-        valueChange, 
-        changeReason, 
-        googleToken: userData.googleToken, 
-        username: userData.username 
+        id: currentPerson.Username,
+        valueChange,
+        changeReason,
+        googleToken: userData.googleToken,
+        username: userData.username
       });
-      handleCloseChangeValue(); // Move this before fetchLoyaltyData
+      handleCloseChangeValue();
       await fetchLoyaltyData();
       alert('Change has been made');
     } catch (error) {
