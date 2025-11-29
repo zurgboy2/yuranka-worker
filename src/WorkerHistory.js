@@ -116,7 +116,7 @@ const WorkerMonthlyWorkHistory = () => {
   };
 
   return (
-    <Paper elevation={4} sx={{ p: 3,}}>
+    <Paper elevation={4} sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
         Worker Monthly Work History
       </Typography>
@@ -193,36 +193,37 @@ const WorkerMonthlyWorkHistory = () => {
         </Alert>
       )}
 
-      <Typography variant="h6" gutterBottom>
-        {`Results for ${worker} - ${new Date(0, month - 1).toLocaleString(
-          "default",
-          { month: "long" }
-        )} - ${year}`}
-      </Typography>
-
       {/* Results */}
       {results.length > 0 && (
-        <Box
-          sx={{
-            maxHeight: 600,
-            overflowY: "auto",
-            overflowX: "hidden",
-            border: 1,
-            borderColor: "divider",
-            borderRadius: 1,
-          }}
-        >
-          <List>
-            {results.map((rec, idx) => (
-              <ListItem key={idx} divider>
-                <ListItemText
-                  primary={rec.date}
-                  secondary={rec.workDone || "No work details"}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
+        <>
+          <Typography variant="h6" gutterBottom>
+            {`Results for ${worker} - ${new Date(0, month - 1).toLocaleString(
+              "default",
+              { month: "long" }
+            )} - ${year}`}
+          </Typography>
+          <Box
+            sx={{
+              maxHeight: 550,
+              overflowY: "auto",
+              overflowX: "hidden",
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 1,
+            }}
+          >
+            <List>
+              {results.map((rec, idx) => (
+                <ListItem key={idx} divider>
+                  <ListItemText
+                    primary={rec.date}
+                    secondary={rec.workDone || "No work details"}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </>
       )}
 
       {/* No results message */}
