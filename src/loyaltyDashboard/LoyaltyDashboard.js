@@ -16,8 +16,8 @@ import {
   FormControl
 } from '@mui/material';
 import { styled } from '@mui/system';
-import apiCall from './api';
-import { useUserData } from './UserContext';
+import apiCall from '../api';
+import { useUserData } from '../UserContext';
 
 // Update the StyledCard component definition
 const StyledCard = styled(Card)(({ theme }) => ({
