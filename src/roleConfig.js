@@ -11,7 +11,7 @@ import Register from './Register';
 import EventManager from './eventManager/EventManager';
 import StoreSearch from './StoreAndCardsSearch';
 import QrCodeGenerator from './QrCodeGenerator';
-import LoyaltyDashboard from './LoyaltyDashboard';
+import LoyaltyDashboard from './loyaltyDashboard/LoyaltyDashboard';
 import ScheduleForm from './ScheduleForm';
 import NoticeBoardDisplay from './NoticeBoardDisplay';
 import CardSearch from './testAdmin';
