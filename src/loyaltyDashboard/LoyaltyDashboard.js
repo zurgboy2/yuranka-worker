@@ -35,11 +35,20 @@ const TabPanel = ({ children, value, index, ...other }) => {
   );
 };
 
-const LoyaltyDashboard = () => {
+const LoyaltyDashboard = ({ onMaxWidthChange }) => {
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+
+    // Set max width to lg for Approvals (tab 1) and Reports (tab 2)
+    if (onMaxWidthChange) {
+      if (newValue === 1 || newValue === 2) {
+        onMaxWidthChange("lg");
+      } else {
+        onMaxWidthChange("md");
+      }
+    }
   };
 
   return (
