@@ -112,32 +112,46 @@ const ApprovalsTab = () => {
     try {
       const scriptId = "loyalty_script";
       const action = "handleApprovalAction";
-      await apiCall(scriptId, action, {
+
+      const response = await apiCall(scriptId, action, {
         id: selectedApproval.ID,
         workerName: selectedApproval.WorkerName,
         customerName: selectedApproval["Customer Name"],
-        username: selectedApproval.Username,
+        customerUsername: selectedApproval.Username,
         existingAmount: selectedApproval.Existing,
         changeAmount: selectedApproval["Change Amount"],
         amountAfter: selectedApproval["After Change"],
         isApproved: actionType === "approve",
-        approvedByUsername: userData.username,
+        username: userData.username,
         reason: selectedApproval.Reason,
         googleToken: userData.googleToken,
       });
 
-      alert(
-        `Request has been ${
-          actionType === "approve" ? "approved" : "denied"
-        } successfully.`
-      );
-      setConfirmDialogOpen(false);
-      setSelectedApproval(null);
-      setActionType("");
-      await fetchApprovals();
+      // Handle backend response
+      if (response && response.success) {
+        alert(
+          response.message ||
+            `Request has been ${
+              actionType === "approve" ? "approved" : "denied"
+            } successfully.`
+        );
+        setConfirmDialogOpen(false);
+        setSelectedApproval(null);
+        setActionType("");
+        await fetchApprovals();
+      } else {
+        // Handle specific error messages from backend
+        const errorMessage =
+          response && response.error
+            ? response.error
+            : `Error processing request. Please try again.`;
+        alert(errorMessage);
+      }
     } catch (error) {
       console.error("Error processing approval:", error);
-      alert("Error processing request. Please try again.");
+      alert(
+        "Error occurred. Please try again later."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -247,7 +261,7 @@ const ApprovalsTab = () => {
               <TableCell>ID</TableCell>
               <TableCell>Worker Name</TableCell>
               <TableCell>Customer Name</TableCell>
-              <TableCell>Username</TableCell>
+              <TableCell>Customer Username</TableCell>
               <TableCell>Change Amount</TableCell>
               <TableCell>Existing</TableCell>
               <TableCell>After Change</TableCell>
