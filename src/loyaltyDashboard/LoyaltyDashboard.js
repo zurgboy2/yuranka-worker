@@ -3,6 +3,7 @@ import { Box, Tabs, Tab, Typography } from "@mui/material";
 import { styled } from "@mui/system";
 import CreditTransferTab from "./CreditTransferTab";
 import ApprovalsTab from "./ApprovalsTab";
+import RecentChangesTab from "./RecentChangesTab";
 // Styled components for consistent theming
 const StyledTabs = styled(Tabs)({
   backgroundColor: "#333",
@@ -41,7 +42,6 @@ const LoyaltyDashboard = ({ onMaxWidthChange }) => {
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
 
-    // Set max width to lg for Approvals (tab 1) and Reports (tab 2)
     if (onMaxWidthChange) {
       if (newValue === 1 || newValue === 2) {
         onMaxWidthChange("lg");
@@ -58,10 +58,11 @@ const LoyaltyDashboard = ({ onMaxWidthChange }) => {
           value={tabValue}
           onChange={handleTabChange}
           aria-label="loyalty dashboard tabs"
+          variant="fullWidth"
         >
-          <StyledTab label="Customer Management" />
+          <StyledTab label="Transfer Credit" />
           <StyledTab label="Approvals" />
-          <StyledTab label="Reports" />
+          <StyledTab label="Recent Changes" />
         </StyledTabs>
       </Box>
 
@@ -74,14 +75,7 @@ const LoyaltyDashboard = ({ onMaxWidthChange }) => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <Box sx={{ padding: "20px" }}>
-          <Typography
-            variant="h4"
-            sx={{ color: "#b22222", marginBottom: "20px" }}
-          >
-            Recent Changes
-          </Typography>
-        </Box>
+        <RecentChangesTab />
       </TabPanel>
     </Box>
   );
