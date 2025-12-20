@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogActions,
   Chip,
+  Stack,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import apiCall from "../api";
@@ -281,7 +282,7 @@ const ApprovalsTab = () => {
                 {canApprove && (
                   <TableCell>
                     {approval.Status === "Pending approval" ? (
-                      <Box>
+                      <Stack sx={{ display: "flex", gap: 2 }}>
                         <ApproveButton
                           size="small"
                           onClick={() => handleApprovalAction(approval, true)}
@@ -296,7 +297,7 @@ const ApprovalsTab = () => {
                         >
                           Deny
                         </DenyButton>
-                      </Box>
+                      </Stack>
                     ) : (
                       "-"
                     )}
