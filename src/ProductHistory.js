@@ -62,40 +62,6 @@ const ProductHistory = ({ open, onClose, productId, productTitle }) => {
     }
   }, [open, productId]);
 
-  const compareEntries = (currentEntry, previousEntry) => {
-    const changes = [];
-    const currentData = currentEntry?.requestData?.productData || {};
-    const previousData = previousEntry?.requestData?.productData || {};
-    
-    // Get all unique field names from both entries
-    const allFields = new Set([
-      ...Object.keys(currentData),
-      ...Object.keys(previousData)
-    ]);
-    
-    allFields.forEach(field => {
-      const currentValue = currentData[field];
-      const previousValue = previousData[field];
-      
-      // Skip comparison for certain fields that shouldn't be tracked
-      if (field === 'Unique_ID' || field === 'Product ID' || field === 'Variant ID' || field === 'Inventory Item ID') {
-        return;
-      }
-      
-      if (currentValue !== previousValue) {
-        changes.push({
-          field,
-          oldValue: previousValue,
-          newValue: currentValue,
-          isNew: previousValue === undefined,
-          isDeleted: currentValue === undefined
-        });
-      }
-    });
-    
-    return changes;
-  };
-
   const formatValue = (value) => {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
@@ -111,9 +77,38 @@ const ProductHistory = ({ open, onClose, productId, productTitle }) => {
 
   const renderFieldComparison = (entry, index) => {
     const previousEntry = entries[index + 1];
-    const changes = previousEntry ? compareEntries(entry, previousEntry) : [];
     const productData = entry?.requestData?.productData || {};
     const username = entry?.requestData?.username || 'Unknown';
+    
+    // Calculate actual changes by direct comparison
+    let actualChanges = 0;
+    if (previousEntry) {
+      const previousData = previousEntry?.requestData?.productData || {};
+      
+      // Check all fields from both entries
+      const allFields = new Set([
+        ...Object.keys(productData),
+        ...Object.keys(previousData)
+      ]);
+      
+      allFields.forEach(field => {
+        // Skip system fields
+        if (field === 'Unique_ID' || field === 'Product ID' || field === 'Variant ID' || field === 'Inventory Item ID') {
+          return;
+        }
+        const currentValue = productData[field];
+        const previousValue = previousData[field];
+        
+        // Convert both to strings for comparison to handle type differences
+        // But handle undefined/null cases specially
+        const currentStr = (currentValue === undefined || currentValue === null) ? 'undefined' : String(currentValue);
+        const previousStr = (previousValue === undefined || previousValue === null) ? 'undefined' : String(previousValue);
+        
+        if (currentStr !== previousStr) {
+          actualChanges++;
+        }
+      });
+    }
     
     return (
       <Paper key={index} sx={{ mb: 2, bgcolor: '#2a2a2a' }}>
@@ -128,9 +123,9 @@ const ProductHistory = ({ open, onClose, productId, productTitle }) => {
                   Updated by: {username} | {formatTimestamp(entry.timestamp)}
                 </Typography>
               </Box>
-              {changes.length > 0 && (
+              {actualChanges > 0 && (
                 <Chip 
-                  label={`${changes.length} changes`} 
+                  label={`${actualChanges} changes`} 
                   color="warning" 
                   size="small"
                   sx={{ ml: 2 }}
@@ -140,48 +135,92 @@ const ProductHistory = ({ open, onClose, productId, productTitle }) => {
           </AccordionSummary>
           <AccordionDetails>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {Object.entries(productData).map(([field, value]) => {
-                const change = changes.find(c => c.field === field);
-                const isChanged = !!change;
-                const isNewField = change?.isNew;
-                const isDeletedField = change?.isDeleted;
+              {(() => {
+                // Get all fields from both current and previous entries
+                const previousData = previousEntry?.requestData?.productData || {};
+                const allFields = new Set([
+                  ...Object.keys(productData),
+                  ...Object.keys(previousData)
+                ]);
                 
-                return (
-                  <Box 
-                    key={field}
-                    sx={{ 
-                      p: 1, 
-                      borderRadius: 1,
-                      bgcolor: isChanged ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                      border: isChanged ? '1px solid #4caf50' : '1px solid transparent'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: '150px' }}>
-                        {field}:
-                      </Typography>
-                      <Box sx={{ flex: 1, ml: 2 }}>
-                        <Typography variant="body2">
-                          {formatValue(value)}
-                        </Typography>
-                        {isChanged && (
-                          <Box sx={{ mt: 0.5 }}>
-                            {isNewField ? (
-                              <Chip label="NEW FIELD" size="small" color="success" />
-                            ) : isDeletedField ? (
-                              <Chip label="FIELD REMOVED" size="small" color="error" />
-                            ) : (
-                              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                                Previous: {formatValue(change.oldValue)}
-                              </Typography>
-                            )}
+                return Array.from(allFields).map(field => {
+                  const value = productData[field];
+                  
+                  // Skip comparison for certain fields that shouldn't be tracked
+                  if (field === 'Unique_ID' || field === 'Product ID' || field === 'Variant ID' || field === 'Inventory Item ID') {
+                    return (
+                      <Box 
+                        key={field}
+                        sx={{ 
+                          p: 1, 
+                          borderRadius: 1,
+                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          border: '1px solid transparent'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: '150px' }}>
+                            {field}:
+                          </Typography>
+                          <Box sx={{ flex: 1, ml: 2 }}>
+                            <Typography variant="body2">
+                              {formatValue(value)}
+                            </Typography>
                           </Box>
-                        )}
+                        </Box>
+                      </Box>
+                    );
+                  }
+
+                  // Direct comparison with previous entry only
+                  const previousValue = previousData[field];
+                  
+                  // Convert to strings for consistent comparison
+                  // But handle undefined/null cases specially
+                  const currentStr = (value === undefined || value === null) ? 'undefined' : String(value);
+                  const previousStr = (previousValue === undefined || previousValue === null) ? 'undefined' : String(previousValue);
+                  
+                  const isActuallyChanged = previousEntry && (currentStr !== previousStr);
+                  const isNewField = previousEntry && previousValue === undefined && value !== undefined;
+                  const isDeletedField = previousEntry && previousValue !== undefined && value === undefined;
+                  
+                  return (
+                    <Box 
+                      key={field}
+                      sx={{ 
+                        p: 1, 
+                        borderRadius: 1,
+                        bgcolor: isActuallyChanged ? 'rgba(76, 175, 80, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                        border: isActuallyChanged ? '1px solid #4caf50' : '1px solid transparent'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: '150px' }}>
+                          {field}:
+                        </Typography>
+                        <Box sx={{ flex: 1, ml: 2 }}>
+                          <Typography variant="body2">
+                            {formatValue(value)}
+                          </Typography>
+                          {isActuallyChanged && (
+                            <Box sx={{ mt: 0.5 }}>
+                              {isNewField ? (
+                                <Chip label="NEW FIELD" size="small" color="success" />
+                              ) : isDeletedField ? (
+                                <Chip label="FIELD REMOVED" size="small" color="error" />
+                              ) : (
+                                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                                  Previous: {formatValue(previousValue)}
+                                </Typography>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                );
-              })}
+                  );
+                });
+              })()}
             </Box>
           </AccordionDetails>
         </Accordion>
