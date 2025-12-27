@@ -9,6 +9,7 @@ import apiCall from './api';
 import { useUserData } from './UserContext';
 import { List, ListItem, ListItemText } from '@mui/material';
 import BarcodeScanner from './BarcodeScanner';
+import ProductHistory from './ProductHistory';
 
 const StoreSearch = ({ onClose }) => {
   const { userData } = useUserData();
@@ -43,6 +44,8 @@ const StoreSearch = ({ onClose }) => {
   const [addProductDisabled, setAddProductDisabled] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scanTargetField, setScanTargetField] = useState(null);
+  const [productHistoryOpen, setProductHistoryOpen] = useState(false);
+  const [selectedProductForHistory, setSelectedProductForHistory] = useState(null);
 
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
@@ -425,6 +428,11 @@ const StoreSearch = ({ onClose }) => {
     setScanTargetField(null);
   };
 
+  const handleShowProductHistory = (product) => {
+    setSelectedProductForHistory(product);
+    setProductHistoryOpen(true);
+  };
+
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -769,6 +777,12 @@ const StoreSearch = ({ onClose }) => {
               <Button onClick={() => handleUpdateProduct(product.Unique_ID)} sx={{ mr: 1, bgcolor: '#4a4a4a' }}>
                 Update
               </Button>
+              <Button 
+                onClick={() => handleShowProductHistory(product)} 
+                sx={{ mr: 1, bgcolor: '#4a4a4a' }}
+              >
+                Show Product History
+              </Button>
               {(userData.role === 'Admin' || userData.role === 'Store Manager') && (
                 <Button onClick={() => handleDeleteProduct(product.Unique_ID)} sx={{ bgcolor: '#4a4a4a' }}>
                   Delete
@@ -1079,6 +1093,15 @@ const StoreSearch = ({ onClose }) => {
         setScanTargetField(null);
       }}
       onScan={handleBarcodeScan}
+    />
+    <ProductHistory
+      open={productHistoryOpen}
+      onClose={() => {
+        setProductHistoryOpen(false);
+        setSelectedProductForHistory(null);
+      }}
+      productId={selectedProductForHistory?.Unique_ID}
+      productTitle={selectedProductForHistory?.Title}
     />
   </Box>
 );
