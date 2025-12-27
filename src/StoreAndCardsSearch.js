@@ -173,7 +173,50 @@ const StoreSearch = ({ onClose }) => {
     fetchTagSuggestions();
   };
 
+  const validateRequiredFields = () => {
+    const requiredFields = [
+      { field: 'Title', name: 'Product Name' },
+      { field: 'Type', name: 'Product Type' },
+      { field: 'Variant Price', name: 'Price' },
+      { field: 'Variant Inventory Qty', name: 'Quantity' },
+      { field: 'Variant Grams', name: 'Grams' },
+      { field: 'Variant Barcode', name: 'Barcode' },
+      { field: 'Description', name: 'Description' },
+      { field: 'Original Cost', name: 'Original Cost' },
+      { field: 'Supplier', name: 'Supplier' },
+      { field: 'Date Obtained', name: 'Date Obtained' },
+      { field: 'Height', name: 'Height' },
+      { field: 'Width', name: 'Width' },
+      { field: 'Length', name: 'Length' }
+    ];
+
+    const missingFields = requiredFields.filter(({ field }) => 
+      !productData[field] || productData[field].toString().trim() === ''
+    );
+
+    // Check for tags
+    const tags = (productData.Tags || '').split(',').filter(Boolean);
+    if (tags.length === 0) {
+      missingFields.push({ name: 'At least one Tag' });
+    }
+
+    // Check for platforms
+    if (!productData.Shopify && !productData.Store) {
+      missingFields.push({ name: 'At least one Platform (Shopify or Store)' });
+    }
+
+    return missingFields.map(field => typeof field === 'string' ? field : field.name);
+  };
+
   const handleAddProduct = async () => {
+    // Validate required fields
+    const missingRequiredFields = validateRequiredFields();
+    
+    if (missingRequiredFields.length > 0) {
+      alert(`Please fill in the following required fields: ${missingRequiredFields.join(', ')}`);
+      return;
+    }
+
     setAddProductDisabled(true);
     setLoading(true);
     setError(null);
@@ -215,11 +258,11 @@ const StoreSearch = ({ onClose }) => {
         Length: ''
       });
       handleSearch(); // Refresh the search results
-      setAddProductDisabled(false);
     } catch (err) {
       setError('Failed to add product. Please try again.');
     } finally {
       setLoading(false);
+      setAddProductDisabled(false);
     }
   };
 
@@ -742,13 +785,38 @@ const StoreSearch = ({ onClose }) => {
         <DialogContent>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Title" label="Product Name" value={productData.Title} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Title" 
+              label="Product Name" 
+              value={productData.Title} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Type" label="Product Type" value={productData.Type} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Type" 
+              label="Product Type" 
+              value={productData.Type} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Variant Price" label="Price" type="number" value={productData['Variant Price']} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Variant Price" 
+              label="Price" 
+              type="number" 
+              value={productData['Variant Price']} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField 
@@ -779,10 +847,20 @@ const StoreSearch = ({ onClose }) => {
                 inputMode: 'numeric',
                 pattern: '[0-9]*',
               }}
+              required
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Variant Grams" label="Grams" type="number" value={productData['Variant Grams']} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Variant Grams" 
+              label="Grams" 
+              type="number" 
+              value={productData['Variant Grams']} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -793,6 +871,7 @@ const StoreSearch = ({ onClose }) => {
                 label="Barcode" 
                 value={productData['Variant Barcode']} 
                 onChange={handleInputChange} 
+                required
               />
               <Button
                 variant="outlined"
@@ -808,18 +887,58 @@ const StoreSearch = ({ onClose }) => {
             </Box>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField fullWidth margin="dense" name="Height" label="Height" type="number" value={productData.Height} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Height" 
+              label="Height" 
+              type="number" 
+              value={productData.Height} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField fullWidth margin="dense" name="Width" label="Width" type="number" value={productData.Width} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Width" 
+              label="Width" 
+              type="number" 
+              value={productData.Width} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={4}>
-            <TextField fullWidth margin="dense" name="Length" label="Length" type="number" value={productData.Length} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Length" 
+              label="Length" 
+              type="number" 
+              value={productData.Length} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12}>
-            <TextField fullWidth margin="dense" name="Description" label="Description" multiline rows={3} value={productData.Description} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Description" 
+              label="Description" 
+              multiline 
+              rows={3} 
+              value={productData.Description} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12}>
+            <Typography variant="subtitle2" sx={{ marginBottom: 1, fontWeight: 'bold' }}>
+              Tags (At least one tag is required)
+            </Typography>
             <TagInput
               tags={(productData.Tags || '').split(',').filter(Boolean)}
               onAddTag={(newTag) => {
@@ -837,7 +956,9 @@ const StoreSearch = ({ onClose }) => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1">Platforms</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+              Platforms (Select at least one platform)
+            </Typography>
             <FormControlLabel
               control={<Checkbox checked={productData.Shopify} onChange={handleInputChange} name="Shopify" />}
               label="Shopify"
@@ -848,13 +969,40 @@ const StoreSearch = ({ onClose }) => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Original Cost" label="Original Cost" type="number" value={productData['Original Cost']} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Original Cost" 
+              label="Original Cost" 
+              type="number" 
+              value={productData['Original Cost']} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Supplier" label="Supplier" value={productData.Supplier} onChange={handleInputChange} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Supplier" 
+              label="Supplier" 
+              value={productData.Supplier} 
+              onChange={handleInputChange} 
+              required
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField fullWidth margin="dense" name="Date Obtained" label="Date Obtained" type="date" value={productData['Date Obtained']} onChange={handleInputChange} InputLabelProps={{ shrink: true }} />
+            <TextField 
+              fullWidth 
+              margin="dense" 
+              name="Date Obtained" 
+              label="Date Obtained" 
+              type="date" 
+              value={productData['Date Obtained']} 
+              onChange={handleInputChange} 
+              InputLabelProps={{ shrink: true }} 
+              required
+            />
           </Grid>
         </Grid>
       </DialogContent>
