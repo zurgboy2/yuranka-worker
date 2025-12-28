@@ -251,11 +251,11 @@ const StoreSearch = ({ onClose }) => {
           return;
         }
         
-        // Handle first success format: { status: 'success', message: 'Product added successfully' }
         if (response.status === 'success') {
           setSuccessMessage(response.message || 'Product added successfully');
+          fetchAllItems();
         }
-        // Handle Shopify success response: {success: true, message: "Product successfully added to Shopify.", handle: shopifyData.product.handle, productId: result.unique_id}
+        // Handle Shopify success response
         else if (response.success === true && response.handle && response.productId && response.message && response.message.includes("Shopify")) {
           setSuccessMessage(response.message);
           setNewProductData({
@@ -264,10 +264,12 @@ const StoreSearch = ({ onClose }) => {
             title: productData.Title
           });
           setMandatoryImageUpload(true);
+          // Note: fetchAllItems() will be called after successful image upload for Shopify products
         } 
         // Handle other success responses with success: true
         else if (response.success === true) {
           setSuccessMessage(response.message || 'Product added successfully');
+          fetchAllItems(); // Refresh all items after successful addition
         }
         // Handle unexpected object response without success or status property
         else {
@@ -512,6 +514,7 @@ const StoreSearch = ({ onClose }) => {
             });
             
             setNewProductData(null);
+            fetchAllItems();
             handleSearch(); // Refresh the search results
           } else {
             throw new Error(response.message || 'Failed to upload image');
