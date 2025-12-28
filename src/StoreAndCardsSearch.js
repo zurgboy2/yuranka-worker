@@ -46,6 +46,8 @@ const StoreSearch = ({ onClose }) => {
   const [scanTargetField, setScanTargetField] = useState(null);
   const [productHistoryOpen, setProductHistoryOpen] = useState(false);
   const [selectedProductForHistory, setSelectedProductForHistory] = useState(null);
+  const [mandatoryImageUpload, setMandatoryImageUpload] = useState(false);
+  const [newProductData, setNewProductData] = useState(null);
 
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
@@ -234,12 +236,50 @@ const StoreSearch = ({ onClose }) => {
       });
       console.log("Add product response:", response);
       setOpenDialog(false);
-      setSuccessMessage(response.message || 'Product added successfully');
-      if (response.handle) {
-        setShopifyPopup({ 
-          open: true, 
-          url: `https://store.yuranka.com/products/${response.handle}`
-        });
+      
+      // Check if response is an error string (backend returns string for errors)
+      if (typeof response === 'string') {
+        setError(response);
+        return;
+      }
+      
+      // Check if response is an object
+      if (response && typeof response === 'object') {
+        // Handle explicit failure responses
+        if (response.success === false || response.status === 'error') {
+          setError(response.message || 'Failed to add product');
+          return;
+        }
+        
+        // Handle first success format: { status: 'success', message: 'Product added successfully' }
+        if (response.status === 'success') {
+          setSuccessMessage(response.message || 'Product added successfully');
+        }
+        // Handle Shopify success response: {success: true, message: "Product successfully added to Shopify.", handle: shopifyData.product.handle, productId: result.unique_id}
+        else if (response.success === true && response.handle && response.productId && response.message && response.message.includes("Shopify")) {
+          setSuccessMessage(response.message);
+          setNewProductData({
+            productId: response.productId,
+            handle: response.handle,
+            title: productData.Title
+          });
+          setMandatoryImageUpload(true);
+        } 
+        // Handle other success responses with success: true
+        else if (response.success === true) {
+          setSuccessMessage(response.message || 'Product added successfully');
+        }
+        // Handle unexpected object response without success or status property
+        else {
+          setError('Unexpected response from server. Please try again.');
+          console.warn("Unexpected response format:", response);
+          return;
+        }
+      } else {
+        // Handle completely unexpected response types
+        setError('Invalid response from server. Please try again.');
+        console.warn("Invalid response type:", typeof response, response);
+        return;
       }
       // Reset the form
       setProductData({
@@ -261,8 +301,20 @@ const StoreSearch = ({ onClose }) => {
         Length: ''
       });
       handleSearch(); // Refresh the search results
-    } catch (err) {
-      setError('Failed to add product. Please try again.');
+    } catch (error) {
+      console.error("Error adding product:", error);
+      setOpenDialog(false);
+      
+      // Handle different types of errors
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data && typeof error.response.data === 'string') {
+        setError(error.response.data);
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError('Network error occurred while adding the product. Please check your connection and try again.');
+      }
     } finally {
       setLoading(false);
       setAddProductDisabled(false);
@@ -431,6 +483,48 @@ const StoreSearch = ({ onClose }) => {
   const handleShowProductHistory = (product) => {
     setSelectedProductForHistory(product);
     setProductHistoryOpen(true);
+  };
+
+  const handleMandatoryImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
+        try {
+          setLoading(true);
+          const response = await apiCall('stocker_script', 'uploadImageToServer', {
+            googleToken: userData.googleToken,
+            username: userData.username,
+            base64Image,
+            uniqueId: newProductData.productId,
+            productType: 'Individual Products'
+          });
+          
+          if (response.success) {
+            setSuccessMessage(`Image uploaded successfully for ${newProductData.title}!`);
+            setMandatoryImageUpload(false);
+            
+            // Show Shopify popup after successful image upload
+            setShopifyPopup({ 
+              open: true, 
+              url: `https://store.yuranka.com/products/${newProductData.handle}`
+            });
+            
+            setNewProductData(null);
+            handleSearch(); // Refresh the search results
+          } else {
+            throw new Error(response.message || 'Failed to upload image');
+          }
+        } catch (err) {
+          setError(err.message || 'Failed to upload image. Please try again.');
+        } finally {
+          setLoading(false);
+          e.target.value = ''; // Reset file input
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -1103,6 +1197,65 @@ const StoreSearch = ({ onClose }) => {
       productId={selectedProductForHistory?.Unique_ID}
       productTitle={selectedProductForHistory?.Title}
     />
+    
+    {/* Mandatory Image Upload Dialog */}
+    <Dialog 
+      open={mandatoryImageUpload} 
+      maxWidth="sm" 
+      fullWidth
+      disableEscapeKeyDown
+      PaperProps={{
+        sx: {
+          bgcolor: '#1a1a1a',
+          color: '#ffffff'
+        }
+      }}
+    >
+      <DialogTitle sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <Typography variant="h6" sx={{ color: '#ff6b6b', fontWeight: 'bold' }}>
+          Image Upload Required
+        </Typography>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Adding an image is <strong>mandatory</strong> for Shopify products.
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 3, color: 'rgba(255, 255, 255, 0.7)' }}>
+          Product: {newProductData?.title}
+        </Typography>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100px' }}>
+          <input
+            accept="image/*"
+            id="mandatory-image-upload"
+            type="file"
+            style={{ display: 'none' }}
+            onChange={handleMandatoryImageUpload}
+          />
+          <label htmlFor="mandatory-image-upload">
+            <Button 
+              variant="contained" 
+              component="span"
+              size="large"
+              sx={{ 
+                bgcolor: '#4caf50',
+                '&:hover': { bgcolor: '#45a049' },
+                padding: '12px 32px'
+              }}
+              startIcon={<span className="material-icons">cloud_upload</span>}
+            >
+              Upload Image
+            </Button>
+          </label>
+        </Box>
+        
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
+      </DialogContent>
+    </Dialog>
   </Box>
 );
 };
