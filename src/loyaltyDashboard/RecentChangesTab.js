@@ -188,6 +188,7 @@ const RecentChangesTab = () => {
               <TableCell>Timestamp</TableCell>
               <TableCell>Customer Name</TableCell>
               <TableCell>Amount</TableCell>
+              <TableCell>Worker Name</TableCell>
               <TableCell>Reason</TableCell>
             </TableRow>
           </TableHead>
@@ -199,6 +200,7 @@ const RecentChangesTab = () => {
                 </TableCell>
                 <TableCell>{log.Name}</TableCell>
                 <TableCell>{getAmountChip(log.Amount)}</TableCell>
+                <TableCell>{log.WorkerName || "-"}</TableCell>
                 <TableCell sx={{ maxWidth: "300px", wordWrap: "break-word" }}>
                   {log.Reason}
                 </TableCell>
