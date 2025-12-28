@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import {
   Typography, Button, TextField, Grid, Paper,
   CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
-  Box, Checkbox, FormControlLabel, Snackbar,  Chip, MenuItem, InputAdornment
+  Box, Checkbox, FormControlLabel, Snackbar,  Chip, MenuItem, InputAdornment, Stack
 } from '@mui/material';
 import 'material-icons/iconfont/material-icons.css';
 import apiCall from './api';
@@ -664,15 +664,25 @@ const StoreSearch = ({ onClose }) => {
               </Paper>
             )}
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button 
-              fullWidth 
-              variant="contained"
-              onClick={handleOpenDialog}
-              sx={{ height: '100%', bgcolor: '#4a4a4a' }}
-            >
-              + Add Product
-            </Button>
+          <Grid item xs={12} sm={3} >
+            <Stack spacing={2}>
+              <Button 
+                fullWidth 
+                variant="contained"
+                onClick={handleOpenDialog}
+                sx={{ height: '100%', bgcolor: '#4a4a4a' }}
+              >
+                + Add Product
+              </Button>
+              <Button 
+                fullWidth 
+                variant="contained"
+                onClick={fetchAllItems}
+                sx={{ height: '100%', bgcolor: '#4a4a4a' }}
+              >
+                Refresh Items
+              </Button>
+            </Stack>
           </Grid>
         </Grid>
       </Box>
