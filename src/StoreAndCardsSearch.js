@@ -404,6 +404,7 @@ const StoreSearch = ({ onClose }) => {
           productId
         });
         setSearchResults(prev => prev.filter(product => product.Unique_ID !== productId));
+        fetchAllItems();
       } catch (err) {
         setError('Failed to delete product. Please try again.');
       } finally {
