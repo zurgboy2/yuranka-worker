@@ -173,6 +173,23 @@ const ApprovalsTab = () => {
     return <Chip label={status} color={color} size="small" />;
   };
 
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "-";
+    
+    try {
+      const date = new Date(timestamp);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    } catch (error) {
+      return timestamp; // Return original if parsing fails
+    }
+  };
+
   const canApprove =
     userData.role === "Admin" || userData.role === "Store Manager";
 
@@ -260,6 +277,7 @@ const ApprovalsTab = () => {
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Worker Name</TableCell>
+              <TableCell>Timestamp</TableCell>
               <TableCell>Customer Name</TableCell>
               <TableCell>Customer Username</TableCell>
               <TableCell>Change Amount</TableCell>
@@ -276,6 +294,7 @@ const ApprovalsTab = () => {
               <TableRow key={approval.ID}>
                 <TableCell>{approval.ID}</TableCell>
                 <TableCell>{approval.WorkerName}</TableCell>
+                <TableCell>{formatTimestamp(approval.Timestamp)}</TableCell>
                 <TableCell>{approval["Customer Name"]}</TableCell>
                 <TableCell>{approval.Username}</TableCell>
                 <TableCell
