@@ -36,7 +36,7 @@ const EventManager = ({ onClose }) => {
     messageToBuyer: '',
     price: '',
     reader_info: '',
-    eventType: '',
+    eventType: 'weekly',
     inventoryQuantity: ''
   }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
