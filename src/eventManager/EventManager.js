@@ -14,6 +14,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
 
 const EventManager = ({ onClose }) => {
   const { userData } = useUserData();
@@ -47,6 +48,7 @@ const EventManager = ({ onClose }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [pendingOrFailed, setPendingOrFailed] = useState([]);
   const [submissionStatuses, setSubmissionStatuses] = useState([]);
+  const [imageAlertOpen, setImageAlertOpen] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -146,6 +148,15 @@ const EventManager = ({ onClose }) => {
     setIsSubmitting(true);
     setError(null);
     setSubmissionStatuses([]);
+
+    // Check for missing images
+    for (let i = 0; i < eventPanels.length; i++) {
+      if (!eventPanels[i].image) {
+        setImageAlertOpen(true);
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     try {
       const scriptId = 'admin_tournament_script';
@@ -1488,6 +1499,17 @@ const EventManager = ({ onClose }) => {
           </>
         )}
       </Dialog>
+      <MuiDialog open={imageAlertOpen} onClose={() => setImageAlertOpen(false)}>
+        <MuiDialogTitle>Image Required</MuiDialogTitle>
+        <MuiDialogContent>
+          <Typography>An event image is mandatory. Please upload an image before submitting.</Typography>
+        </MuiDialogContent>
+        <MuiDialogActions>
+          <Button onClick={() => setImageAlertOpen(false)} color="primary" autoFocus>
+            OK
+          </Button>
+        </MuiDialogActions>
+      </MuiDialog>
     </Box>
   );
 };
