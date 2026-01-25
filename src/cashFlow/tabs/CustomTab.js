@@ -1,0 +1,51 @@
+import React, { useState } from 'react';
+import { Box, Tabs, Tab } from '@mui/material';
+import InvoiceListComponent from './InvoiceListComponent';
+import CustomInvoiceGenerator from './CustomInvoiceGenerator';
+import PurchaseAdderComponent from '../purchaseAdder';
+
+const TabPanel = ({ children, value, index, ...other }) => (
+  <div
+    role="tabpanel"
+    hidden={value !== index}
+    id={`custom-tabpanel-${index}`}
+    aria-labelledby={`custom-tab-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+  </div>
+);
+
+const CustomTab = () => {
+  const [subTab, setSubTab] = useState(0);
+
+  const handleSubTabChange = (event, newValue) => {
+    setSubTab(newValue);
+  };
+
+  return (
+    <Box>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={subTab} onChange={handleSubTabChange} aria-label="custom sub tabs">
+          <Tab label="Invoices" />
+          <Tab label="Invoice Generator" />
+          <Tab label="Purchase Adder" />
+        </Tabs>
+      </Box>
+
+      <TabPanel value={subTab} index={0}>
+        <InvoiceListComponent keyword="YG" title="Custom Invoices" />
+      </TabPanel>
+
+      <TabPanel value={subTab} index={1}>
+        <CustomInvoiceGenerator />
+      </TabPanel>
+
+      <TabPanel value={subTab} index={2}>
+        <PurchaseAdderComponent />
+      </TabPanel>
+    </Box>
+  );
+};
+
+export default CustomTab;
