@@ -29,6 +29,10 @@ const ShopifyOrdersTab = () => {
   const [duplicateWarning, setDuplicateWarning] = useState(false);
   const [generatingInvoice, setGeneratingInvoice] = useState(false);
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount || 0);
+  };
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -36,7 +40,9 @@ const ShopifyOrdersTab = () => {
         googleToken: userData.googleToken,
         username: userData.username
       });
-      setOrders(response || []);
+
+      setOrders(Array.isArray(response) ? response : []);
+      console.log("Fetched Shopify orders:", response);
     } catch (error) {
       console.error("Error fetching Shopify orders:", error);
       setSnackbar({ open: true, message: 'Error fetching orders', severity: 'error' });
@@ -60,7 +66,7 @@ const ShopifyOrdersTab = () => {
 
   const handleGenerateInvoiceClick = (order) => {
     setSelectedOrder(order);
-    setInvoiceNumber(`SH-${order.orderNumber}`);
+    setInvoiceNumber(`SH-${order.orderNumber || order.id || ''}`);
     setInvoiceDate(dayjs());
     setDueDate(dayjs().add(30, 'day'));
     setDuplicateWarning(false);
@@ -159,10 +165,6 @@ const ShopifyOrdersTab = () => {
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount || 0);
   };
 
   return (
