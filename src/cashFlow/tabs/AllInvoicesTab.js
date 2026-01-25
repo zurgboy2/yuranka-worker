@@ -14,7 +14,7 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const AllInvoicesTab = () => {
+const AllInvoicesTab = ({ onMaxWidthChange }) => {
   const [subTab, setSubTab] = useState(0);
 
   const handleSubTabChange = (event, newValue) => {
@@ -30,7 +30,7 @@ const AllInvoicesTab = () => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="ALL" title="All Invoices" />
+        <InvoiceListComponent keyword="ALL" title="All Invoices" onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
     </Box>
   );

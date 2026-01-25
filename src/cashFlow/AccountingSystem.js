@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ThemeProvider, createTheme,
   CssBaseline, Container, Typography, Box,
@@ -89,9 +89,18 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const AccountingSystem = () => {
+const AccountingSystem = ({ onMaxWidthChange }) => {
   const [mainTab, setMainTab] = useState(0);
   const isMobile = useMediaQuery(darkTheme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    // Make the dialog wider for Accounting by default
+    if (typeof onMaxWidthChange === 'function') {
+      onMaxWidthChange('lg');
+      return () => onMaxWidthChange('md');
+    }
+    return undefined;
+  }, [onMaxWidthChange]);
 
   const handleMainTabChange = (event, newValue) => {
     setMainTab(newValue);
@@ -123,23 +132,23 @@ const AccountingSystem = () => {
           </Box>
 
           <TabPanel value={mainTab} index={0}>
-            <ShopifyTab />
+            <ShopifyTab onMaxWidthChange={onMaxWidthChange} />
           </TabPanel>
 
           <TabPanel value={mainTab} index={1}>
-            <CardmarketTab />
+            <CardmarketTab onMaxWidthChange={onMaxWidthChange} />
           </TabPanel>
 
           <TabPanel value={mainTab} index={2}>
-            <CustomTab />
+            <CustomTab onMaxWidthChange={onMaxWidthChange} />
           </TabPanel>
 
           <TabPanel value={mainTab} index={3}>
-            <OutgoingTab />
+            <OutgoingTab onMaxWidthChange={onMaxWidthChange} />
           </TabPanel>
 
           <TabPanel value={mainTab} index={4}>
-            <AllInvoicesTab />
+            <AllInvoicesTab onMaxWidthChange={onMaxWidthChange} />
           </TabPanel>
         </Box>
       </Container>

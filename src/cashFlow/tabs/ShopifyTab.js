@@ -15,7 +15,7 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const ShopifyTab = () => {
+const ShopifyTab = ({ onMaxWidthChange }) => {
   const [subTab, setSubTab] = useState(0);
 
   const handleSubTabChange = (event, newValue) => {
@@ -32,11 +32,11 @@ const ShopifyTab = () => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="SH" title="Shopify Invoices" />
+        <InvoiceListComponent keyword="SH" title="Shopify Invoices" onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
 
       <TabPanel value={subTab} index={1}>
-        <ShopifyOrdersTab />
+        <ShopifyOrdersTab onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
     </Box>
   );

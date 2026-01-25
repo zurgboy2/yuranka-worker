@@ -16,7 +16,7 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const CustomTab = () => {
+const CustomTab = ({ onMaxWidthChange }) => {
   const [subTab, setSubTab] = useState(0);
 
   const handleSubTabChange = (event, newValue) => {
@@ -34,15 +34,15 @@ const CustomTab = () => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="YG" title="Custom Invoices" />
+        <InvoiceListComponent keyword="YG" title="Custom Invoices" onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
 
       <TabPanel value={subTab} index={1}>
-        <CustomInvoiceGenerator />
+        <CustomInvoiceGenerator onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
 
       <TabPanel value={subTab} index={2}>
-        <PurchaseAdderComponent />
+        <PurchaseAdderComponent onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
     </Box>
   );

@@ -16,7 +16,7 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const CardmarketTab = () => {
+const CardmarketTab = ({ onMaxWidthChange }) => {
   const [subTab, setSubTab] = useState(0);
 
   const handleSubTabChange = (event, newValue) => {
@@ -34,15 +34,15 @@ const CardmarketTab = () => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="CM" title="Cardmarket Invoices" />
+        <InvoiceListComponent keyword="CM" title="Cardmarket Invoices" onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
 
       <TabPanel value={subTab} index={1}>
-        <CardmarketOrdersComponent />
+        <CardmarketOrdersComponent onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
 
       <TabPanel value={subTab} index={2}>
-        <BulkOrderUploadComponent />
+        <BulkOrderUploadComponent onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
     </Box>
   );

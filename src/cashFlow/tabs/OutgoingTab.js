@@ -14,7 +14,7 @@ const TabPanel = ({ children, value, index, ...other }) => (
   </div>
 );
 
-const OutgoingTab = () => {
+const OutgoingTab = ({ onMaxWidthChange }) => {
   const [subTab, setSubTab] = useState(0);
 
   const handleSubTabChange = (event, newValue) => {
@@ -30,7 +30,7 @@ const OutgoingTab = () => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="OP" title="Outgoing/Labour Invoices" />
+        <InvoiceListComponent keyword="OP" title="Outgoing/Labour Invoices" onMaxWidthChange={onMaxWidthChange} />
       </TabPanel>
     </Box>
   );
