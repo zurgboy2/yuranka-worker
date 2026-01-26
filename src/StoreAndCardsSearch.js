@@ -629,24 +629,28 @@ const StoreSearch = ({ onClose }) => {
                         try {
                           setLoading(true);
                           setError(null);
-                          
-                          // Call the backend searchStoreProduct function
+
+                          // Ensure we only load the clicked item, even if multiple items share the same title
+                          setSelectedUniqueId(item.uniqueId);
+                          setSearchText(item.title || '');
+
+                          // Call backend using uniqueId as the source of truth
                           const response = await apiCall('stocker_script', 'searchStoreProduct', {
                             googleToken: userData.googleToken,
                             username: userData.username,
-                            searchText: item.title || '',
+                            searchText: '',
                             uniqueId: item.uniqueId
                           });
-                          
+
                           if (response && Array.isArray(response)) {
-                            setSearchResults(response);
-                            setSearchText(item.title || '');
+                            // Backend may still return multiple rows; enforce uniqueId match client-side
+                            const filtered = response.filter(r => String(r.Unique_ID) === String(item.uniqueId));
+                            setSearchResults(filtered);
                           } else {
-                            // Handle case when response is not as expected
                             throw new Error('Invalid response from server');
                           }
                         } catch (err) {
-                          console.error("Search error:", err);
+                          console.error('Search error:', err);
                           setError('Failed to retrieve product. Please try again.');
                           setSearchResults([]);
                         } finally {
