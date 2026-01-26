@@ -49,7 +49,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
     setIsLoading(true);
     try {
       const fetchedInvoices = await apiCall('accounting_script', 'getInvoices', {
-        keyword,
+        type: keyword,
         googleToken: userData.googleToken,
         username: userData.username
       });
