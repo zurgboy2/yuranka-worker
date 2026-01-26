@@ -49,6 +49,20 @@ const StoreSearch = ({ onClose }) => {
   const [mandatoryImageUpload, setMandatoryImageUpload] = useState(false);
   const [newProductData, setNewProductData] = useState(null);
 
+  const clearLoadedProductState = useCallback(() => {
+    setSearchResults([]);
+    setError(null);
+    setSuccessMessage('');
+    setSelectedUniqueId(null);
+    setShopifyPopup({ open: false, url: '' });
+    setProductHistoryOpen(false);
+    setSelectedProductForHistory(null);
+    setScannerOpen(false);
+    setScanTargetField(null);
+    setMandatoryImageUpload(false);
+    setNewProductData(null);
+  }, []);
+
   const handleSearch = useCallback(() => {
     console.log("=== SEARCH INITIATED ===");
     console.log("searchText:", searchText);
@@ -610,6 +624,8 @@ const StoreSearch = ({ onClose }) => {
                       button 
                       key={item.uniqueId || index}
                       onClick={async () => {
+                        clearLoadedProductState();
+
                         try {
                           setLoading(true);
                           setError(null);
