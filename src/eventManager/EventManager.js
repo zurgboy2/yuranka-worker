@@ -149,9 +149,13 @@ const EventManager = ({ onClose }) => {
     setError(null);
     setSubmissionStatuses([]);
 
-    // Check for missing images
+    // Check for missing images ONLY when price > 0
     for (let i = 0; i < eventPanels.length; i++) {
-      if (!eventPanels[i].image) {
+      const rawPrice = eventPanels[i].price;
+      const price = rawPrice === '' || rawPrice === null || rawPrice === undefined ? 0 : Number(rawPrice);
+      const requiresImage = !Number.isNaN(price) && price > 0;
+
+      if (requiresImage && !eventPanels[i].image) {
         setImageAlertOpen(true);
         setIsSubmitting(false);
         return;
