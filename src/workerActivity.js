@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Paper, Typography, Box, List, ListItem, ListItemText,
-  CircularProgress, Divider, useTheme, Chip
+  CircularProgress, Divider, useTheme, Chip, Button
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useUserData } from './UserContext';
 import apiCall from './api';
 
@@ -15,6 +16,7 @@ const WorkerActivityDisplay = () => {
 
   const fetchWorkerActivity = useCallback(async () => {
     try {
+      setLoading(true);
       const scriptId = 'dashboard_script';
       const action = 'getWorkerActivity';
       
@@ -68,7 +70,18 @@ const WorkerActivityDisplay = () => {
       maxHeight: '800px',
       overflow: 'hidden',
     }}>
-      <Typography variant="h6" sx={{ p: 2, color: '#ffffff' }}>Worker Activity</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+        <Typography variant="h6" sx={{ color: '#ffffff' }}>Worker Activity</Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<RefreshIcon />}
+          onClick={fetchWorkerActivity}
+          sx={{ color: '#ffffff', borderColor: '#4a4a4a' }}
+        >
+          Refresh
+        </Button>
+      </Box>
       <Box sx={{ flexGrow: 1, overflow: 'auto', overflowX: 'hidden' }}>
         <List>
           {workerData.map((worker, index) => (
