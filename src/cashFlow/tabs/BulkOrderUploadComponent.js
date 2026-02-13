@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   Box, Typography, Button, Card, CardContent,
   CircularProgress, Snackbar, Alert, Paper,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox, FormControlLabel
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import apiCall from '../../api';
@@ -13,6 +13,7 @@ const BulkOrderUploadComponent = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [previewData, setPreviewData] = useState(null);
+  const [orderType, setOrderType] = useState(''); // 'sales' or 'purchased'
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef(null);
 
@@ -70,6 +71,12 @@ const BulkOrderUploadComponent = () => {
       return;
     }
 
+    // Ensure order type is selected
+    if (!orderType) {
+      setSnackbar({ open: true, message: 'Please select Order Type: Sales or Purchase', severity: 'warning' });
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -77,10 +84,11 @@ const BulkOrderUploadComponent = () => {
       reader.onloadend = async () => {
         const base64String = reader.result.split(',')[1];
         
-        const response = await apiCall('accounting_script', 'bulkUploadCMOrders', {
-          fileData: base64String,
+        const response = await apiCall('accounting_script', 'uploadCSV', {
+          fileBlob: base64String, // backend expects fileBlob
           fileName: selectedFile.name,
           mimeType: selectedFile.type,
+          orderType, // 'sales' or 'purchase'
           googleToken: userData.googleToken,
           username: userData.username
         });
@@ -93,6 +101,7 @@ const BulkOrderUploadComponent = () => {
           });
           setSelectedFile(null);
           setPreviewData(null);
+          setOrderType('');
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
@@ -121,6 +130,7 @@ const BulkOrderUploadComponent = () => {
   const handleClear = () => {
     setSelectedFile(null);
     setPreviewData(null);
+    setOrderType('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -195,6 +205,36 @@ const BulkOrderUploadComponent = () => {
               </TableContainer>
             </Paper>
           )}
+
+          {/* Order Type selection - required */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>Order Type (required)</Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={orderType === 'sales'}
+                    onChange={(e) => setOrderType(e.target.checked ? 'sales' : '')}
+                    disabled={uploading}
+                    color="primary"
+                  />
+                }
+                label="Sales"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={orderType === 'purchased'}
+                    onChange={(e) => setOrderType(e.target.checked ? 'purchased' : '')}
+                    disabled={uploading}
+                    color="primary"
+                  />
+                }
+                label="Purchased"
+              />
+            </Box>
+            <Typography variant="caption" color="text.secondary">Select exactly one option. Checking one will select it; uncheck to clear.</Typography>
+          </Box>
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
