@@ -17,16 +17,18 @@ const TabPanel = ({ children, value, index, ...other }) => (
 );
 
 const CustomTab = ({ onMaxWidthChange }) => {
-  const [subTab, setSubTab] = useState(0);
+  const [subTab, setSubTab] = useState(null);
+  const [visitedTabs, setVisitedTabs] = useState(new Set());
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
+    setVisitedTabs(prev => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab} onChange={handleSubTabChange} aria-label="custom sub tabs">
+        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="custom sub tabs">
           <Tab label="Invoices" />
           <Tab label="Invoice Generator" />
           <Tab label="Purchase Adder" />
@@ -34,15 +36,21 @@ const CustomTab = ({ onMaxWidthChange }) => {
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="YG" title="Custom Invoices" onMaxWidthChange={onMaxWidthChange} />
+        {visitedTabs.has(0) && (
+          <InvoiceListComponent keyword="YG" title="Custom Invoices" onMaxWidthChange={onMaxWidthChange} />
+        )}
       </TabPanel>
 
       <TabPanel value={subTab} index={1}>
-        <CustomInvoiceGenerator onMaxWidthChange={onMaxWidthChange} />
+        {visitedTabs.has(1) && (
+          <CustomInvoiceGenerator onMaxWidthChange={onMaxWidthChange} />
+        )}
       </TabPanel>
 
       <TabPanel value={subTab} index={2}>
-        <PurchaseAdderComponent onMaxWidthChange={onMaxWidthChange} />
+        {visitedTabs.has(2) && (
+          <PurchaseAdderComponent onMaxWidthChange={onMaxWidthChange} />
+        )}
       </TabPanel>
     </Box>
   );

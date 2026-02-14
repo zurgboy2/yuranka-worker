@@ -15,22 +15,26 @@ const TabPanel = ({ children, value, index, ...other }) => (
 );
 
 const OutgoingTab = ({ onMaxWidthChange }) => {
-  const [subTab, setSubTab] = useState(0);
+  const [subTab, setSubTab] = useState(null);
+  const [visitedTabs, setVisitedTabs] = useState(new Set());
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
+    setVisitedTabs(prev => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab} onChange={handleSubTabChange} aria-label="outgoing sub tabs">
+        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="outgoing sub tabs">
           <Tab label="Invoices" />
         </Tabs>
       </Box>
 
       <TabPanel value={subTab} index={0}>
-        <InvoiceListComponent keyword="OP" title="Outgoing/Labour Invoices" onMaxWidthChange={onMaxWidthChange} />
+        {visitedTabs.has(0) && (
+          <InvoiceListComponent keyword="OP" title="Outgoing/Labour Invoices" onMaxWidthChange={onMaxWidthChange} />
+        )}
       </TabPanel>
     </Box>
   );
