@@ -81,9 +81,19 @@ const ShopifyOrdersTab = () => {
         googleToken: userData.googleToken,
         username: userData.username
       });
+
+      if (typeof response !== 'boolean') {
+        throw new Error('Unexpected response while checking duplicate invoice number');
+      }
+
       return response;
     } catch (error) {
       console.error("Error checking duplicate:", error);
+      setSnackbar({
+        open: true,
+        message: error?.message || 'Failed to check duplicate invoice number',
+        severity: 'error'
+      });
       return false;
     }
   };
