@@ -64,7 +64,7 @@ const CustomInvoiceGenerator = () => {
 
   const checkDuplicateInvoice = async () => {
     try {
-      const response = await apiCall('accounting_script', 'hasDuplicateInvoiceNo', {
+      const response = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
         invoiceNumber: invoiceData.invoiceNumber,
         type: 'YG',
         googleToken: userData.googleToken,

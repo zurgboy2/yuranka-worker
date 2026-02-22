@@ -75,8 +75,8 @@ const ShopifyOrdersTab = () => {
 
   const checkDuplicateInvoice = async () => {
     try {
-      const response = await apiCall('accounting_script', 'hasDuplicateInvoiceNo', {
-        invoiceNumber,
+      const response = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
+        invoiceNumber: invoiceNumber,
         type: 'SH',
         googleToken: userData.googleToken,
         username: userData.username
