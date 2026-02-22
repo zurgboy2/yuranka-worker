@@ -85,7 +85,7 @@ const BulkOrderUploadComponent = () => {
         const base64String = reader.result.split(',')[1];
         
         const response = await apiCall('accounting_script', 'uploadCSV', {
-          fileBlob: base64String, // backend expects fileBlob
+          base64: base64String, // backend expects fileBlob
           fileName: selectedFile.name,
           mimeType: selectedFile.type,
           orderType, // 'sales' or 'purchase'
