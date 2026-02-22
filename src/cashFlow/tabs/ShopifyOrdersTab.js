@@ -77,7 +77,7 @@ const ShopifyOrdersTab = () => {
     try {
       const response = await apiCall('accounting_script', 'hasDuplicateInvoiceNo', {
         invoiceNumber,
-        prefix: 'SH',
+        type: 'SH',
         googleToken: userData.googleToken,
         username: userData.username
       });
@@ -130,7 +130,7 @@ const ShopifyOrdersTab = () => {
         discount: selectedOrder.discount || 0,
         invoiceNumber,
         dateOfInvoice: invoiceDate.format('YYYY-MM-DD'),
-        prefix: 'SH'
+        type: 'SH'
       };
 
       const response = await apiCall('accounting_script', 'generateInvoice', {

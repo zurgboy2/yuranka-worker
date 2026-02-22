@@ -66,7 +66,7 @@ const CustomInvoiceGenerator = () => {
     try {
       const response = await apiCall('accounting_script', 'hasDuplicateInvoiceNo', {
         invoiceNumber: invoiceData.invoiceNumber,
-        prefix: 'YG',
+        type: 'YG',
         googleToken: userData.googleToken,
         username: userData.username
       });
@@ -97,7 +97,7 @@ const CustomInvoiceGenerator = () => {
         productItems: invoiceData.items,
         tax: invoiceData.tax,
         discount: invoiceData.discount,
-        prefix: 'YG'
+        type: 'YG'
       };
 
       if (invoiceData.invoiceNumber) {
