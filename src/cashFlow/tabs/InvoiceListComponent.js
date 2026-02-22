@@ -7,7 +7,8 @@ import {
   useMediaQuery, CircularProgress, Dialog, DialogTitle,
   DialogContent, DialogActions, Snackbar, Alert,
   List, ListItem, ListItemText, Divider, IconButton,
-  createTheme
+  createTheme,
+  Tabs, Tab
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -44,6 +45,9 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const isMobile = useMediaQuery(darkTheme.breakpoints.down('sm'));
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [editMode, setEditMode] = useState(0); // 0: invoice number, 1: invoice data
+  const [invoiceNumberForm, setInvoiceNumberForm] = useState({ oldInvoiceNumber: '', newInvoiceNumber: '' });
+  const [invoiceNumberCheck, setInvoiceNumberCheck] = useState({ checked: false, exists: false, checking: false, error: '' });
 
   const fetchInvoices = useCallback(async () => {
     setIsLoading(true);
@@ -105,6 +109,91 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
 
   const handleInvoiceClick = (invoice) => {
     setSelectedInvoice({ ...invoice });
+    const currentInvoiceNo = invoice?.invoicenumber ?? '';
+    setInvoiceNumberForm({ oldInvoiceNumber: currentInvoiceNo, newInvoiceNumber: currentInvoiceNo });
+    setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: '' });
+    setEditMode(1); 
+  };
+
+  const checkInvoiceNumberExists = async () => {
+    const newNo = (invoiceNumberForm.newInvoiceNumber || '').trim();
+    if (!newNo) {
+      setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: 'Please enter a new invoice number' });
+      return { ok: false, exists: false, error: 'Please enter a new invoice number' };
+    }
+
+    setInvoiceNumberCheck(prev => ({ ...prev, checking: true, error: '' }));
+    try {
+      const res = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
+        invoiceNumber: newNo,
+        type: keyword,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+
+      if (typeof res !== 'boolean') {
+        const msg = 'Unexpected response while checking invoice number';
+        setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: msg });
+        return { ok: false, exists: false, error: msg };
+      }
+
+      setInvoiceNumberCheck({ checked: true, exists: res, checking: false, error: '' });
+      return { ok: true, exists: res, error: '' };
+    } catch (e) {
+      console.error('Error checking invoice number:', e);
+      const msg = e?.message || 'Failed to check invoice number';
+      setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: msg });
+      return { ok: false, exists: false, error: msg };
+    }
+  };
+
+  const updateInvoiceNumber = async ({ force = false } = {}) => {
+    if (!selectedInvoice) return;
+
+    const oldNo = (invoiceNumberForm.oldInvoiceNumber || '').trim();
+    const newNo = (invoiceNumberForm.newInvoiceNumber || '').trim();
+
+    if (!oldNo || !newNo) {
+      setSnackbar({ open: true, message: 'Invoice number cannot be empty', severity: 'error' });
+      return;
+    }
+
+    if (!force) {
+      const check = await checkInvoiceNumberExists();
+      if (!check.ok) {
+        setSnackbar({ open: true, message: check.error || 'Failed to check invoice number', severity: 'error' });
+        return;
+      }
+      if (check.exists) {
+        setSnackbar({ open: true, message: 'Invoice number already exists. Click "Proceed Anyway" to force update.', severity: 'warning' });
+        return;
+      }
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await apiCall('accounting_script', 'updateInvoiceNumber', {
+        oldInvoiceNumber: oldNo,
+        newInvoiceNumber: newNo,
+        id: selectedInvoice.id,
+        type: selectedInvoice.type,
+        googleToken: userData.googleToken,
+        username: userData.username
+      });
+
+      if (res?.success) {
+        await fetchInvoices();
+        setSnackbar({ open: true, message: res.message || 'Invoice number updated', severity: 'success' });
+        setSelectedInvoice(null);
+      } else {
+        throw new Error(res?.message || 'Failed to update invoice number');
+      }
+    } catch (e) {
+      console.error('Error updating invoice number:', e);
+      setSnackbar({ open: true, message: e?.message || 'Error updating invoice number', severity: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const sortedInvoices = useMemo(() => {
@@ -160,13 +249,16 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
       const result = await apiCall('accounting_script', 'updateInvoice', {
         originalName: invoice.nameOfInvoice,
         name: invoice.nameOfInvoice,
+        invoiceId: invoice.id,
         amount: invoice.amount,
         amountPaid: invoice.amountPaid,
+        paymentStatus: invoice.paymentStatus,
         date: invoice.date,
+        type: invoice.type,
         dateofrelease: invoice.dateofrelease,
         invoiceNumber: invoice.invoicenumber,
         googleToken: userData.googleToken,
-        username: userData.username
+        username: userData.username,
       });
 
       if (result.success) {
@@ -254,73 +346,135 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
     <Dialog open={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} fullWidth maxWidth="sm">
       <DialogTitle>{selectedInvoice?.nameOfInvoice}</DialogTitle>
       <DialogContent>
-        <TextField
-          fullWidth
-          margin="dense"
-          label="Amount"
-          type="number"
-          name="amount"
-          value={selectedInvoice?.amount}
-          onChange={handleSelectedInvoiceChange}
-          InputProps={{
-            startAdornment: <Typography>€</Typography>,
-          }}
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          label="Amount Paid"
-          type="number"
-          name="amountPaid"
-          value={selectedInvoice?.amountPaid}
-          onChange={handleSelectedInvoiceChange}
-          InputProps={{
-            startAdornment: <Typography>€</Typography>,
-          }}
-        />
-        <Typography><strong>Amount Remaining:</strong> €{selectedInvoice?.amount - selectedInvoice?.amountPaid}</Typography>
-        <Box sx={{ mt: 2 }}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              value={selectedInvoice?.date ? dayjs(selectedInvoice.date) : null}
-              onChange={(date) => handleSelectedInvoiceDateChange(date ? date.toDate() : null)}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  label: "Date",
-                }
+        <Tabs value={editMode} onChange={(e, v) => setEditMode(v)} sx={{ mb: 2 }}>
+          <Tab label="Change Invoice Number" />
+          <Tab label="Change Invoice Data" />
+        </Tabs>
+
+        {editMode === 0 && (
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Current Invoice Number</Typography>
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Existing Invoice Number"
+              value={invoiceNumberForm.oldInvoiceNumber}
+              disabled
+            />
+
+            <TextField
+              fullWidth
+              margin="dense"
+              label="New Invoice Number"
+              value={invoiceNumberForm.newInvoiceNumber}
+              onChange={(e) => {
+                const v = e.target.value;
+                setInvoiceNumberForm(prev => ({ ...prev, newInvoiceNumber: v }));
+                setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: '' });
               }}
             />
-          </LocalizationProvider>
-        </Box>
-        <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel>Payment Status</InputLabel>
-          <Select
-            name="paymentStatus"
-            value={selectedInvoice?.paymentStatus}
-            onChange={handleSelectedInvoiceChange}
-          >
-            <MenuItem value="Paid">Paid</MenuItem>
-            <MenuItem value="Partially Paid">Partially Paid</MenuItem>
-            <MenuItem value="UnPaid">UnPaid</MenuItem>
-          </Select>
-        </FormControl>
-        {selectedInvoice?.docUrl && (
-          <Button
-            href={selectedInvoice.docUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="contained"
-            sx={{ mt: 2 }}
-          >
-            View Document
-          </Button>
+
+            <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
+              <Button variant="outlined" onClick={checkInvoiceNumberExists} disabled={invoiceNumberCheck.checking || isLoading}>
+                {invoiceNumberCheck.checking ? 'Checking...' : 'Check Duplicate'}
+              </Button>
+              {invoiceNumberCheck.checked && !invoiceNumberCheck.exists && (
+                <Typography variant="body2" color="success.main">Invoice number is available</Typography>
+              )}
+              {invoiceNumberCheck.checked && invoiceNumberCheck.exists && (
+                <Typography variant="body2" color="warning.main">Invoice number already exists</Typography>
+              )}
+              {invoiceNumberCheck.error && (
+                <Typography variant="body2" color="error.main">{invoiceNumberCheck.error}</Typography>
+              )}
+            </Box>
+
+            {invoiceNumberCheck.checked && invoiceNumberCheck.exists && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                This invoice number already exists. You can still proceed if you are sure.
+              </Alert>
+            )}
+          </Box>
+        )}
+
+        {editMode === 1 && (
+          <Box>
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Amount"
+              type="number"
+              name="amount"
+              value={selectedInvoice?.amount}
+              onChange={handleSelectedInvoiceChange}
+              InputProps={{ startAdornment: <Typography>€</Typography> }}
+            />
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Amount Paid"
+              type="number"
+              name="amountPaid"
+              value={selectedInvoice?.amountPaid}
+              onChange={handleSelectedInvoiceChange}
+              InputProps={{ startAdornment: <Typography>€</Typography> }}
+            />
+            <Typography><strong>Amount Remaining:</strong> €{selectedInvoice?.amount - selectedInvoice?.amountPaid}</Typography>
+            <Box sx={{ mt: 2 }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  value={selectedInvoice?.date ? dayjs(selectedInvoice.date) : null}
+                  onChange={(date) => handleSelectedInvoiceDateChange(date ? date.toDate() : null)}
+                  slotProps={{ textField: { fullWidth: true, label: 'Date' } }}
+                />
+              </LocalizationProvider>
+            </Box>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel>Payment Status</InputLabel>
+              <Select
+                name="paymentStatus"
+                value={selectedInvoice?.paymentStatus}
+                onChange={handleSelectedInvoiceChange}
+              >
+                <MenuItem value="Paid">Paid</MenuItem>
+                <MenuItem value="Partially Paid">Partially Paid</MenuItem>
+                <MenuItem value="UnPaid">UnPaid</MenuItem>
+              </Select>
+            </FormControl>
+            {selectedInvoice?.docUrl && (
+              <Button
+                href={selectedInvoice.docUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="contained"
+                sx={{ mt: 2 }}
+              >
+                View Document
+              </Button>
+            )}
+          </Box>
         )}
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setSelectedInvoice(null)}>Close</Button>
-        <Button onClick={() => saveInvoice(selectedInvoice)} variant="contained">Save</Button>
-        <Button onClick={() => deleteInvoice(selectedInvoice.invoicenumber)} variant="contained" color="error">Delete</Button>
+        {editMode === 0 ? (
+          <>
+            <Button
+              onClick={() => {
+                updateInvoiceNumber({ force: invoiceNumberCheck.exists });
+              }}
+              variant="contained"
+              disabled={isLoading || invoiceNumberCheck.checking}
+            >
+              {invoiceNumberCheck.exists ? 'Proceed Anyway' : 'Update Invoice Number'}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button onClick={() => saveInvoice(selectedInvoice)} variant="contained" disabled={isLoading}>Save</Button>
+            <Button onClick={() => deleteInvoice(selectedInvoice.invoicenumber)} variant="contained" color="error" disabled={isLoading}>Delete</Button>
+          </>
+        )}
       </DialogActions>
     </Dialog>
   );
