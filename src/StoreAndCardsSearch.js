@@ -734,11 +734,20 @@ const StoreSearch = ({ onClose }) => {
               <TextField
                 fullWidth
                 label="Price (€)"
-                type="number"
+                type="text"
                 value={product['Variant Price']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Variant Price', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Variant Price', value);
+                  }
+                }}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
                 }}
               />
             </Grid>
@@ -765,9 +774,20 @@ const StoreSearch = ({ onClose }) => {
               <TextField
                 fullWidth
                 label="Grams"
-                type="number"
+                type="text"
                 value={product['Variant Grams']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Variant Grams', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Variant Grams', value);
+                  }
+                }}
+                InputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -795,27 +815,60 @@ const StoreSearch = ({ onClose }) => {
               <TextField
                 fullWidth
                 label="Height"
-                type="number"
+                type="text"
                 value={product.Height}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Height', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Height', value);
+                  }
+                }}
+                InputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 label="Width"
-                type="number"
+                type="text"
                 value={product.Width}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Width', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Width', value);
+                  }
+                }}
+                InputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 label="Length"
-                type="number"
+                type="text"
                 value={product.Length}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Length', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Length', value);
+                  }
+                }}
+                InputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -859,11 +912,20 @@ const StoreSearch = ({ onClose }) => {
               <TextField
                 fullWidth
                 label="Original Cost (€)"
-                type="number"
+                type="text"
                 value={product['Original Cost']}
-                onChange={(e) => handleUpdateField(product.Unique_ID, 'Original Cost', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+                    handleUpdateField(product.Unique_ID, 'Original Cost', value);
+                  }
+                }}
                 InputProps={{
                   startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  style: { MozAppearance: 'textfield' },
+                  onWheel: e => e.target.blur()
                 }}
               />
             </Grid>
