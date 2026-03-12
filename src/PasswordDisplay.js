@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Typography, CircularProgress, Alert, 
   Card, CardContent, List, ListItem, ListItemText,
-  Button, Collapse, Box, Stack
+  Button, Collapse, Box, Stack,
+  TextField
 } from '@mui/material';
 import apiCall from './api';
 import { useUserData } from './UserContext'; // Import the useUserData hook
@@ -14,6 +15,7 @@ const PasswordDisplay = () => {
   const [copySuccess, setCopySuccess] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchPasswords = useCallback(async () => {
     try {
@@ -72,6 +74,15 @@ const PasswordDisplay = () => {
     });
   }, []);
 
+  const filteredPasswords = passwords.filter((entry) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+
+    const website = (entry.website || '').toString().toLowerCase();
+    const username = (entry.username || '').toString().toLowerCase();
+    return website.includes(q) || username.includes(q);
+  });
+
   if (loading) {
     return (
       <Card>
@@ -88,6 +99,17 @@ const PasswordDisplay = () => {
         <Typography variant="h6" gutterBottom>
           Passwords for {userData.role}
         </Typography>
+
+        <TextField
+          fullWidth
+          size="small"
+          label="Search"
+          placeholder="Search by website or username..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mt: 3 , mb: 2 }}
+        />
+
         {error && (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
             {error}
@@ -96,14 +118,14 @@ const PasswordDisplay = () => {
       </CardContent>
       <Box sx={{ flexGrow: 1, overflow: 'auto', px: 2 }}>
         <List sx={{ width: '100%' }}>
-          {passwords.map((entry, index) => (
+          {filteredPasswords.map((entry, index) => (
             <ListItem 
               key={index} 
               divider 
               sx={{ 
                 flexDirection: 'column', 
                 alignItems: 'flex-start',
-                py: 2
+                py: 1, pb: 2
               }}
             >
               <ListItemText 
