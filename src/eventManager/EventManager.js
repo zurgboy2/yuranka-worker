@@ -300,6 +300,18 @@ const EventManager = ({ onClose }) => {
     setEditingEvent(prev => ({ ...prev, [name]: value }));
   };
 
+  const isValidPriceInput = (value) => {
+    return value === '' || /^\d+(\.\d{0,2})?$/.test(value);
+  };
+
+  const isValidInventoryQuantityInput = (value) => {
+    if (value === '') {
+      return true;
+    }
+
+    return /^[0-9]+$/.test(value) && Number(value) >= 1 && Number(value) <= 50;
+  };
+
   const handlePosterChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -696,9 +708,20 @@ const EventManager = ({ onClose }) => {
                         fullWidth
                         label="Price"
                         name="price"
-                        type="number"
+                        type="text"
                         value={panel.price}
-                        onChange={(e) => handleInputChange(e, index)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (isValidPriceInput(value)) {
+                            handleInputChange(e, index);
+                          }
+                        }}
+                        InputProps={{
+                          inputMode: 'numeric',
+                          pattern: '[0-9]*',
+                          style: { MozAppearance: 'textfield' },
+                          onWheel: e => e.target.blur()
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -706,15 +729,18 @@ const EventManager = ({ onClose }) => {
                         fullWidth
                         label="Inventory Quantity (1-50)"
                         name="inventoryQuantity"
-                        type="number"
+                        type="text"
                         value={panel.inventoryQuantity}
                         onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          if (value >= 1 && value <= 50) {
+                          const value = e.target.value;
+                          if (isValidInventoryQuantityInput(value)) {
                             handleInputChange(e, index);
                           }
                         }}
-                        inputProps={{ min: 1, max: 50 }}                     
+                        inputProps={{
+                          inputMode: 'numeric',
+                          pattern: '[0-9]*'
+                        }}
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -1119,11 +1145,19 @@ const EventManager = ({ onClose }) => {
                       fullWidth
                       label="Price"
                       name="Price"
-                      type="number"
+                      type="text"
                       value={editingEvent["Price"]}
-                      onChange={handleEditChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (isValidPriceInput(value)) {
+                          handleEditChange(e);
+                        }
+                      }}
                       InputLabelProps={{ style: { color: '#ffffff' } }}
                       InputProps={{
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*',
+                        onWheel: e => e.target.blur(),
                         style: { color: '#ffffff' },
                         sx: { 
                           bgcolor: 'rgba(74, 74, 74, 0.8)',
@@ -1145,15 +1179,18 @@ const EventManager = ({ onClose }) => {
                       fullWidth
                       label="Inventory Quantity (1-50)"
                       name="Inventory Quantity"
-                      type="number"
+                      type="text"
                       value={editingEvent["Inventory Quantity"] || ''}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (value >= 1 && value <= 50) {
+                        const value = e.target.value;
+                        if (isValidInventoryQuantityInput(value)) {
                           handleEditChange(e);
                         }
                       }}
-                      inputProps={{ min: 1, max: 50 }}                             
+                      inputProps={{
+                        inputMode: 'numeric',
+                        pattern: '[0-9]*'
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
