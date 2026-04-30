@@ -49,6 +49,22 @@ const StoreSearch = ({ onClose }) => {
   const [mandatoryImageUpload, setMandatoryImageUpload] = useState(false);
   const [newProductData, setNewProductData] = useState(null);
 
+  const getSearchableText = (value) => {
+    if (typeof value === 'string') {
+      return value.toLowerCase();
+    }
+
+    if (Array.isArray(value)) {
+      return value.join(' ').toLowerCase();
+    }
+
+    if (value == null) {
+      return '';
+    }
+
+    return String(value).toLowerCase();
+  };
+
   const clearLoadedProductState = useCallback(() => {
     setSearchResults([]);
     setError(null);
@@ -104,9 +120,9 @@ const StoreSearch = ({ onClose }) => {
         
         const filteredResults = allItems.filter(item => {
           // Check each field individually and log the result
-          const titleMatch = item.title && item.title.toLowerCase().includes(query);
-          const supplierMatch = item.supplier && item.supplier.toLowerCase().includes(query);
-          const typeMatch = item.type && item.type.toLowerCase().includes(query);
+          const titleMatch = getSearchableText(item.title).includes(query);
+          const supplierMatch = getSearchableText(item.supplier).includes(query);
+          const typeMatch = getSearchableText(item.type).includes(query);
           
           console.log(`Item ${item.uniqueId || 'unknown'} (${item.title || 'untitled'}): titleMatch=${titleMatch}, supplierMatch=${supplierMatch}, typeMatch=${typeMatch}`);
           
@@ -615,9 +631,9 @@ const StoreSearch = ({ onClose }) => {
                   {allItems.filter(item => {
                     const query = searchText.toLowerCase().trim();
                     return (
-                      (item.title && item.title.toLowerCase().includes(query)) ||
-                      (item.supplier && item.supplier.toLowerCase().includes(query)) ||
-                      (item.type && item.type.toLowerCase().includes(query))
+                      getSearchableText(item.title).includes(query) ||
+                      getSearchableText(item.supplier).includes(query) ||
+                      getSearchableText(item.type).includes(query)
                     );
                   }).slice(0, 10).map((item, index) => (
                     <ListItem 
