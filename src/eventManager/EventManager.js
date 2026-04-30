@@ -155,9 +155,16 @@ const EventManager = ({ onClose }) => {
       const price = rawPrice === '' || rawPrice === null || rawPrice === undefined ? 0 : Number(rawPrice);
       const requiresImage = !Number.isNaN(price) && price > 0;
       const requiresDescription = !Number.isNaN(price) && price > 0;
+      const requiresMessageToBuyer = !Number.isNaN(price) && price > 0;
 
       if (requiresDescription && !eventPanels[i].description.trim()) {
         setError(`Description is required when price is above 0 for event "${eventPanels[i].name || i + 1}".`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (requiresMessageToBuyer && !eventPanels[i].messageToBuyer.trim()) {
+        setError(`Message to Buyer is required when price is above 0 for event "${eventPanels[i].name || i + 1}".`);
         setIsSubmitting(false);
         return;
       }
@@ -668,6 +675,7 @@ const EventManager = ({ onClose }) => {
                         onChange={(e) => handleInputChange(e, index)}
                         multiline
                         rows={2}
+                        required={Number(panel.price) > 0}
                       />
                     </Grid>
                     <Grid item xs={12}>
