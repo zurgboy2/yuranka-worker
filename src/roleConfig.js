@@ -32,6 +32,7 @@ const roleConfig = {
     { component: ListerApp, gridProps: { xs: 6, md: 3 }, name: 'Lister' },
     { component: ScheduleForm, gridProps: { xs: 6, md: 3 }, name: 'ScheduleForm' },
     { component: testUser, gridProps: { xs: 6, md: 3 }, name: 'testUser' },
+    { component: StoreSearch, gridProps: { xs: 6, md: 3 }, name: 'StoreSearch' },
   ],
   Admin: [
     { component: CheckInSystem, gridProps: { xs: 12, md: 6 }, name: 'CheckInSystem' },
