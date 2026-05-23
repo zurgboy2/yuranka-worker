@@ -9,6 +9,7 @@ import MiniTaskManager from './MiniTaskManager';
 import Approvals from './Approvals';
 import Register from './Register';
 import EventManager from './eventManager/EventManager';
+import CareersManager from './careersManager/CareersManager';
 import StoreSearch from './StoreAndCardsSearch';
 import QrCodeGenerator from './QrCodeGenerator';
 import LoyaltyDashboard from './loyaltyDashboard/LoyaltyDashboard';
@@ -49,6 +50,7 @@ const roleConfig = {
     { component: Approvals, gridProps: { xs: 6, md: 3 }, name: 'Approvals' },
     { component: Register, gridProps: { xs: 6, md: 3 }, name: 'Register' },
     { component: EventManager, gridProps: { xs: 6, md: 3 }, name: 'EventManager' },
+    { component: CareersManager, gridProps: { xs: 6, md: 3 }, name: 'Careers Manager' },
     { component: StoreSearch, gridProps: { xs: 6, md: 3 }, name: 'StoreSearch' },
     { component: QrCodeGenerator, gridProps: { xs: 6, md: 3 }, name: 'QrCodeGenerator' },
     { component: LoyaltyDashboard, gridProps: { xs: 6, md: 3 }, name: 'LoyaltyDashboard' },
