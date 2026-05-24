@@ -90,6 +90,24 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
     return normalized;
   };
 
+  const buildEditableInvoice = useCallback((invoice = {}) => {
+    const normalizedInvoiceNumber = invoice.invoicenumber ?? invoice.invoiceNumber ?? '';
+
+    return {
+      ...invoice,
+      id: invoice.id ?? invoice.invoiceId ?? normalizedInvoiceNumber,
+      type: invoice.type ?? keyword,
+      amount: invoice.amount ?? '',
+      amountPaid: invoice.amountPaid ?? '',
+      paymentStatus: normalizePaymentStatus(invoice.paymentStatus),
+      date: invoice.date ?? '',
+      dateofrelease: invoice.dateofrelease ?? '',
+      invoicenumber: normalizedInvoiceNumber,
+      nameOfInvoice: invoice.nameOfInvoice ?? '',
+      docUrl: invoice.docUrl ?? '',
+    };
+  }, [keyword]);
+
   const applyFilters = useCallback(() => {
     const filtered = invoices.filter(invoice => {
       const statusMatch = statusFilter === 'All' || invoice.status === statusFilter;
@@ -108,8 +126,10 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   }, [applyFilters]);
 
   const handleInvoiceClick = (invoice) => {
-    setSelectedInvoice({ ...invoice });
-    const currentInvoiceNo = invoice?.invoicenumber ?? '';
+    const editableInvoice = buildEditableInvoice(invoice);
+
+    setSelectedInvoice(editableInvoice);
+    const currentInvoiceNo = editableInvoice.invoicenumber;
     setInvoiceNumberForm({ oldInvoiceNumber: currentInvoiceNo, newInvoiceNumber: currentInvoiceNo });
     setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: '' });
     setEditMode(1); 
@@ -236,11 +256,23 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
 
   const handleSelectedInvoiceChange = (event) => {
     const { name, value } = event.target;
-    setSelectedInvoice(prev => ({ ...prev, [name]: value }));
+    setSelectedInvoice(prev => {
+      if (!prev) {
+        return prev;
+      }
+
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleSelectedInvoiceDateChange = (date) => {
-    setSelectedInvoice(prev => ({ ...prev, date: formatDate(date) }));
+    setSelectedInvoice(prev => {
+      if (!prev) {
+        return prev;
+      }
+
+      return { ...prev, date: formatDate(date) };
+    });
   };
 
   const saveInvoice = async (invoice) => {
@@ -276,19 +308,35 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
     }
   };
 
-  const deleteInvoice = async (invoiceId) => {
+  const deleteInvoice = async (invoice) => {
+    const invoiceId = invoice?.id ?? invoice?.invoiceId ?? invoice?.invoicenumber ?? '';
+    const invoiceType = invoice?.type ?? keyword;
+
+    if (!invoiceId || !invoiceType) {
+      setSnackbar({ open: true, message: 'Missing invoice id or type', severity: 'error' });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await apiCall('accounting_script', 'deleteInvoice', {
+      console.log("Deleting invoice with ID:", invoiceId, "and type:", invoiceType);
+      const result = await apiCall('accounting_script', 'deleteInvoice', {
+        id: invoiceId,
         invoiceId,
+        type: invoiceType,
         googleToken: userData.googleToken,
         username: userData.username
       });
-      fetchInvoices();
+
+      if (result?.success === false) {
+        throw new Error(result.message || 'Failed to delete invoice');
+      }
+
+      await fetchInvoices();
       setSnackbar({ open: true, message: 'Invoice deleted successfully', severity: 'success' });
     } catch (error) {
       console.error("Error deleting invoice:", error);
-      setSnackbar({ open: true, message: 'Error deleting invoice', severity: 'error' });
+      setSnackbar({ open: true, message: error?.message || 'Error deleting invoice', severity: 'error' });
     } finally {
       setIsLoading(false);
       setSelectedInvoice(null);
@@ -405,7 +453,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               label="Amount"
               type="number"
               name="amount"
-              value={selectedInvoice?.amount}
+              value={selectedInvoice?.amount ?? ''}
               onChange={handleSelectedInvoiceChange}
               InputProps={{ startAdornment: <Typography>€</Typography> }}
             />
@@ -415,11 +463,11 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               label="Amount Paid"
               type="number"
               name="amountPaid"
-              value={selectedInvoice?.amountPaid}
+              value={selectedInvoice?.amountPaid ?? ''}
               onChange={handleSelectedInvoiceChange}
               InputProps={{ startAdornment: <Typography>€</Typography> }}
             />
-            <Typography><strong>Amount Remaining:</strong> €{selectedInvoice?.amount - selectedInvoice?.amountPaid}</Typography>
+            <Typography><strong>Amount Remaining:</strong> €{((parseFloat(selectedInvoice?.amount) || 0) - (parseFloat(selectedInvoice?.amountPaid) || 0)).toFixed(2)}</Typography>
             <Box sx={{ mt: 2 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -433,7 +481,8 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               <InputLabel>Payment Status</InputLabel>
               <Select
                 name="paymentStatus"
-                value={selectedInvoice?.paymentStatus}
+                value={selectedInvoice?.paymentStatus ?? 'UnPaid'}
+                label="Payment Status"
                 onChange={handleSelectedInvoiceChange}
               >
                 <MenuItem value="Paid">Paid</MenuItem>
@@ -472,7 +521,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
         ) : (
           <>
             <Button onClick={() => saveInvoice(selectedInvoice)} variant="contained" disabled={isLoading}>Save</Button>
-            <Button onClick={() => deleteInvoice(selectedInvoice.invoicenumber)} variant="contained" color="error" disabled={isLoading}>Delete</Button>
+            <Button onClick={() => deleteInvoice(selectedInvoice)} variant="contained" color="error" disabled={isLoading}>Delete</Button>
           </>
         )}
       </DialogActions>
