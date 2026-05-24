@@ -62,6 +62,14 @@ const CustomInvoiceGenerator = () => {
     return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
+  const getResponseErrorMessage = (response, fallbackMessage) => {
+    if (!response || typeof response !== 'object') {
+      return fallbackMessage;
+    }
+
+    return response.message || response.error || fallbackMessage;
+  };
+
   const checkDuplicateInvoice = async () => {
     try {
       const response = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
@@ -70,10 +78,25 @@ const CustomInvoiceGenerator = () => {
         googleToken: userData.googleToken,
         username: userData.username
       });
+
+      if (typeof response !== 'boolean') {
+        throw new Error(
+          getResponseErrorMessage(
+            response,
+            'Unexpected response while checking duplicate invoice number'
+          )
+        );
+      }
+
       return response;
     } catch (error) {
       console.error("Error checking duplicate:", error);
-      return false;
+      setSnackbar({
+        open: true,
+        message: error?.message || 'Failed to check duplicate invoice number',
+        severity: 'error'
+      });
+      return null;
     }
   };
 
@@ -83,6 +106,9 @@ const CustomInvoiceGenerator = () => {
       // Check for duplicates first (unless skipped)
       if (!skipDuplicateCheck) {
         const isDuplicate = await checkDuplicateInvoice();
+        if (isDuplicate === null) {
+          return;
+        }
         if (isDuplicate) {
           setDuplicateDialogOpen(true);
           setLoading(false);
@@ -113,6 +139,10 @@ const CustomInvoiceGenerator = () => {
         googleToken: userData.googleToken,
         username: userData.username
       });
+
+      if (response?.success === false) {
+        throw new Error(getResponseErrorMessage(response, 'Failed to generate invoice'));
+      }
 
       if (response && response.pdfUrl && response.message) {
         setGeneratedInvoiceUrl(response.pdfUrl);
