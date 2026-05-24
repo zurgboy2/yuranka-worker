@@ -65,6 +65,24 @@ const StoreSearch = ({ onClose }) => {
     return String(value).toLowerCase();
   };
 
+  const isTruthyValue = (value) => {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim().toLowerCase();
+
+      return normalizedValue === 'true' || normalizedValue === '1' || normalizedValue === 'yes';
+    }
+
+    return false;
+  };
+
   const clearLoadedProductState = useCallback(() => {
     setSearchResults([]);
     setError(null);
@@ -410,7 +428,14 @@ const StoreSearch = ({ onClose }) => {
         productData: productToUpdate
       });
        if (response.success) {
-        setShopifyPopup({ open: true, url: `https://store.yuranka.com/products/${productToUpdate.Handle}` });
+        const shouldShowShopifyPopup = isTruthyValue(productToUpdate?.Shopify) && productToUpdate?.Handle;
+
+        if (shouldShowShopifyPopup) {
+          setShopifyPopup({ open: true, url: `https://store.yuranka.com/products/${productToUpdate.Handle}` });
+        } else {
+          setShopifyPopup({ open: false, url: '' });
+        }
+
         setSuccessMessage(response.message || 'Product updated successfully');
       } else {
         setError(response.message || 'Failed to update product.');
