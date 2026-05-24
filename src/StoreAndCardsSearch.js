@@ -830,7 +830,7 @@ const StoreSearch = ({ onClose }) => {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Height"
+                label="Height (mm)"
                 type="text"
                 value={product.Height}
                 onChange={(e) => {
@@ -850,7 +850,7 @@ const StoreSearch = ({ onClose }) => {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Width"
+                label="Width (mm)"
                 type="text"
                 value={product.Width}
                 onChange={(e) => {
@@ -870,7 +870,7 @@ const StoreSearch = ({ onClose }) => {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Length"
+                label="Length (mm)"
                 type="text"
                 value={product.Length}
                 onChange={(e) => {
