@@ -1,28 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  TextField, Button, Grid, Typography, Box,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  CircularProgress, Snackbar, Alert, Link, Dialog, DialogTitle,
-  DialogContent, DialogActions
-} from '@mui/material';
-import apiCall from '../../api';
-import { useUserData } from '../../UserContext';
+  TextField,
+  Button,
+  Grid,
+  Typography,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Link,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import apiCall from "../../api";
+import { useUserData } from "../../UserContext";
 
 const CustomInvoiceGenerator = () => {
   const { userData } = useUserData();
   const [invoiceData, setInvoiceData] = useState({
-    customerName: '',
-    customerDetails: '',
+    customerName: "",
+    customerDetails: "",
     items: [],
-    dueDate: '',
+    dueDate: "",
     tax: 0,
     discount: 0,
-    invoiceNumber: 'YG-',
-    dateOfInvoice: ''
+    invoiceNumber: "YG-",
+    dateOfInvoice: "",
   });
-  const [newItem, setNewItem] = useState({ productService: '', quantity: 0, price: 0 });
+  const [newItem, setNewItem] = useState({
+    productService: "",
+    quantity: 0,
+    price: 0,
+  });
   const [loading, setLoading] = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [generatedInvoiceUrl, setGeneratedInvoiceUrl] = useState(null);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
 
@@ -40,9 +64,12 @@ const CustomInvoiceGenerator = () => {
     if (newItem.productService && newItem.quantity > 0 && newItem.price > 0) {
       setInvoiceData({
         ...invoiceData,
-        items: [...invoiceData.items, { ...newItem, total: newItem.quantity * newItem.price }]
+        items: [
+          ...invoiceData.items,
+          { ...newItem, total: newItem.quantity * newItem.price },
+        ],
       });
-      setNewItem({ productService: '', quantity: 0, price: 0 });
+      setNewItem({ productService: "", quantity: 0, price: 0 });
     }
   };
 
@@ -52,18 +79,24 @@ const CustomInvoiceGenerator = () => {
   };
 
   const calculateTotal = () => {
-    const subtotal = invoiceData.items.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = invoiceData.items.reduce(
+      (sum, item) => sum + item.total,
+      0,
+    );
     const taxAmount = subtotal * (invoiceData.tax / 100);
     const discountAmount = subtotal * (invoiceData.discount / 100);
     return subtotal + taxAmount - discountAmount;
   };
 
   const formatEuro = (amount) => {
-    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
+    return new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    }).format(amount);
   };
 
   const getResponseErrorMessage = (response, fallbackMessage) => {
-    if (!response || typeof response !== 'object') {
+    if (!response || typeof response !== "object") {
       return fallbackMessage;
     }
 
@@ -72,19 +105,23 @@ const CustomInvoiceGenerator = () => {
 
   const checkDuplicateInvoice = async () => {
     try {
-      const response = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
-        invoiceNumber: invoiceData.invoiceNumber,
-        type: 'YG',
-        googleToken: userData.googleToken,
-        username: userData.username
-      });
+      const response = await apiCall(
+        "accounting_script",
+        "checkDuplicateInvoiceNumber",
+        {
+          invoiceNumber: invoiceData.invoiceNumber,
+          type: "YG",
+          googleToken: userData.googleToken,
+          username: userData.username,
+        },
+      );
 
-      if (typeof response !== 'boolean') {
+      if (typeof response !== "boolean") {
         throw new Error(
           getResponseErrorMessage(
             response,
-            'Unexpected response while checking duplicate invoice number'
-          )
+            "Unexpected response while checking duplicate invoice number",
+          ),
         );
       }
 
@@ -93,8 +130,8 @@ const CustomInvoiceGenerator = () => {
       console.error("Error checking duplicate:", error);
       setSnackbar({
         open: true,
-        message: error?.message || 'Failed to check duplicate invoice number',
-        severity: 'error'
+        message: error?.message || "Failed to check duplicate invoice number",
+        severity: "error",
       });
       return null;
     }
@@ -123,7 +160,7 @@ const CustomInvoiceGenerator = () => {
         productItems: invoiceData.items,
         tax: invoiceData.tax,
         discount: invoiceData.discount,
-        type: 'YG'
+        type: "YG",
       };
 
       if (invoiceData.invoiceNumber) {
@@ -134,14 +171,16 @@ const CustomInvoiceGenerator = () => {
         formData.dateOfInvoice = invoiceData.dateOfInvoice;
       }
 
-      const response = await apiCall('accounting_script', 'generateInvoice', {
+      const response = await apiCall("accounting_script", "generateInvoice", {
         data: formData,
         googleToken: userData.googleToken,
-        username: userData.username
+        username: userData.username,
       });
 
       if (response?.success === false) {
-        throw new Error(getResponseErrorMessage(response, 'Failed to generate invoice'));
+        throw new Error(
+          getResponseErrorMessage(response, "Failed to generate invoice"),
+        );
       }
 
       if (response && response.pdfUrl && response.message) {
@@ -149,28 +188,28 @@ const CustomInvoiceGenerator = () => {
         setSnackbar({
           open: true,
           message: response.message,
-          severity: 'success'
+          severity: "success",
         });
         // Reset form after successful generation
         setInvoiceData({
-          customerName: '',
-          customerDetails: '',
+          customerName: "",
+          customerDetails: "",
           items: [],
-          dueDate: '',
+          dueDate: "",
           tax: 0,
           discount: 0,
-          invoiceNumber: 'YG-',
-          dateOfInvoice: ''
+          invoiceNumber: "YG-",
+          dateOfInvoice: "",
         });
       } else {
-        throw new Error('Invalid response format');
+        throw new Error("Invalid response format");
       }
     } catch (error) {
       console.error("Failed to generate invoice", error);
       setSnackbar({
         open: true,
         message: `Failed to generate invoice: ${error.message}`,
-        severity: 'error'
+        severity: "error",
       });
     } finally {
       setLoading(false);
@@ -183,13 +222,15 @@ const CustomInvoiceGenerator = () => {
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setSnackbar({ ...snackbar, open: false });
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Custom Invoice Generator</Typography>
+      <Typography variant="h5" gutterBottom>
+        Custom Invoice Generator
+      </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -281,7 +322,12 @@ const CustomInvoiceGenerator = () => {
             />
           </Grid>
           <Grid item xs={12} sm={2}>
-            <Button variant="contained" onClick={addItem} fullWidth sx={{ height: '56px' }}>
+            <Button
+              variant="contained"
+              onClick={addItem}
+              fullWidth
+              sx={{ height: "56px" }}
+            >
               Add
             </Button>
           </Grid>
@@ -307,7 +353,9 @@ const CustomInvoiceGenerator = () => {
                 <TableCell align="right">{formatEuro(item.price)}</TableCell>
                 <TableCell align="right">{formatEuro(item.total)}</TableCell>
                 <TableCell align="right">
-                  <Button onClick={() => removeItem(index)} color="secondary">Remove</Button>
+                  <Button onClick={() => removeItem(index)} color="secondary">
+                    Remove
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -348,14 +396,18 @@ const CustomInvoiceGenerator = () => {
         sx={{ mt: 4 }}
         disabled={loading || invoiceData.items.length === 0}
       >
-        {loading ? <CircularProgress size={24} /> : 'Generate Invoice'}
+        {loading ? <CircularProgress size={24} /> : "Generate Invoice"}
       </Button>
 
       {generatedInvoiceUrl && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="body1">
-            Invoice generated successfully.{' '}
-            <Link href={generatedInvoiceUrl} target="_blank" rel="noopener noreferrer">
+            Invoice generated successfully.{" "}
+            <Link
+              href={generatedInvoiceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               View Invoice
             </Link>
           </Typography>
@@ -363,7 +415,10 @@ const CustomInvoiceGenerator = () => {
       )}
 
       {/* Duplicate Warning Dialog */}
-      <Dialog open={duplicateDialogOpen} onClose={() => setDuplicateDialogOpen(false)}>
+      <Dialog
+        open={duplicateDialogOpen}
+        onClose={() => setDuplicateDialogOpen(false)}
+      >
         <DialogTitle>Duplicate Invoice Number</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -376,13 +431,19 @@ const CustomInvoiceGenerator = () => {
             fullWidth
             label="Invoice Number"
             value={invoiceData.invoiceNumber}
-            onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNumber: e.target.value })}
+            onChange={(e) =>
+              setInvoiceData({ ...invoiceData, invoiceNumber: e.target.value })
+            }
             sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDuplicateDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleProceedWithDuplicate} variant="contained" color="warning">
+          <Button
+            onClick={handleProceedWithDuplicate}
+            variant="contained"
+            color="warning"
+          >
             Proceed Anyway
           </Button>
           <Button
@@ -397,8 +458,16 @@ const CustomInvoiceGenerator = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

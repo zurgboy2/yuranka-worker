@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
-import InvoiceListComponent from './InvoiceListComponent';
+import React, { useState } from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import InvoiceListComponent from "./InvoiceListComponent";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -20,20 +20,28 @@ const OutgoingTab = ({ onMaxWidthChange }) => {
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
-    setVisitedTabs(prev => new Set([...prev, newValue]));
+    setVisitedTabs((prev) => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="outgoing sub tabs">
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={subTab !== null ? subTab : false}
+          onChange={handleSubTabChange}
+          aria-label="outgoing sub tabs"
+        >
           <Tab label="Invoices" />
         </Tabs>
       </Box>
 
       <TabPanel value={subTab} index={0}>
         {visitedTabs.has(0) && (
-          <InvoiceListComponent keyword="OP" title="Outgoing/Labour Invoices" onMaxWidthChange={onMaxWidthChange} />
+          <InvoiceListComponent
+            keyword="OP"
+            title="Outgoing/Labour Invoices"
+            onMaxWidthChange={onMaxWidthChange}
+          />
         )}
       </TabPanel>
     </Box>

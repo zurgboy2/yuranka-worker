@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
-import InvoiceListComponent from './InvoiceListComponent';
-import CustomInvoiceGenerator from './CustomInvoiceGenerator';
-import PurchaseAdderComponent from '../purchaseAdder';
+import React, { useState } from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import InvoiceListComponent from "./InvoiceListComponent";
+import CustomInvoiceGenerator from "./CustomInvoiceGenerator";
+import PurchaseAdderComponent from "../purchaseAdder";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -22,13 +22,17 @@ const CustomTab = ({ onMaxWidthChange }) => {
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
-    setVisitedTabs(prev => new Set([...prev, newValue]));
+    setVisitedTabs((prev) => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="custom sub tabs">
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={subTab !== null ? subTab : false}
+          onChange={handleSubTabChange}
+          aria-label="custom sub tabs"
+        >
           <Tab label="Invoices" />
           <Tab label="Invoice Generator" />
           <Tab label="Purchase Adder" />
@@ -37,7 +41,11 @@ const CustomTab = ({ onMaxWidthChange }) => {
 
       <TabPanel value={subTab} index={0}>
         {visitedTabs.has(0) && (
-          <InvoiceListComponent keyword="YG" title="Custom Invoices" onMaxWidthChange={onMaxWidthChange} />
+          <InvoiceListComponent
+            keyword="YG"
+            title="Custom Invoices"
+            onMaxWidthChange={onMaxWidthChange}
+          />
         )}
       </TabPanel>
 

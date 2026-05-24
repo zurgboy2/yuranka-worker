@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
-import InvoiceListComponent from './InvoiceListComponent';
-import ShopifyOrdersTab from './ShopifyOrdersTab';
+import React, { useState } from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import InvoiceListComponent from "./InvoiceListComponent";
+import ShopifyOrdersTab from "./ShopifyOrdersTab";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -21,13 +21,17 @@ const ShopifyTab = ({ onMaxWidthChange }) => {
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
-    setVisitedTabs(prev => new Set([...prev, newValue]));
+    setVisitedTabs((prev) => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="shopify sub tabs">
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={subTab !== null ? subTab : false}
+          onChange={handleSubTabChange}
+          aria-label="shopify sub tabs"
+        >
           <Tab label="Invoices" />
           <Tab label="Shopify Orders" />
         </Tabs>
@@ -35,7 +39,11 @@ const ShopifyTab = ({ onMaxWidthChange }) => {
 
       <TabPanel value={subTab} index={0}>
         {visitedTabs.has(0) && (
-          <InvoiceListComponent keyword="SH" title="Shopify Invoices" onMaxWidthChange={onMaxWidthChange} />
+          <InvoiceListComponent
+            keyword="SH"
+            title="Shopify Invoices"
+            onMaxWidthChange={onMaxWidthChange}
+          />
         )}
       </TabPanel>
 

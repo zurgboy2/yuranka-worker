@@ -1,25 +1,50 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Typography, Box, Button, Card, CardContent, CardHeader,
-  TextField, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper,
-  Select, MenuItem, InputLabel, FormControl,
-  useMediaQuery, CircularProgress, Dialog, DialogTitle,
-  DialogContent, DialogActions, Snackbar, Alert,
-  List, ListItem, ListItemText, Divider, IconButton,
+  Typography,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  useMediaQuery,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  IconButton,
   createTheme,
-  Tabs, Tab
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import apiCall from '../../api';
-import { useUserData } from '../../UserContext';
+  Tabs,
+  Tab,
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import apiCall from "../../api";
+import { useUserData } from "../../UserContext";
 
 const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
   },
   breakpoints: {
     values: {
@@ -36,32 +61,55 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   const { userData } = useUserData();
   const [invoices, setInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
-  const isMobile = useMediaQuery(darkTheme.breakpoints.down('sm'));
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [sortConfig, setSortConfig] = useState({
+    key: "date",
+    direction: "desc",
+  });
+  const isMobile = useMediaQuery(darkTheme.breakpoints.down("sm"));
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [editMode, setEditMode] = useState(0); // 0: invoice number, 1: invoice data
-  const [invoiceNumberForm, setInvoiceNumberForm] = useState({ oldInvoiceNumber: '', newInvoiceNumber: '' });
-  const [invoiceNumberCheck, setInvoiceNumberCheck] = useState({ checked: false, exists: false, checking: false, error: '' });
+  const [invoiceNumberForm, setInvoiceNumberForm] = useState({
+    oldInvoiceNumber: "",
+    newInvoiceNumber: "",
+  });
+  const [invoiceNumberCheck, setInvoiceNumberCheck] = useState({
+    checked: false,
+    exists: false,
+    checking: false,
+    error: "",
+  });
 
   const fetchInvoices = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedInvoices = await apiCall('accounting_script', 'getInvoices', {
-        type: keyword,
-        googleToken: userData.googleToken,
-        username: userData.username
-      });
+      const fetchedInvoices = await apiCall(
+        "accounting_script",
+        "getInvoices",
+        {
+          type: keyword,
+          googleToken: userData.googleToken,
+          username: userData.username,
+        },
+      );
       setInvoices(fetchedInvoices || []);
       setFilteredInvoices(fetchedInvoices || []);
     } catch (error) {
       console.error("Error fetching invoices:", error);
-      setSnackbar({ open: true, message: 'Error fetching invoices', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Error fetching invoices",
+        severity: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -78,43 +126,53 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   };
 
   const formatDate = (date) => {
-    return date ? dayjs(date).format('YYYY-MM-DD') : '';
+    return date ? dayjs(date).format("YYYY-MM-DD") : "";
   };
 
   const normalizePaymentStatus = (status) => {
-    if (!status) return 'UnPaid';
-    const normalized = status.replace(/\s+/g, ' ').trim();
-    if (normalized.toLowerCase() === 'unpaid') return 'UnPaid';
-    if (normalized.toLowerCase() === 'partially paid') return 'Partially Paid';
-    if (normalized.toLowerCase() === 'paid') return 'Paid';
+    if (!status) return "UnPaid";
+    const normalized = status.replace(/\s+/g, " ").trim();
+    if (normalized.toLowerCase() === "unpaid") return "UnPaid";
+    if (normalized.toLowerCase() === "partially paid") return "Partially Paid";
+    if (normalized.toLowerCase() === "paid") return "Paid";
     return normalized;
   };
 
-  const buildEditableInvoice = useCallback((invoice = {}) => {
-    const normalizedInvoiceNumber = invoice.invoicenumber ?? invoice.invoiceNumber ?? '';
+  const buildEditableInvoice = useCallback(
+    (invoice = {}) => {
+      const normalizedInvoiceNumber =
+        invoice.invoicenumber ?? invoice.invoiceNumber ?? "";
 
-    return {
-      ...invoice,
-      id: invoice.id ?? invoice.invoiceId ?? normalizedInvoiceNumber,
-      type: invoice.type ?? keyword,
-      amount: invoice.amount ?? '',
-      amountPaid: invoice.amountPaid ?? '',
-      paymentStatus: normalizePaymentStatus(invoice.paymentStatus),
-      date: invoice.date ?? '',
-      dateofrelease: invoice.dateofrelease ?? '',
-      invoicenumber: normalizedInvoiceNumber,
-      nameOfInvoice: invoice.nameOfInvoice ?? '',
-      docUrl: invoice.docUrl ?? '',
-    };
-  }, [keyword]);
+      return {
+        ...invoice,
+        id: invoice.id ?? invoice.invoiceId ?? normalizedInvoiceNumber,
+        type: invoice.type ?? keyword,
+        amount: invoice.amount ?? "",
+        amountPaid: invoice.amountPaid ?? "",
+        paymentStatus: normalizePaymentStatus(invoice.paymentStatus),
+        date: invoice.date ?? "",
+        dateofrelease: invoice.dateofrelease ?? "",
+        invoicenumber: normalizedInvoiceNumber,
+        nameOfInvoice: invoice.nameOfInvoice ?? "",
+        docUrl: invoice.docUrl ?? "",
+      };
+    },
+    [keyword],
+  );
 
   const applyFilters = useCallback(() => {
-    const filtered = invoices.filter(invoice => {
-      const statusMatch = statusFilter === 'All' || invoice.status === statusFilter;
-      const normalizedPaymentStatus = normalizePaymentStatus(invoice.paymentStatus);
-      const paymentStatusMatch = paymentStatusFilter === 'All' || normalizedPaymentStatus === paymentStatusFilter;
+    const filtered = invoices.filter((invoice) => {
+      const statusMatch =
+        statusFilter === "All" || invoice.status === statusFilter;
+      const normalizedPaymentStatus = normalizePaymentStatus(
+        invoice.paymentStatus,
+      );
+      const paymentStatusMatch =
+        paymentStatusFilter === "All" ||
+        normalizedPaymentStatus === paymentStatusFilter;
       const invoiceDate = parseDate(invoice.date);
-      const dateMatch = (!startDate || (invoiceDate && invoiceDate >= startDate)) &&
+      const dateMatch =
+        (!startDate || (invoiceDate && invoiceDate >= startDate)) &&
         (!endDate || (invoiceDate && invoiceDate <= endDate));
       return statusMatch && paymentStatusMatch && dateMatch;
     });
@@ -130,39 +188,75 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
 
     setSelectedInvoice(editableInvoice);
     const currentInvoiceNo = editableInvoice.invoicenumber;
-    setInvoiceNumberForm({ oldInvoiceNumber: currentInvoiceNo, newInvoiceNumber: currentInvoiceNo });
-    setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: '' });
-    setEditMode(1); 
+    setInvoiceNumberForm({
+      oldInvoiceNumber: currentInvoiceNo,
+      newInvoiceNumber: currentInvoiceNo,
+    });
+    setInvoiceNumberCheck({
+      checked: false,
+      exists: false,
+      checking: false,
+      error: "",
+    });
+    setEditMode(1);
   };
 
   const checkInvoiceNumberExists = async () => {
-    const newNo = (invoiceNumberForm.newInvoiceNumber || '').trim();
+    const newNo = (invoiceNumberForm.newInvoiceNumber || "").trim();
     if (!newNo) {
-      setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: 'Please enter a new invoice number' });
-      return { ok: false, exists: false, error: 'Please enter a new invoice number' };
+      setInvoiceNumberCheck({
+        checked: false,
+        exists: false,
+        checking: false,
+        error: "Please enter a new invoice number",
+      });
+      return {
+        ok: false,
+        exists: false,
+        error: "Please enter a new invoice number",
+      };
     }
 
-    setInvoiceNumberCheck(prev => ({ ...prev, checking: true, error: '' }));
+    setInvoiceNumberCheck((prev) => ({ ...prev, checking: true, error: "" }));
     try {
-      const res = await apiCall('accounting_script', 'checkDuplicateInvoiceNumber', {
-        invoiceNumber: newNo,
-        type: keyword,
-        googleToken: userData.googleToken,
-        username: userData.username
-      });
+      const res = await apiCall(
+        "accounting_script",
+        "checkDuplicateInvoiceNumber",
+        {
+          invoiceNumber: newNo,
+          type: keyword,
+          googleToken: userData.googleToken,
+          username: userData.username,
+        },
+      );
 
-      if (typeof res !== 'boolean') {
-        const msg = 'Unexpected response while checking invoice number';
-        setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: msg });
+      if (typeof res !== "boolean") {
+        const msg = "Unexpected response while checking invoice number";
+        setInvoiceNumberCheck({
+          checked: false,
+          exists: false,
+          checking: false,
+          error: msg,
+        });
         return { ok: false, exists: false, error: msg };
       }
 
-      setInvoiceNumberCheck({ checked: true, exists: res, checking: false, error: '' });
-      return { ok: true, exists: res, error: '' };
+      setInvoiceNumberCheck({
+        checked: true,
+        exists: res,
+        checking: false,
+        error: "",
+      });
+      return { ok: true, exists: res, error: "" };
     } catch (e) {
-      console.error('Error checking invoice number:', e);
-      const msg = e?.message || 'Failed to check invoice number';
-      setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: msg });
+      console.error("Error checking invoice number:", e);
+      const msg = e?.message || "Failed to check invoice number";
+      setInvoiceNumberCheck({
+        checked: false,
+        exists: false,
+        checking: false,
+        error: msg,
+      });
       return { ok: false, exists: false, error: msg };
     }
   };
@@ -170,47 +264,68 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   const updateInvoiceNumber = async ({ force = false } = {}) => {
     if (!selectedInvoice) return;
 
-    const oldNo = (invoiceNumberForm.oldInvoiceNumber || '').trim();
-    const newNo = (invoiceNumberForm.newInvoiceNumber || '').trim();
+    const oldNo = (invoiceNumberForm.oldInvoiceNumber || "").trim();
+    const newNo = (invoiceNumberForm.newInvoiceNumber || "").trim();
 
     if (!oldNo || !newNo) {
-      setSnackbar({ open: true, message: 'Invoice number cannot be empty', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Invoice number cannot be empty",
+        severity: "error",
+      });
       return;
     }
 
     if (!force) {
       const check = await checkInvoiceNumberExists();
       if (!check.ok) {
-        setSnackbar({ open: true, message: check.error || 'Failed to check invoice number', severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: check.error || "Failed to check invoice number",
+          severity: "error",
+        });
         return;
       }
       if (check.exists) {
-        setSnackbar({ open: true, message: 'Invoice number already exists. Click "Proceed Anyway" to force update.', severity: 'warning' });
+        setSnackbar({
+          open: true,
+          message:
+            'Invoice number already exists. Click "Proceed Anyway" to force update.',
+          severity: "warning",
+        });
         return;
       }
     }
 
     setIsLoading(true);
     try {
-      const res = await apiCall('accounting_script', 'updateInvoiceNumber', {
+      const res = await apiCall("accounting_script", "updateInvoiceNumber", {
         oldInvoiceNumber: oldNo,
         newInvoiceNumber: newNo,
         id: selectedInvoice.id,
         type: selectedInvoice.type,
         googleToken: userData.googleToken,
-        username: userData.username
+        username: userData.username,
       });
 
       if (res?.success) {
         await fetchInvoices();
-        setSnackbar({ open: true, message: res.message || 'Invoice number updated', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: res.message || "Invoice number updated",
+          severity: "success",
+        });
         setSelectedInvoice(null);
       } else {
-        throw new Error(res?.message || 'Failed to update invoice number');
+        throw new Error(res?.message || "Failed to update invoice number");
       }
     } catch (e) {
-      console.error('Error updating invoice number:', e);
-      setSnackbar({ open: true, message: e?.message || 'Error updating invoice number', severity: 'error' });
+      console.error("Error updating invoice number:", e);
+      setSnackbar({
+        open: true,
+        message: e?.message || "Error updating invoice number",
+        severity: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +338,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
       let aValue = a[sortConfig.key];
       let bValue = b[sortConfig.key];
 
-      if (sortConfig.key === 'date' || sortConfig.key === 'dateofrelease') {
+      if (sortConfig.key === "date" || sortConfig.key === "dateofrelease") {
         aValue = parseDate(aValue);
         bValue = parseDate(bValue);
         if (!aValue && !bValue) return 0;
@@ -231,32 +346,36 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
         if (!bValue) return -1;
       }
 
-      if (sortConfig.key === 'amount' || sortConfig.key === 'amountPaid' || sortConfig.key === 'invoicenumber') {
+      if (
+        sortConfig.key === "amount" ||
+        sortConfig.key === "amountPaid" ||
+        sortConfig.key === "invoicenumber"
+      ) {
         aValue = parseFloat(aValue) || 0;
         bValue = parseFloat(bValue) || 0;
       }
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
+      if (typeof aValue === "string" && typeof bValue === "string") {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
 
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
   }, [filteredInvoices, sortConfig]);
 
   const handleSort = (key) => {
-    setSortConfig(prev => ({
+    setSortConfig((prev) => ({
       key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
   const handleSelectedInvoiceChange = (event) => {
     const { name, value } = event.target;
-    setSelectedInvoice(prev => {
+    setSelectedInvoice((prev) => {
       if (!prev) {
         return prev;
       }
@@ -266,7 +385,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   };
 
   const handleSelectedInvoiceDateChange = (date) => {
-    setSelectedInvoice(prev => {
+    setSelectedInvoice((prev) => {
       if (!prev) {
         return prev;
       }
@@ -278,7 +397,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   const saveInvoice = async (invoice) => {
     setIsLoading(true);
     try {
-      const result = await apiCall('accounting_script', 'updateInvoice', {
+      const result = await apiCall("accounting_script", "updateInvoice", {
         originalName: invoice.nameOfInvoice,
         name: invoice.nameOfInvoice,
         invoiceId: invoice.id,
@@ -295,13 +414,21 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
 
       if (result.success) {
         fetchInvoices();
-        setSnackbar({ open: true, message: 'Invoice updated successfully', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: "Invoice updated successfully",
+          severity: "success",
+        });
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
       console.error("Error saving invoice:", error);
-      setSnackbar({ open: true, message: 'Error updating invoice', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Error updating invoice",
+        severity: "error",
+      });
     } finally {
       setIsLoading(false);
       setSelectedInvoice(null);
@@ -309,34 +436,52 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   };
 
   const deleteInvoice = async (invoice) => {
-    const invoiceId = invoice?.id ?? invoice?.invoiceId ?? invoice?.invoicenumber ?? '';
+    const invoiceId =
+      invoice?.id ?? invoice?.invoiceId ?? invoice?.invoicenumber ?? "";
     const invoiceType = invoice?.type ?? keyword;
 
     if (!invoiceId || !invoiceType) {
-      setSnackbar({ open: true, message: 'Missing invoice id or type', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Missing invoice id or type",
+        severity: "error",
+      });
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log("Deleting invoice with ID:", invoiceId, "and type:", invoiceType);
-      const result = await apiCall('accounting_script', 'deleteInvoice', {
+      console.log(
+        "Deleting invoice with ID:",
+        invoiceId,
+        "and type:",
+        invoiceType,
+      );
+      const result = await apiCall("accounting_script", "deleteInvoice", {
         id: invoiceId,
         invoiceId,
         type: invoiceType,
         googleToken: userData.googleToken,
-        username: userData.username
+        username: userData.username,
       });
 
       if (result?.success === false) {
-        throw new Error(result.message || 'Failed to delete invoice');
+        throw new Error(result.message || "Failed to delete invoice");
       }
 
       await fetchInvoices();
-      setSnackbar({ open: true, message: 'Invoice deleted successfully', severity: 'success' });
+      setSnackbar({
+        open: true,
+        message: "Invoice deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error deleting invoice:", error);
-      setSnackbar({ open: true, message: error?.message || 'Error deleting invoice', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error?.message || "Error deleting invoice",
+        severity: "error",
+      });
     } finally {
       setIsLoading(false);
       setSelectedInvoice(null);
@@ -344,31 +489,36 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   };
 
   const clearFilters = () => {
-    setStatusFilter('All');
-    setPaymentStatusFilter('All');
+    setStatusFilter("All");
+    setPaymentStatusFilter("All");
     setStartDate(null);
     setEndDate(null);
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setSnackbar({ ...snackbar, open: false });
   };
 
   const FilterSummary = () => {
-    const totalAmount = sortedInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
-    const totalPaid = sortedInvoices.reduce((sum, inv) => sum + (parseFloat(inv.amountPaid) || 0), 0);
+    const totalAmount = sortedInvoices.reduce(
+      (sum, inv) => sum + (parseFloat(inv.amount) || 0),
+      0,
+    );
+    const totalPaid = sortedInvoices.reduce(
+      (sum, inv) => sum + (parseFloat(inv.amountPaid) || 0),
+      0,
+    );
     const totalRemaining = totalAmount - totalPaid;
 
     return (
-      <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+      <Box sx={{ mb: 2, p: 2, bgcolor: "background.paper", borderRadius: 1 }}>
         <Typography variant="h6">
           Showing {sortedInvoices.length} of {invoices.length} invoices
         </Typography>
         <Typography variant="body2">
-          Total Amount: €{totalAmount.toFixed(2)} |
-          Total Paid: €{totalPaid.toFixed(2)} |
-          Total Remaining: €{totalRemaining.toFixed(2)}
+          Total Amount: €{totalAmount.toFixed(2)} | Total Paid: €
+          {totalPaid.toFixed(2)} | Total Remaining: €{totalRemaining.toFixed(2)}
         </Typography>
       </Box>
     );
@@ -391,17 +541,28 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   );
 
   const renderInvoiceDetails = () => (
-    <Dialog open={!!selectedInvoice} onClose={() => setSelectedInvoice(null)} fullWidth maxWidth="sm">
+    <Dialog
+      open={!!selectedInvoice}
+      onClose={() => setSelectedInvoice(null)}
+      fullWidth
+      maxWidth="sm"
+    >
       <DialogTitle>{selectedInvoice?.nameOfInvoice}</DialogTitle>
       <DialogContent>
-        <Tabs value={editMode} onChange={(e, v) => setEditMode(v)} sx={{ mb: 2 }}>
+        <Tabs
+          value={editMode}
+          onChange={(e, v) => setEditMode(v)}
+          sx={{ mb: 2 }}
+        >
           <Tab label="Change Invoice Number" />
           <Tab label="Change Invoice Data" />
         </Tabs>
 
         {editMode === 0 && (
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Current Invoice Number</Typography>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Current Invoice Number
+            </Typography>
             <TextField
               fullWidth
               margin="dense"
@@ -417,29 +578,50 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               value={invoiceNumberForm.newInvoiceNumber}
               onChange={(e) => {
                 const v = e.target.value;
-                setInvoiceNumberForm(prev => ({ ...prev, newInvoiceNumber: v }));
-                setInvoiceNumberCheck({ checked: false, exists: false, checking: false, error: '' });
+                setInvoiceNumberForm((prev) => ({
+                  ...prev,
+                  newInvoiceNumber: v,
+                }));
+                setInvoiceNumberCheck({
+                  checked: false,
+                  exists: false,
+                  checking: false,
+                  error: "",
+                });
               }}
             />
 
-            <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
-              <Button variant="outlined" onClick={checkInvoiceNumberExists} disabled={invoiceNumberCheck.checking || isLoading}>
-                {invoiceNumberCheck.checking ? 'Checking...' : 'Check Duplicate'}
+            <Box sx={{ display: "flex", gap: 1, mt: 1, alignItems: "center" }}>
+              <Button
+                variant="outlined"
+                onClick={checkInvoiceNumberExists}
+                disabled={invoiceNumberCheck.checking || isLoading}
+              >
+                {invoiceNumberCheck.checking
+                  ? "Checking..."
+                  : "Check Duplicate"}
               </Button>
               {invoiceNumberCheck.checked && !invoiceNumberCheck.exists && (
-                <Typography variant="body2" color="success.main">Invoice number is available</Typography>
+                <Typography variant="body2" color="success.main">
+                  Invoice number is available
+                </Typography>
               )}
               {invoiceNumberCheck.checked && invoiceNumberCheck.exists && (
-                <Typography variant="body2" color="warning.main">Invoice number already exists</Typography>
+                <Typography variant="body2" color="warning.main">
+                  Invoice number already exists
+                </Typography>
               )}
               {invoiceNumberCheck.error && (
-                <Typography variant="body2" color="error.main">{invoiceNumberCheck.error}</Typography>
+                <Typography variant="body2" color="error.main">
+                  {invoiceNumberCheck.error}
+                </Typography>
               )}
             </Box>
 
             {invoiceNumberCheck.checked && invoiceNumberCheck.exists && (
               <Alert severity="warning" sx={{ mt: 2 }}>
-                This invoice number already exists. You can still proceed if you are sure.
+                This invoice number already exists. You can still proceed if you
+                are sure.
               </Alert>
             )}
           </Box>
@@ -453,7 +635,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               label="Amount"
               type="number"
               name="amount"
-              value={selectedInvoice?.amount ?? ''}
+              value={selectedInvoice?.amount ?? ""}
               onChange={handleSelectedInvoiceChange}
               InputProps={{ startAdornment: <Typography>€</Typography> }}
             />
@@ -463,17 +645,27 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               label="Amount Paid"
               type="number"
               name="amountPaid"
-              value={selectedInvoice?.amountPaid ?? ''}
+              value={selectedInvoice?.amountPaid ?? ""}
               onChange={handleSelectedInvoiceChange}
               InputProps={{ startAdornment: <Typography>€</Typography> }}
             />
-            <Typography><strong>Amount Remaining:</strong> €{((parseFloat(selectedInvoice?.amount) || 0) - (parseFloat(selectedInvoice?.amountPaid) || 0)).toFixed(2)}</Typography>
+            <Typography>
+              <strong>Amount Remaining:</strong> €
+              {(
+                (parseFloat(selectedInvoice?.amount) || 0) -
+                (parseFloat(selectedInvoice?.amountPaid) || 0)
+              ).toFixed(2)}
+            </Typography>
             <Box sx={{ mt: 2 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
-                  value={selectedInvoice?.date ? dayjs(selectedInvoice.date) : null}
-                  onChange={(date) => handleSelectedInvoiceDateChange(date ? date.toDate() : null)}
-                  slotProps={{ textField: { fullWidth: true, label: 'Date' } }}
+                  value={
+                    selectedInvoice?.date ? dayjs(selectedInvoice.date) : null
+                  }
+                  onChange={(date) =>
+                    handleSelectedInvoiceDateChange(date ? date.toDate() : null)
+                  }
+                  slotProps={{ textField: { fullWidth: true, label: "Date" } }}
                 />
               </LocalizationProvider>
             </Box>
@@ -481,7 +673,7 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               <InputLabel>Payment Status</InputLabel>
               <Select
                 name="paymentStatus"
-                value={selectedInvoice?.paymentStatus ?? 'UnPaid'}
+                value={selectedInvoice?.paymentStatus ?? "UnPaid"}
                 label="Payment Status"
                 onChange={handleSelectedInvoiceChange}
               >
@@ -515,13 +707,28 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               variant="contained"
               disabled={isLoading || invoiceNumberCheck.checking}
             >
-              {invoiceNumberCheck.exists ? 'Proceed Anyway' : 'Update Invoice Number'}
+              {invoiceNumberCheck.exists
+                ? "Proceed Anyway"
+                : "Update Invoice Number"}
             </Button>
           </>
         ) : (
           <>
-            <Button onClick={() => saveInvoice(selectedInvoice)} variant="contained" disabled={isLoading}>Save</Button>
-            <Button onClick={() => deleteInvoice(selectedInvoice)} variant="contained" color="error" disabled={isLoading}>Delete</Button>
+            <Button
+              onClick={() => saveInvoice(selectedInvoice)}
+              variant="contained"
+              disabled={isLoading}
+            >
+              Save
+            </Button>
+            <Button
+              onClick={() => deleteInvoice(selectedInvoice)}
+              variant="contained"
+              color="error"
+              disabled={isLoading}
+            >
+              Delete
+            </Button>
           </>
         )}
       </DialogActions>
@@ -531,9 +738,10 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
   const renderInvoiceRow = (invoice) => {
     const amount = parseFloat(invoice.amount) || 0;
     const amountPaid = parseFloat(invoice.amountPaid) || 0;
-    const amountRemaining = invoice.amountRemaining !== undefined
-      ? parseFloat(invoice.amountRemaining)
-      : amount - amountPaid;
+    const amountRemaining =
+      invoice.amountRemaining !== undefined
+        ? parseFloat(invoice.amountRemaining)
+        : amount - amountPaid;
 
     return (
       <TableRow key={invoice.invoicenumber}>
@@ -547,11 +755,16 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
         <TableCell>{normalizePaymentStatus(invoice.paymentStatus)}</TableCell>
         <TableCell>
           {invoice.docUrl ? (
-            <a href={invoice.docUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ff1744' }}>
+            <a
+              href={invoice.docUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#ff1744" }}
+            >
               View
             </a>
           ) : (
-            'N/A'
+            "N/A"
           )}
         </TableCell>
         <TableCell>
@@ -569,13 +782,24 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
         <CardHeader
           title={title}
           action={
-            <Button onClick={fetchInvoices} disabled={isLoading} variant="contained">
+            <Button
+              onClick={fetchInvoices}
+              disabled={isLoading}
+              variant="contained"
+            >
               Refresh Invoices
             </Button>
           }
         />
         <CardContent>
-          <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: isMobile ? 'column' : 'row' }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              mb: 4,
+              flexDirection: isMobile ? "column" : "row",
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel id="status-filter-label">Filter by Status</InputLabel>
               <Select
@@ -590,7 +814,9 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel id="payment-status-filter-label">Filter by Payment Status</InputLabel>
+              <InputLabel id="payment-status-filter-label">
+                Filter by Payment Status
+              </InputLabel>
               <Select
                 labelId="payment-status-filter-label"
                 value={paymentStatusFilter}
@@ -604,34 +830,45 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
               </Select>
             </FormControl>
           </Box>
-          <Box sx={{ display: 'flex', gap: 2, mb: 4, flexDirection: isMobile ? 'column' : 'row' }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              mb: 4,
+              flexDirection: isMobile ? "column" : "row",
+            }}
+          >
             <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle1" gutterBottom>Start Date</Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                Start Date
+              </Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   value={startDate ? dayjs(startDate) : null}
                   onChange={(date) => setStartDate(date ? date.toDate() : null)}
                   slotProps={{
-                    textField: { fullWidth: true }
+                    textField: { fullWidth: true },
                   }}
                 />
               </LocalizationProvider>
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle1" gutterBottom>End Date</Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                End Date
+              </Typography>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   value={endDate ? dayjs(endDate) : null}
                   onChange={(date) => setEndDate(date ? date.toDate() : null)}
                   minDate={startDate ? dayjs(startDate) : null}
                   slotProps={{
-                    textField: { fullWidth: true }
+                    textField: { fullWidth: true },
                   }}
                 />
               </LocalizationProvider>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <Button onClick={clearFilters} variant="outlined" sx={{ mt: 2 }}>
               Clear Filters
             </Button>
@@ -639,37 +876,74 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
 
           {!isLoading && <FilterSummary />}
           {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
               <CircularProgress />
             </Box>
           ) : (
-            <Box sx={{ overflowX: 'auto', width: '100%' }}>
-              {isMobile ? renderMobileInvoiceList() : (
+            <Box sx={{ overflowX: "auto", width: "100%" }}>
+              {isMobile ? (
+                renderMobileInvoiceList()
+              ) : (
                 <TableContainer component={Paper}>
                   <Table stickyHeader>
                     <TableHead>
                       <TableRow>
-                        <TableCell onClick={() => handleSort('invoicenumber')} style={{ cursor: 'pointer' }}>
-                          Invoice # {sortConfig.key === 'invoicenumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("invoicenumber")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Invoice #{" "}
+                          {sortConfig.key === "invoicenumber" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
-                        <TableCell onClick={() => handleSort('nameOfInvoice')} style={{ cursor: 'pointer' }}>
-                          Name {sortConfig.key === 'nameOfInvoice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("nameOfInvoice")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Name{" "}
+                          {sortConfig.key === "nameOfInvoice" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
-                        <TableCell onClick={() => handleSort('amount')} style={{ cursor: 'pointer' }}>
-                          Amount {sortConfig.key === 'amount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("amount")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Amount{" "}
+                          {sortConfig.key === "amount" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
-                        <TableCell onClick={() => handleSort('amountPaid')} style={{ cursor: 'pointer' }}>
-                          Paid {sortConfig.key === 'amountPaid' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("amountPaid")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Paid{" "}
+                          {sortConfig.key === "amountPaid" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
                         <TableCell>Remaining</TableCell>
-                        <TableCell onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
-                          Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("date")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Date{" "}
+                          {sortConfig.key === "date" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
-                        <TableCell onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>
-                          Status {sortConfig.key === 'status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("status")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Status{" "}
+                          {sortConfig.key === "status" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
-                        <TableCell onClick={() => handleSort('paymentStatus')} style={{ cursor: 'pointer' }}>
-                          Payment {sortConfig.key === 'paymentStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                        <TableCell
+                          onClick={() => handleSort("paymentStatus")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          Payment{" "}
+                          {sortConfig.key === "paymentStatus" &&
+                            (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </TableCell>
                         <TableCell>Document</TableCell>
                         <TableCell>Actions</TableCell>
@@ -677,7 +951,9 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
                     </TableHead>
                     <TableBody>
                       {sortedInvoices.map((invoice, index) => (
-                        <React.Fragment key={`${invoice.invoicenumber}-${index}`}>
+                        <React.Fragment
+                          key={`${invoice.invoicenumber}-${index}`}
+                        >
                           {renderInvoiceRow(invoice)}
                         </React.Fragment>
                       ))}
@@ -690,8 +966,16 @@ const InvoiceListComponent = ({ keyword, title = "Invoices" }) => {
         </CardContent>
       </Card>
       {renderInvoiceDetails()}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

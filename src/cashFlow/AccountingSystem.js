@@ -1,52 +1,58 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  ThemeProvider, createTheme,
-  CssBaseline, Container, Typography, Box,
-  Tabs, Tab, useMediaQuery
-} from '@mui/material';
-import ShopifyTab from './tabs/ShopifyTab';
-import CardmarketTab from './tabs/CardmarketTab';
-import CustomTab from './tabs/CustomTab';
-import OutgoingTab from './tabs/OutgoingTab';
-import AllInvoicesTab from './tabs/AllInvoicesTab';
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Container,
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  useMediaQuery,
+} from "@mui/material";
+import ShopifyTab from "./tabs/ShopifyTab";
+import CardmarketTab from "./tabs/CardmarketTab";
+import CustomTab from "./tabs/CustomTab";
+import OutgoingTab from "./tabs/OutgoingTab";
+import AllInvoicesTab from "./tabs/AllInvoicesTab";
 
 const darkTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: "dark",
     primary: {
-      main: '#ff1744',
+      main: "#ff1744",
     },
     secondary: {
-      main: '#b71c1c',
+      main: "#b71c1c",
     },
     background: {
-      default: '#000000',
-      paper: '#121212',
+      default: "#000000",
+      paper: "#121212",
     },
     text: {
-      primary: '#ff1744',
-      secondary: '#f44336',
+      primary: "#ff1744",
+      secondary: "#f44336",
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          color: '#000000',
-          backgroundColor: '#ff1744',
-          '&:hover': {
-            backgroundColor: '#b71c1c',
+          color: "#000000",
+          backgroundColor: "#ff1744",
+          "&:hover": {
+            backgroundColor: "#b71c1c",
           },
-          margin: '4px',
+          margin: "4px",
         },
       },
     },
     MuiTab: {
       styleOverrides: {
         root: {
-          color: '#f44336',
-          '&.Mui-selected': {
-            color: '#ff1744',
+          color: "#f44336",
+          "&.Mui-selected": {
+            color: "#ff1744",
           },
         },
       },
@@ -54,23 +60,23 @@ const darkTheme = createTheme({
     MuiTabs: {
       styleOverrides: {
         indicator: {
-          backgroundColor: '#ff1744',
+          backgroundColor: "#ff1744",
         },
       },
     },
     MuiTableCell: {
       styleOverrides: {
         root: {
-          borderBottom: '1px solid #b71c1c',
-          whiteSpace: 'nowrap',
-          padding: '8px 16px',
+          borderBottom: "1px solid #b71c1c",
+          whiteSpace: "nowrap",
+          padding: "8px 16px",
         },
       },
     },
     MuiIconButton: {
       styleOverrides: {
         root: {
-          color: '#ff1744',
+          color: "#ff1744",
         },
       },
     },
@@ -91,13 +97,13 @@ const TabPanel = ({ children, value, index, ...other }) => (
 
 const AccountingSystem = ({ onMaxWidthChange }) => {
   const [mainTab, setMainTab] = useState(0);
-  const isMobile = useMediaQuery(darkTheme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(darkTheme.breakpoints.down("sm"));
 
   useEffect(() => {
     // Make the dialog wider for Accounting by default
-    if (typeof onMaxWidthChange === 'function') {
-      onMaxWidthChange('lg');
-      return () => onMaxWidthChange('md');
+    if (typeof onMaxWidthChange === "function") {
+      onMaxWidthChange("lg");
+      return () => onMaxWidthChange("md");
     }
     return undefined;
   }, [onMaxWidthChange]);
@@ -115,12 +121,12 @@ const AccountingSystem = ({ onMaxWidthChange }) => {
             Accounting System
           </Typography>
 
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={mainTab}
               onChange={handleMainTabChange}
-              variant={isMobile ? 'scrollable' : 'standard'}
-              scrollButtons={isMobile ? 'auto' : false}
+              variant={isMobile ? "scrollable" : "standard"}
+              scrollButtons={isMobile ? "auto" : false}
               aria-label="accounting tabs"
             >
               <Tab label="Shopify" />

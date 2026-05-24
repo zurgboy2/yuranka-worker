@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
-import InvoiceListComponent from './InvoiceListComponent';
-import CardmarketOrdersComponent from './CardmarketOrdersComponent';
-import BulkOrderUploadComponent from './BulkOrderUploadComponent';
+import React, { useState } from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import InvoiceListComponent from "./InvoiceListComponent";
+import CardmarketOrdersComponent from "./CardmarketOrdersComponent";
+import BulkOrderUploadComponent from "./BulkOrderUploadComponent";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -22,13 +22,17 @@ const CardmarketTab = ({ onMaxWidthChange }) => {
 
   const handleSubTabChange = (event, newValue) => {
     setSubTab(newValue);
-    setVisitedTabs(prev => new Set([...prev, newValue]));
+    setVisitedTabs((prev) => new Set([...prev, newValue]));
   };
 
   return (
     <Box>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={subTab !== null ? subTab : false} onChange={handleSubTabChange} aria-label="cardmarket sub tabs">
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={subTab !== null ? subTab : false}
+          onChange={handleSubTabChange}
+          aria-label="cardmarket sub tabs"
+        >
           <Tab label="Invoices" />
           <Tab label="Orders" />
           <Tab label="Bulk Order Upload" />
@@ -37,7 +41,11 @@ const CardmarketTab = ({ onMaxWidthChange }) => {
 
       <TabPanel value={subTab} index={0}>
         {visitedTabs.has(0) && (
-          <InvoiceListComponent keyword="CM" title="Cardmarket Invoices" onMaxWidthChange={onMaxWidthChange} />
+          <InvoiceListComponent
+            keyword="CM"
+            title="Cardmarket Invoices"
+            onMaxWidthChange={onMaxWidthChange}
+          />
         )}
       </TabPanel>
 
