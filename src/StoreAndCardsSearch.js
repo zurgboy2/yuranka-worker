@@ -1111,7 +1111,7 @@ const StoreSearch = ({ onClose }) => {
               fullWidth 
               margin="dense" 
               name="Height" 
-              label="Height" 
+              label="Height (mm)" 
               type="number" 
               value={productData.Height} 
               onChange={handleInputChange} 
@@ -1123,7 +1123,7 @@ const StoreSearch = ({ onClose }) => {
               fullWidth 
               margin="dense" 
               name="Width" 
-              label="Width" 
+              label="Width (mm)" 
               type="number" 
               value={productData.Width} 
               onChange={handleInputChange} 
@@ -1135,7 +1135,7 @@ const StoreSearch = ({ onClose }) => {
               fullWidth 
               margin="dense" 
               name="Length" 
-              label="Length" 
+              label="Length (mm)" 
               type="number" 
               value={productData.Length} 
               onChange={handleInputChange} 
